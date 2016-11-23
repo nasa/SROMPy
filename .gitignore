@@ -1,1 +1,8 @@
 *swp*
+*.pyc
+srom/*.pyc
+target/*.pyc
+optimize/*.pyc
+srom/*swp*
+target/*swp*
+optimize/*swp*

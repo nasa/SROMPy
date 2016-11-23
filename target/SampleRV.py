@@ -1,0 +1,174 @@
+import os
+import numpy as np
+from scipy import interpolate
+
+from target import RandomVector
+
+
+class SampleRV(RandomVector):
+    '''
+    Sample-based random vector. Defines a target random vector to match with
+    an SROM based on a set of realizations of that random vector
+    '''
+
+    def __init__(self, samples, max_moment=10):
+        '''
+        Initialize SampleRV with an array of samples of the random vector.
+        Must be an array of size (# samples x dim). Statistics of the 
+        SampleRV are precomputed during initialization - max_moment is the
+        maximum moment order to compute & store for later use. If higher 
+        moments are anticipated, this can be increased (or visa versa)
+        '''
+
+        #Check for 1D case (random variable):
+        if len(samples.shape) == 1:
+            samples = samples.reshape((len(samples),1))
+        
+        (num_samples, dim) = samples.shape
+
+        if dim > num_samples:
+            msg = "Dimension is greater than # samples! Check samples array"
+            raise ValueError(msg)
+
+        #Parent class (RandomVector) constructor, sets self._dim
+        super(SampleRV, self).__init__(dim)
+
+        self._num_samples = num_samples
+        self._samples = samples
+        self._max_moment = max_moment 
+   
+        #Precompute & store statistics so they can be returned quickly later
+        self.generate_statistics(max_moment)
+ 
+    def compute_moments(self, max_order):
+        '''
+        Return precomputed moments up to specified order
+        '''
+
+        #TODO - calculate moments above max_moment on the fly & append to stored
+        if max_order <= self._max_moment:
+            moments = self._moments[:max_order, :]
+        else:
+            raise NotImplementedError("Moment above max_moment not handled yet")
+
+        return moments
+
+    def compute_CDF(self, x_grid):
+        '''
+        Evaluates the precomputed/stored CDFs at the specified x_grid values
+        and returns. x_grid can be a 1D array in which case the CDFs for each 
+        dimension are evaluated at the same points, or it can be a 
+        (num_grid_pts x dim) array, specifying different points for each 
+        dimension - each dimension can have a different range of values but
+        must have the same # of grid pts across it. Returns a (num_grid_pts x
+        dim) array of corresponding CDF values at the grid points
+    
+        '''
+
+        #NOTE - should deep copy x_grid since were modifying?
+        #1D random variable case
+        if len(x_grid.shape) == 1:
+            x_grid = x_grid.reshape((len(x_grid),1))
+        (num_pts, dim) = x_grid.shape
+
+        #If only one grid was provided for multiple dims, repeat to generalize
+        if (dim == 1) and (self._dim > 1):
+            x_grid = np.repeat(x_grid, self._dim, axis=1)
+
+        CDF_vals = np.zeros((num_pts, self._dim))
+
+        #Evaluate CDF interpolants on grid
+        for d, grid in enumerate(x_grid.T):
+    
+            #Make sure grid values lie within max/min along each dimension
+            grid[np.where(grid<self._mins[d])] = self._mins[d]
+            grid[np.where(grid>self._maxs[d])] = self._maxs[d]
+
+            CDF_d = self._CDFs[d](grid)
+            CDF_vals[:,d] = CDF_d
+
+        return CDF_vals
+
+    def compute_corr_mat(self):
+        '''
+        Returns precomputed correlation matrix
+        '''
+        return self._corr
+
+
+    #--------------Helper initialization methods---------------------------
+
+    def generate_statistics(self, max_moment):
+        '''
+        Precompute & store moments, CDFs, correlation matrix of the samples
+        so that they can be returned quickly later
+        '''
+
+        self.generate_moments(max_moment)
+        self.generate_CDFs()
+        self.generate_correlation()
+
+    def generate_moments(self, max_moment):
+        '''
+        Calculate & store random vector moments up to order max_moment based
+        on samples. Moments from 1,...,max_order
+        '''
+
+        self._moments = np.zeros((max_moment, self._dim))
+ 
+        #TODO - is there a faster numpy/scipy function for non-centered moments?
+        factor = (1./float(self._num_samples))
+        for q in range(0, max_moment):
+
+            moment_q = np.zeros((1,self._dim))
+            for k, sample in enumerate(self._samples):
+                moment_q += factor*np.power(sample, q+1)
+
+            self._moments[q,:] = moment_q
+
+    def generate_CDFs(self):
+        '''
+        Calculate & store marginal CDFs for each dimension of the random vector.
+        Stores a linear interpolator of the CDF for each dim
+        Uses trick from :   http://stackoverflow.com/questions/3209362/
+                            %20how-to-plot-empirical-cdf-in-matplotlib-in-python
+        to calculate CDF from samples
+        '''
+        
+        self._CDFs = []
+
+        #Need to store max/min samples in each dimension to prevent out of 
+        #bounds values in the interpolators later
+        self._mins = []
+        self._maxs = []    
+
+        #Get all samples of the i^th dimension at a time to generate CDF
+        #NOTE - does iterating over / sorting happen in place? Need deep copy?
+        for i, samples_i in enumerate(self._samples.T):
+        
+            #Generate/store interpolant for empirical CDF:
+            sorted_i = np.sort(samples_i)
+            cdf_vals = np.arange(1,len(sorted_i)+1)/float(len(sorted_i))
+            cdf_func = interpolate.interp1d(sorted_i, cdf_vals)
+            self._CDFs.append(cdf_func)
+            
+            self._mins.append(sorted_i[0])
+            self._maxs.append(sorted_i[-1])
+
+
+    def generate_correlation(self):
+        '''
+        Calculates and stores sample-based correlation matrix for random vector
+        '''
+
+        #TODO - find faster numpy/scipy function 
+        self._corr = np.zeros((self._dim, self._dim))
+
+        factor = (1./float(self._num_samples))
+        for k, sample in enumerate(self._samples):
+            self._corr = self._corr + factor*np.outer(sample, sample) 
+
+
+
+
+

@@ -51,6 +51,7 @@ class SROM:
         if len(probs) != self._size:
             raise ValueError("SROM probs must have dim. equal to srom size")
 
+        #TODO - do I need a deep copy? 
         self._samples = samples
         self._probs = probs
 
@@ -104,15 +105,20 @@ class SROM:
 
         TODO - option for smoothed/differentiable SROM CDF approximation?
         '''
-            
+         
+        #NOTE - should deep copy x_grid since were modifying?
+
+        #Make sure SROM has been properly initialized
+        if self._samples is None or self._probs is None:
+            raise ValueError("Must initalize SROM before computing moments")
+   
         if len(x_grid.shape) == 1:
             x_grid = x_grid.reshape((len(x_grid),1))
-
         (num_pts, dim) = x_grid.shape
 
         #If only one grid was provided for multiple dims, repeat to generalize
         if (dim == 1) and (self._dim > 1):
-            x_grid = np.repeat(x_grid, dim, axis=1)
+            x_grid = np.repeat(x_grid, self._dim, axis=1)
 
         CDF_vals = np.zeros((num_pts, self._dim))
 
@@ -129,4 +135,24 @@ class SROM:
             CDF_vals[:,d] = CDF_d
 
         return CDF_vals
+
+    
+    def compute_corr_mat(self):
+        '''
+        Returns the SROM correlation matrix as (dim x dim) numpy array
+
+        srom_corr = sum_{k=1}^m [ x^(k) * (x^(k))^T ] * p^(k)
+
+        '''
+    
+        #Make sure SROM has been properly initialized
+        if self._samples is None or self._probs is None:
+            raise ValueError("Must initalize SROM before computing moments")        
+        corr = np.zeros((self._dim, self._dim))
+
+        for k, sample in enumerate(self._samples):
+            corr = corr + np.outer(sample, sample) * self._probs[k]
+
+        return corr
+
 
