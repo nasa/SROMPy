@@ -12,7 +12,7 @@ class ObjectiveFunction:
     '''
 
     def __init__(self, SROM, targetRV, obj_weights=None, error='mean',
-                 max_moment=5):
+                 max_moment=5, cdf_grid_pts=100):
         '''
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
@@ -30,12 +30,16 @@ class ObjectiveFunction:
             -error - string 'mean' or 'max' defining how error is defined 
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
+            -cdf_grid_pts - int, # pts to evaluate CDF errors on
 
         '''
 
         #TODO - make sure SROM & targetRV are properly initialized / have same d
         self._SROM = SROM
         self._target = targetRV 
+
+        #Generate grids for evaluating CDFs based on target RV's range
+        self.generate_cdf_grids(cdf_grid_pts)
 
         if obj_weights is not None:
             if len(obj_weights) != 3:
@@ -51,13 +55,11 @@ class ObjectiveFunction:
         self._max_moment = max_moment
 
 
-    def evaluate(self, samples, probs, x_grid):
+    def evaluate(self, samples, probs):
         '''
         Evaluates the objective function for the specified SROM samples & 
         probabilities. Calculates errrors in statistics between SROM/target
 
-        #***** TODO - how to handle x_grid for evaluating CDF error? 
-        #         - define in constructor with max moments?
         '''
 
         error = 0.0
@@ -70,7 +72,7 @@ class ObjectiveFunction:
             error += moment_error * self._weights[0]
 
         if self._weights[1] > 0.0:
-            cdf_error = self.compute_CDF_error(x_grid)
+            cdf_error = self.compute_CDF_error()
             error += cdf_error * self._weights[1]
 
         if self._weights[2] > 0.0:
@@ -85,7 +87,7 @@ class ObjectiveFunction:
         '''
         
         srom_moments = self._SROM.compute_moments(self._max_moment)
-        target_moments = self._targetRV.compute_moments(self._max_moment)
+        target_moments = self._target.compute_moments(self._max_moment)
         diffs = np.abs(srom_moments - target_moments)
 
         if self._metric == "MEAN":
@@ -96,13 +98,13 @@ class ObjectiveFunction:
         return error
 
 
-    def compute_CDF_error(self, x_grid):
+    def compute_CDF_error(self):
         '''
         Calculate error in CDFs between SROM & target at pts in x_grid
         '''
 
-        srom_cdfs = self._SROM.compute_CDF(x_grid)
-        target_cdfs = self._targetRV.compute_CDF(x_grid)
+        srom_cdfs = self._SROM.compute_CDF(self._x_grid)
+        target_cdfs = self._target.compute_CDF(self._x_grid)
         diffs = np.abs(srom_cdfs - target_cdfs)
 
         if self._metric == "MEAN":
@@ -119,7 +121,7 @@ class ObjectiveFunction:
         ''' 
 
         srom_corr = self._SROM.compute_corr_mat()
-        target_corr = self._targetRV.compute_corr_mat()
+        target_corr = self._target.compute_corr_mat()
         diffs = np.abs(srom_corr - target_corr)
 
         if self._metric == "MEAN":
@@ -128,3 +130,19 @@ class ObjectiveFunction:
             error = np.max(diffs)
 
         return error
+
+    def generate_cdf_grids(self, cdf_grid_pts):
+        '''
+        Generate numerical grids for evaluating the CDF errors based on the 
+        range of the target random vector. Create x_grid member variable with
+        cdf_grid_pts along each dimension of the random vector.
+        '''
+        
+        self._x_grid = np.zeros((cdf_grid_pts, self._target._dim))
+
+        for i in range(self._target._dim):
+            grid = np.linspace(self._target._mins[i], 
+                               self._target._maxs[i],
+                               cdf_grid_pts)
+            self._x_grid[:,i] = grid
+
