@@ -86,6 +86,8 @@ class ObjectiveFunction:
         Calculate error in moments between SROM & target
         '''
         
+        #TODO -Need to update to 1/2*squared diffs instead of absolute value
+        #TODO - make relative metric? Divide by squared true value? 
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
         diffs = np.abs(srom_moments - target_moments)
@@ -102,7 +104,7 @@ class ObjectiveFunction:
         '''
         Calculate error in CDFs between SROM & target at pts in x_grid
         '''
-
+        #TODO -Need to update to 1/2*squared diffs instead of absolute value
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
         diffs = np.abs(srom_cdfs - target_cdfs)
@@ -119,6 +121,7 @@ class ObjectiveFunction:
         '''
         Calculate error in correlation matrix between SROM & target
         ''' 
+        #TODO -Need to update to 1/2*squared diffs instead of absolute value
 
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()
