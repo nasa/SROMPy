@@ -3,7 +3,7 @@ Define stochastic reduced order model (SROM) class
 '''
 
 import numpy as np
-
+import os
 
 class SROM:
 
@@ -53,7 +53,7 @@ class SROM:
 
         #TODO - do I need a deep copy? 
         self._samples = samples
-        self._probs = probs
+        self._probs = probs.reshape((self._size,1))
 
 
     def compute_moments(self, max_order):
@@ -155,4 +155,53 @@ class SROM:
 
         return corr
 
+    def save_params(self, outfile="srom_params.txt"):
+        '''
+        Write the SROM parameters to file.
 
+        Stores array in following format (samples in each row with prob after)
+
+                    comp_1  comp_2 ... comp_d   probability 
+        sample_1    x_1^(1) x_2^(1)             p^(1)
+        sample_2    x_1^(2)
+        ...
+        sample_m    x_1^(m)            x_d^(m)  p^(m)
+
+        '''
+
+        #Make sure SROM has been properly initialized
+        if self._samples is None or self._probs is None:
+            raise ValueError("Must initalize SROM before saving to disk")
+
+        srom_params = np.hstack((self._samples, self._probs))
+        np.savetxt(outfile, srom_params)
+
+    def load_params(self, infile="srom_params.txt"):
+        '''
+        Load SROM parameters from file.
+
+        Assumes array in following format (samples in each row with prob after)
+
+                    comp_1  comp_2 ... comp_d   probability 
+        sample_1    x_1^(1) x_2^(1)             p^(1)
+        sample_2    x_1^(2)
+        ...
+        sample_m    x_1^(m)            x_d^(m)  p^(m)
+
+        '''
+    
+        if not os.path.isfile(infile):
+            raise IOError("SROM parameter input file does not exist: " + infile)
+
+        srom_params = np.genfromtxt(infile)
+
+        (size, dim) = srom_params.shape
+        dim -= 1                        #Account for probabilities in last col
+
+        if size != self._size and dim != self._dim:
+            msg = "Dimension mismatch when loading SROM params from file"
+            raise ValueError(msg)
+
+        self._samples = srom_params[:, :-1]
+        self._probs = srom_params[:, -1]
+    
