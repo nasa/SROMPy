@@ -4,10 +4,11 @@ import scipy.optimize as opt
 
 from srom import SROM
 from optimize import ObjectiveFunction
+from optimize import Gradient
 
 
 #-----------------------------------------------------------------
-def scipy_obj_fun(x, objfun, samples=None):
+def scipy_obj_fun(x, objfun, grad, samples=None):
     '''
     Function to pass to scipy minimize defining objective. Wraps the 
     ObjectiveFunction.evaluate() function that defines SROM error. Need to 
@@ -26,6 +27,25 @@ def scipy_obj_fun(x, objfun, samples=None):
     error = objfun.evaluate(samples, probs)
 
     return error
+
+def scipy_grad(x, objfun, grad, samples=None):
+    '''
+    Function to pass to scipy minimize defining objective. Wraps the 
+    ObjectiveFunction.evaluate() function that defines SROM error. Need to 
+    unpack design variables x into samples & probabilities. Handle two cases:
+
+    1) joint optimization over samples & probs (samples=None)
+    2) sequential optimization -> optimize probs for fixed samples
+    '''
+
+    size = grad._SROM._size
+    dim = grad._SROM._dim
+
+    #Unpacking simple with samples are fixed:
+    probs = x
+
+    grad = grad.evaluate(samples, probs)
+    return grad
 
 #-----------------------------------------------------------------
 
@@ -66,6 +86,9 @@ class Optimizer:
         self._srom_obj = ObjectiveFunction(srom, target, obj_weights, error,
                                            max_moment, cdf_grid_pts)
 
+        self._srom_grad = Gradient(srom, target, obj_weights, error,
+                                        max_moment, cdf_grid_pts)
+
         #Flag indicating if SROM has been optimized already
         self.optimized = False
 
@@ -95,6 +118,11 @@ class Optimizer:
         constraints = self.get_constraints(joint_opt, sromsize, dim)
         initial_guess = self.get_initial_guess(joint_opt, sromsize)
 
+#        srom_samples =  self._target.draw_random_sample(sromsize)
+#        chk = opt.check_grad(scipy_obj_fun, scipy_grad, initial_guess,
+#                        self._srom_obj, self._srom_grad, srom_samples)
+#        print "CHECK GRAD = ", chk
+
         #Sequential optimization - draw random samples, optimize for probs
         if not joint_opt:
 
@@ -103,6 +131,8 @@ class Optimizer:
             opt_samples = None        
             opt_fun = 1e6
 
+            print "SROM Sequential Optimizer:"
+
             for i in xrange(num_test_samples):
         
                 #Randomly draw new 
@@ -110,14 +140,22 @@ class Optimizer:
 
                 #Optimize using scipy
                 opt_res = opt.minimize(scipy_obj_fun, initial_guess,
-                                       args=(self._srom_obj, srom_samples),
+                                       args=(self._srom_obj, self._srom_grad,
+                                                srom_samples),
+                                       #jac=scipy_grad,
                                        constraints=(constraints), 
-                                       bounds = bounds)
+                                       method=method,
+                                       bounds=bounds)
 
                 #If error is lower than lowest so far, keep track of results
                 if opt_res['fun'] < opt_fun:
                     opt_samples = srom_samples
                     opt_probs = opt_res['x']
+                    opt_fun = opt_res['fun']
+                
+                print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
+                print "Optimal:", opt_fun
+
         else:
             raise NotImplementedError("SROM joint optimization not implemented")
 
