@@ -27,7 +27,7 @@ class ObjectiveFunction:
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. 
-            -error - string 'mean' or 'max' defining how error is defined 
+            -error - string 'mean','max', or 'sse' defining how error is defined
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
@@ -48,7 +48,7 @@ class ObjectiveFunction:
         else:
             self._weights = np.ones((3,))        
 
-        if error.upper() not in ["MEAN", "MAX"]:
+        if error.upper() not in ["MEAN", "MAX", "SSE"]:
             raise ValueError("error must be either 'mean' or 'max'")
         self._metric = error.upper()
 
@@ -90,12 +90,21 @@ class ObjectiveFunction:
         #TODO - make relative metric? Divide by squared true value? 
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
-        diffs = np.abs(srom_moments - target_moments)
 
-        if self._metric == "MEAN":
+        #Squared relative difference:
+        if self._metric == "SSE":
+            squared_diffs = (srom_moments - target_moments)**2.0
+            rel_diffs = squared_diffs / target_moments**2.0
+            error = 0.5*np.sum(rel_diffs)
+        #Max absolute value:
+        elif self._metric == "MAX":
+            diffs = np.abs(srom_moments - target_moments)
+            error = np.max(diffs)
+        elif self._metric == "MEAN":    
+            diffs = np.abs(srom_moments - target_moments)
             error = np.mean(diffs)
         else:
-            error = np.max(diffs)
+            raise ValueError("Invalid error metric")
 
         return error
 
@@ -107,12 +116,19 @@ class ObjectiveFunction:
         #TODO -Need to update to 1/2*squared diffs instead of absolute value
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
-        diffs = np.abs(srom_cdfs - target_cdfs)
 
-        if self._metric == "MEAN":
+        if self._metric == "SSE":
+            squared_diffs = (srom_cdfs - target_cdfs)**2.0
+            rel_diffs = squared_diffs / target_cdfs**2.0
+            error = 0.5*np.sum(rel_diffs)
+        elif self._metric == "MAX":
+            diffs = np.abs(srom_cdfs - target_cdfs)
+            error = np.max(diffs)
+        elif self._metric == "MEAN":    
+            diffs = np.abs(srom_cdfs - target_cdfs)
             error = np.mean(diffs)
         else:
-            error = np.max(diffs)
+            raise ValueError("Invalid error metric")
 
         return error
 
@@ -125,12 +141,19 @@ class ObjectiveFunction:
 
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()
-        diffs = np.abs(srom_corr - target_corr)
 
-        if self._metric == "MEAN":
+        if self._metric == "SSE":
+            squared_diffs = (srom_corr - target_corr)**2.0
+            rel_diffs = squared_diffs / target_corr**2.0
+            error = 0.5*np.sum(rel_diffs)
+        elif self._metric == "MAX":
+            diffs = np.abs(srom_corr - target_corr)
+            error = np.max(diffs)
+        elif self._metric == "MEAN":    
+            diffs = np.abs(srom_corr - target_corr)
             error = np.mean(diffs)
         else:
-            error = np.max(diffs)
+            raise ValueError("Invalid error metric")
 
         return error
 

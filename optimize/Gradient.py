@@ -9,8 +9,8 @@ class Gradient:
     to scipy optimization library for faster minimization.
     '''
 
-    def __init__(self, SROM, targetRV, obj_weights=None, max_moment=5,
-                 error='mean', cdf_grid_pts=100):
+    def __init__(self, SROM, targetRV, obj_weights=None, error='mean',
+                 max_moment=5, cdf_grid_pts=100):
         '''
         Initialize SROM obj fun gradient. Pass in SROM & target random vector
         objects that have been previously initialized. 
@@ -34,7 +34,7 @@ class Gradient:
         self._target = targetRV
 
         #Generate grids for evaluating CDFs based on target RV's range
-        self._x_grid = cdf_grid_pts
+        self.generate_cdf_grids(cdf_grid_pts)
 
         if obj_weights is not None:
             if len(obj_weights) != 3:
@@ -48,6 +48,14 @@ class Gradient:
         self._metric = error.upper()
 
         self._max_moment = max_moment
+
+    def evaluate(self, samples, probs):
+        '''
+        Evaluates gradient (for probability only)
+        Just calls gradient_wrt_probs() for now
+        '''
+        return self.gradient_wrt_probs(samples, probs)
+
 
     def gradient_wrt_probs(self, samples, probs):
         '''
@@ -83,6 +91,8 @@ class Gradient:
                               self._weights[1]*moment_grad + 
                               self._weights[2]*corr_grad)  
 
+        grad = grad.flatten()
+        
         return grad
     
     def CDF_wrt_prob(self, samples, probs, srom_ind):
@@ -97,18 +107,19 @@ class Gradient:
 
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
-        diffs = srom_cdfs - target_cdfs
+        diffs = (srom_cdfs - target_cdfs)/target_cdfs**2.0
 
         #TODO -vectorize this? Get indicator array & do pt wise multiply
         grad = 0
-        sample_k = samples[srom_ind,:]
+        samples_k = samples[srom_ind,:]
         for j, grid_pt in enumerate(self._x_grid): #1 grid pt in all dims
             for i, pt in enumerate(grid_pt): #ith dim of jth grid pt
                 if samples_k[i] <= pt: #indicator x_srom^k_i <= x_grid_ij
                     grad += diffs[j,i]
 
         #Take into accoutn averaging:
-        grad *= (1. / (len(self._x_grid[:,0])*dim))
+        factor = diffs.shape[0] * diffs.shape[1]
+        grad *= (1. / factor)
         return grad
 
 
@@ -121,7 +132,7 @@ class Gradient:
         
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
-        diffs = srom_moments - target_moments
+        diffs = (srom_moments - target_moments)/target_moments**2.0
 
         grad_sum = 0.0
         sample_k = samples[srom_ind,:]
@@ -130,7 +141,10 @@ class Gradient:
 
             for q in range(self._max_moment):
                 #grad_i += (1./srom_moments[k,i]) * ... 
-                grad_sum += moment_diffs[q,i]*sample_k[i]^q
+                grad_sum += diffs[q,i]*sample_k[i]**q
+
+        factor = diffs.shape[0] * diffs.shape[1]
+        grad_sum *= (1. / factor)
 
         return grad_sum
 
@@ -148,7 +162,7 @@ class Gradient:
         
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()
-        diffs = srom_corr - target_corr
+        diffs = (srom_corr - target_corr) / target_corr**2.0
 
         grad_sum = 0.0
 
@@ -158,5 +172,23 @@ class Gradient:
             for j in range(dim):
                 #grad_sum +=  (1/true_corrleation^2)  ... if normalized obj fun
                 grad_sum += diffs[i,j] * sample_k[i] * sample_k[j]
+    
+        factor = diffs.shape[0] * diffs.shape[1]
+        grad_sum *= (1. / factor)
 
         return grad_sum
+
+    def generate_cdf_grids(self, cdf_grid_pts):
+        '''
+        Generate numerical grids for evaluating the CDF errors based on the 
+        range of the target random vector. Create x_grid member variable with
+        cdf_grid_pts along each dimension of the random vector.
+        '''
+
+        self._x_grid = np.zeros((cdf_grid_pts, self._target._dim))
+
+        for i in range(self._target._dim):
+            grid = np.linspace(self._target._mins[i],
+                               self._target._maxs[i],
+                               cdf_grid_pts)
+            self._x_grid[:,i] = grid
