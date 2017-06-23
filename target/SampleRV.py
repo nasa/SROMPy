@@ -85,6 +85,7 @@ class SampleRV(RandomVector):
             grid[np.where(grid>self._maxs[d])] = self._maxs[d]
 
             CDF_d = self._CDFs[d](grid)
+
             CDF_vals[:,d] = CDF_d
 
         return CDF_vals
@@ -114,8 +115,25 @@ class SampleRV(RandomVector):
         return sample
 
 
-
     #--------------Helper initialization methods---------------------------
+
+    def get_plot_CDFs(self):
+        '''
+        Get CDF values for plotting (without using interpolant) - returns
+        tuple with xgrid & CDF values arrays
+        '''
+
+        x_grid = np.zeros((self._num_samples, self._dim))
+        CDF_vals = np.zeros((self._num_samples, self._dim))
+        
+        for i, samples_i in enumerate(self._samples.T):
+            #Generate empirical CDF:
+            sorted_i = np.sort(samples_i)
+            cdf_vals = np.arange(1,len(sorted_i)+1)/float(len(sorted_i))
+            x_grid[:,i] = sorted_i
+            CDF_vals[:,i] = cdf_vals
+
+        return (x_grid, CDF_vals)
 
     def generate_statistics(self, max_moment):
         '''

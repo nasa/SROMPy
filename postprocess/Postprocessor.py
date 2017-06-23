@@ -42,7 +42,8 @@ class Postprocessor:
 
         xgrids = self.generate_cdf_grids()
         sromCDFs = self._SROM.compute_CDF(xgrids)
-        targetCDFs = self._target.compute_CDF(xgrids)
+        #targetCDFs = self._target.compute_CDF(xgrids)
+        (targetgrids, targetCDFs) = self._target.get_plot_CDFs()
 
         #Start plot name string if it's being stored
         if saveFig:
@@ -69,12 +70,12 @@ class Postprocessor:
             ylabel = "F(" + variable + ")"
             #Remove latex math symbol from plot name
             plotname_ = plotname_.translate(None, "$")
-            self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], targetCDFs[:,i], 
-                           variable, ylabel, plotname_, showFig)
+            self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], targetgrids[:,i], 
+                         targetCDFs[:,i],  variable, ylabel, plotname_, showFig)
 
 
-    def plot_cdfs(self, xgrid, sromcdf, targetcdf, xlabel="x", ylabel="F(x)", 
-                  plotname=None, showFig=True, xlimits=None):
+    def plot_cdfs(self, xgrid, sromcdf, xtarget, targetcdf, xlabel="x", 
+                 ylabel="F(x)",  plotname=None, showFig=True, xlimits=None):
         '''
         Plotting routine for comparing a single srom/target cdf
         '''
@@ -90,7 +91,7 @@ class Postprocessor:
         #Plot CDFs
         fig,ax = plt.subplots(1)
         ax.plot(xgrid, sromcdf, 'r--', linewidth=4.5, label = 'SROM')
-        ax.plot(xgrid, targetcdf, 'k-', linewidth=2.5, label = 'Target')
+        ax.plot(xtarget, targetcdf, 'k-', linewidth=2.5, label = 'Target')
         ax.legend(loc='best', prop={'size': legendFont})
 
         #Labels/limits    
@@ -170,7 +171,9 @@ class Postprocessor:
         for m,srom in size2srom.iteritems():
             sromCDFs[m] = srom.compute_CDF(xgrids)
 
-        targetCDFs = target.compute_CDF(xgrids)
+        #targetCDFs = target.compute_CDF(xgrids)
+        (target_grids, targetCDFs) = target.get_plot_CDFs()
+
 
         #Start plot name string if it's being stored
         if saveFig:
@@ -209,13 +212,14 @@ class Postprocessor:
             legendFont = 22
        
             xgrid=xgrids[:,i]
+            xtarget = target_grids[:,i]
             targetcdf = targetCDFs[:,i]
 
             linez = ['g-','r:','b--']
             widthz = [2.5, 4, 3.5]
             #Plot CDFs
             fig,ax = plt.subplots(1)
-            ax.plot(xgrid, targetcdf, 'k-', linewidth=2.5, label = 'Target')
+            ax.plot(xtarget, targetcdf, 'k-', linewidth=2.5, label = 'Target')
             for j,m in enumerate(sromCDFs.keys()):
                 #label = "SROM (m=" + str(m) + ")"
                 label = "m = " + str(m) 
@@ -242,3 +246,108 @@ class Postprocessor:
                 plt.savefig(plotname_)
             if showFig:
                 plt.show()
+
+    @staticmethod
+    def compare_RV_CDFs(RV1, RV2, variable="x", plotdir=".",
+                            plotsuffix="CDFscompare", showFig=True, 
+                            saveFig = False, variablenames=None,
+                            xlimits=None, labels=None):
+        '''
+        Generates plots comparing CDFs from sroms of different sizes versus 
+        the target variable for each dimension of the vector.
+
+        inputs:
+            RV1, SampleRV, target random variable object
+            RV2, SampleRV, target random variable object
+            variable, str, name of variable being plotted
+            plotsuffix, str, name for saving plot (will append dim & .pdf)
+            plotdir, str, name of directory to store plots
+            showFig, bool, show or not show generated plot
+            saveFig, bool, save or not save generated plot
+            variablenames, list of strings, names of variable in each dimension
+                optional. Used for x axes labels if provided. 
+            labels, list of str: names of RV1 & RV2
+        '''
+
+        (rv1_grids, rv1CDFs) = RV1.get_plot_CDFs()
+        (rv2_grids, rv2CDFs) = RV2.get_plot_CDFs()
+
+        #Start plot name string if it's being stored
+        if saveFig:
+            plotname = os.path.join(plotdir, plotsuffix)
+        else:
+            plotname = None
+
+        #Get variable names:
+        if variablenames is not None:
+            if len(variablenames) != target._dim:
+                raise ValueError("Wrong number of variable names provided")
+        else:
+            variablenames = []
+            for i in range(RV1._dim):
+                if RV1._dim==1:
+                    variablenames.append(variable)
+                else:
+                    variablenames.append(variable + "_" + str(i+1))
+
+        print "variable names = ", variablenames
+
+        for i in range(RV1._dim):
+
+            variable = variablenames[i]
+            if plotname is not None:
+                plotname_ = plotname + "_" + variable + ".pdf"
+                #Remove latex math symbol from plot name
+                plotname_ = plotname_.translate(None, "$")
+            else:
+                plotname_ = None
+
+            ylabel = r'$F($' + variable + r'$)$'
+
+            #---------------------------------------------
+            #PLOT THIS DIMENSION:
+            #Text formatting for plot
+            title_font = {'fontname':'Arial', 'size':22, 'weight':'bold',
+                                    'verticalalignment':'bottom'}
+            axis_font = {'fontname':'Arial', 'size':26, 'weight':'normal'}
+            labelFont = 'Arial'
+            labelSize =  20
+            legendFont = 22
+       
+            x1 = rv1_grids[:,i]
+            cdf1 = rv1CDFs[:,i]
+            x2 = rv2_grids[:,i]
+            cdf2 = rv2CDFs[:,i]
+
+            linez = ['g-','r:','b--']
+            widthz = [2.5, 4, 3.5]
+            #Plot CDFs
+            fig,ax = plt.subplots(1)
+            if labels is None:
+                labels = ["RV1", "RV2"]
+
+            ax.plot(x1, cdf1, 'r--', linewidth=4.5, label=labels[0])
+            ax.plot(x2, cdf2, 'b-', linewidth=2.5, label=labels[1])
+
+            ax.legend(loc='best', prop={'size': legendFont})
+
+            #Labels/limits    
+            y_limz = ax.get_ylim()
+            x_limz = ax.get_xlim()
+            ax.axis([min(x1), max(x1), 0, 1.1])
+            if(xlimits is not None):
+                ax.axis([xlimits[i][0], xlimits[i][1], 0, 1.1])
+            ax.set_xlabel(variable, **axis_font)
+            ax.set_ylabel(ylabel, **axis_font)
+
+            for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+                label.set_fontname(labelFont)
+                label.set_fontsize(labelSize)
+
+            plt.tight_layout()
+
+            if plotname_ is not None:
+                plt.savefig(plotname_)
+            if showFig:
+                plt.show()
+
