@@ -25,7 +25,8 @@ class Postprocessor:
         self._target = targetrv
 
     def compare_CDFs(self, variable="x", plotdir='.', plotsuffix="CDFcompare", 
-                     showFig=True, saveFig=True, variablenames=None):
+                     showFig=True, saveFig=True, variablenames=None, 
+                     xlimits=None):
         '''
         Generates plots comparing the srom & target cdfs for each dimension
         of the random vector.
@@ -70,8 +71,12 @@ class Postprocessor:
             ylabel = "F(" + variable + ")"
             #Remove latex math symbol from plot name
             plotname_ = plotname_.translate(None, "$")
+            if xlimits is not None:
+                xlims = xlimits[i]
+            else:
+                xlims = None
             self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], targetgrids[:,i], 
-                         targetCDFs[:,i],  variable, ylabel, plotname_, showFig)
+                targetCDFs[:,i],  variable, ylabel, plotname_, showFig, xlims)
 
 
     def plot_cdfs(self, xgrid, sromcdf, xtarget, targetcdf, xlabel="x", 

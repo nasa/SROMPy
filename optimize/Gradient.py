@@ -43,8 +43,8 @@ class Gradient:
         else:
             self._weights = np.ones((3,))
 
-        if error.upper() not in ["MEAN", "MAX"]:
-            raise ValueError("error must be either 'mean' or 'max'")
+        if error.upper() not in ["MEAN", "MAX", "SSE"]:
+            raise ValueError("error must be either 'mean','max', or 'sse'")
         self._metric = error.upper()
 
         self._max_moment = max_moment
@@ -54,6 +54,9 @@ class Gradient:
         Evaluates gradient (for probability only)
         Just calls gradient_wrt_probs() for now
         '''
+        #SROM is now defined by the current values of samples/probs for stats
+        self._SROM.set_params(samples, probs)
+
         return self.gradient_wrt_probs(samples, probs)
 
 
@@ -64,38 +67,31 @@ class Gradient:
         '''
     
         sromsize = self._SROM._size
-        grad = np.zeros((sromsize,1))
+        grad = np.zeros(sromsize)
 
-        for srom_ind in range(sromsize):
+        #d_e1/d_p: 
+        if self._weights[0] > 0:
+            cdf_grad = self.CDF_wrt_prob(samples, probs)
+        else:
+            cdf_grad = np.zeros(sromsize)
+        #d_e2/d_p
+        if self._weights[1] > 0:
+            moment_grad = self.moment_wrt_prob(samples, probs)
+        else:
+            moment_grad = np.zeros(sromsize)
+        #d_e3/d_p
+        if self._weights[2] > 0:
+            corr_grad = self.corr_wrt_prob(samples, probs)
+        else:
+            corr_grad = np.zeros(sromsize)
 
-            #d(CDF_error)/dp_i :
-            if self._weights[0] > 0:
-                cdf_grad = self.CDF_wrt_prob(samples, probs, srom_ind)
-            else:
-                cdf_grad = 0.0
-            
-            #d(moment_error)/dp_i: 
-            if self._weights[1] > 0:
-                moment_grad = self.moment_wrt_prob(samples, probs, srom_ind)
-            else:
-                moment_grad = 0.0
-            
-            #d(corr_error)/dp_i
-            if self._weights[2] > 0:
-                corr_grad = self.corr_wrt_prob(samples, probs, srom_ind)
-            else:
-                corr_grad = 0.0
-            
-            #Sum contribution to gradient from each error term 
-            grad[srom_ind] = (self._weights[0]*cdf_grad + 
-                              self._weights[1]*moment_grad + 
-                              self._weights[2]*corr_grad)  
-
-        grad = grad.flatten()
-        
+        grad = (self._weights[0]*cdf_grad +
+                self._weights[1]*moment_grad + 
+                self._weights[2]*corr_grad)
+       
         return grad
     
-    def CDF_wrt_prob(self, samples, probs, srom_ind):
+    def CDF_wrt_prob(self, samples, probs):
         '''
         Gradient of CDF error term with respect to probability (for srom_ind)
         
@@ -105,51 +101,56 @@ class Gradient:
         
         (size, dim) = samples.shape
 
+        #Compute relative diffs btwn srom/target CDFs
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
         diffs = (srom_cdfs - target_cdfs)/target_cdfs**2.0
 
-        #TODO -vectorize this? Get indicator array & do pt wise multiply
-        grad = 0
-        samples_k = samples[srom_ind,:]
-        for j, grid_pt in enumerate(self._x_grid): #1 grid pt in all dims
-            for i, pt in enumerate(grid_pt): #ith dim of jth grid pt
-                if samples_k[i] <= pt: #indicator x_srom^k_i <= x_grid_ij
-                    grad += diffs[j,i]
+        grad = np.zeros(size)
+               
+        for srom_ind in range(size):
 
-        #Take into accoutn averaging:
-        factor = diffs.shape[0] * diffs.shape[1]
-        grad *= (1. / factor)
+            samples_k = samples[srom_ind,:]
+            grad_i = 0
+
+            for i in range(dim):
+                grid_i = self._x_grid[:, i]
+
+                #Implement indictator function in vectorized way:
+                indz = grid_i >= samples_k[i]
+                grad_i += np.sum(diffs[indz,i])
+
+            grad[srom_ind] = grad_i
+
         return grad
 
 
-    def moment_wrt_prob(self, samples, probs, srom_ind):
+    def moment_wrt_prob(self, samples, probs):
         '''
         Gradient of moment error term with respect to probability (for srom_ind)
         '''
         
         (size, dim) = samples.shape
         
+        #Compute relative diffs btwn srom/target moments
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
         diffs = (srom_moments - target_moments)/target_moments**2.0
 
-        grad_sum = 0.0
-        sample_k = samples[srom_ind,:]
+        samples_flat = samples.flatten()
+        grad = np.zeros(size)
 
-        for i in range(dim):
-
-            for q in range(self._max_moment):
-                #grad_i += (1./srom_moments[k,i]) * ... 
-                grad_sum += diffs[q,i]*sample_k[i]**q
-
-        factor = diffs.shape[0] * diffs.shape[1]
-        grad_sum *= (1. / factor)
-
-        return grad_sum
+        #compute gradient in relatively obscure-looking but fast/vectorized way
+        for q in range(self._max_moment):
+            samples_q = samples_flat**(q+1)
+            diffs_tiled = np.tile(diffs[q,:], size)
+            diffs_samples_q = np.multiply(samples_q, diffs_tiled)
+            grad += np.sum(diffs_samples_q.reshape(size, dim), axis=1)
+        
+        return grad
 
 
-    def corr_wrt_prob(self, samples, probs, srom_ind):
+    def corr_wrt_prob(self, samples, probs):
         '''
         Gradient of corr. error term with respect to probability (for srom_ind)
         '''
@@ -158,25 +159,26 @@ class Gradient:
     
         #Correlation irrelevant for 1D
         if dim == 1:
-            return 0.0
+            return np.zeros(size)
         
+        #Compute relative diffs between SROM/target correlation matrices
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()
         diffs = (srom_corr - target_corr) / target_corr**2.0
 
-        grad_sum = 0.0
+        grad = np.zeros(size)
 
-        sample_k = samples[srom_ind, :]
+        for srom_ind in range(size):
+            sample_k = samples[srom_ind, :]
+            grad_sum = 0.0
 
-        for i in range(dim):
-            for j in range(dim):
-                #grad_sum +=  (1/true_corrleation^2)  ... if normalized obj fun
-                grad_sum += diffs[i,j] * sample_k[i] * sample_k[j]
-    
-        factor = diffs.shape[0] * diffs.shape[1]
-        grad_sum *= (1. / factor)
+            for i in range(dim):
+                for j in range(dim):
+                    grad_sum += diffs[i,j] * sample_k[i] * sample_k[j]
 
-        return grad_sum
+            grad[srom_ind] = grad_sum        
+
+        return grad
 
     def generate_cdf_grids(self, cdf_grid_pts):
         '''

@@ -26,7 +26,8 @@ class ObjectiveFunction:
                 SampleRV) with same dimension as SROM
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
-                CDFs, and correlation matrix in that order. 
+                CDFs, and correlation matrix in that order. Default is equal 
+                weights ([1.0,1.0,1.0])
             -error - string 'mean','max', or 'sse' defining how error is defined
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
@@ -68,12 +69,12 @@ class ObjectiveFunction:
         self._SROM.set_params(samples, probs)
 
         if self._weights[0] > 0.0:
-            moment_error = self.compute_moment_error()
-            error += moment_error * self._weights[0]
+            cdf_error = self.compute_CDF_error()
+            error += cdf_error * self._weights[0]
 
         if self._weights[1] > 0.0:
-            cdf_error = self.compute_CDF_error()
-            error += cdf_error * self._weights[1]
+            moment_error = self.compute_moment_error()
+            error += moment_error * self._weights[1]
 
         if self._weights[2] > 0.0:
             corr_error = self.compute_correlation_error()
@@ -86,15 +87,12 @@ class ObjectiveFunction:
         Calculate error in moments between SROM & target
         '''
         
-        #TODO -Need to update to 1/2*squared diffs instead of absolute value
-        #TODO - make relative metric? Divide by squared true value? 
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
 
         #Squared relative difference:
         if self._metric == "SSE":
-            squared_diffs = (srom_moments - target_moments)**2.0
-            rel_diffs = squared_diffs / target_moments**2.0
+            rel_diffs = ((srom_moments-target_moments)/target_moments)**2.0
             error = 0.5*np.sum(rel_diffs)
         #Max absolute value:
         elif self._metric == "MAX":
@@ -113,7 +111,7 @@ class ObjectiveFunction:
         '''
         Calculate error in CDFs between SROM & target at pts in x_grid
         '''
-        #TODO -Need to update to 1/2*squared diffs instead of absolute value
+
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
 
@@ -137,7 +135,6 @@ class ObjectiveFunction:
         '''
         Calculate error in correlation matrix between SROM & target
         ''' 
-        #TODO -Need to update to 1/2*squared diffs instead of absolute value
 
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()

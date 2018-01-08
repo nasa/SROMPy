@@ -120,6 +120,7 @@ class Optimizer:
 
 #        srom_samples =  self._target.draw_random_sample(sromsize)
 #        chk = opt.check_grad(scipy_obj_fun, scipy_grad, initial_guess,
+#            self._srom_obj, self._srom_grad,srom_samples)
 #                        self._srom_obj, self._srom_grad, srom_samples)
 #        print "CHECK GRAD = ", chk
 
