@@ -1,6 +1,7 @@
 *swp*
 *.pyc
 srom/*.pyc
+srom/__init__.pyc
 target/*.pyc
 optimize/*.pyc
 srom/*swp*
