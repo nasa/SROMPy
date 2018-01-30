@@ -2,7 +2,7 @@
 import numpy as np
 import scipy.optimize as opt
 
-from srom import SROM
+#from srom import SROM
 from optimize import ObjectiveFunction
 from optimize import Gradient
 
@@ -57,7 +57,7 @@ class Optimizer:
     SROM & target random vector
     '''
 
-    def __init__(self, target, sromsize, obj_weights=None, error='SSE',
+    def __init__(self, target, srom, obj_weights=None, error='SSE',
                  max_moment=5, cdf_grid_pts=100):
         '''
 
@@ -80,8 +80,10 @@ p
         self._target = target
         
         #Initialize SROM for modeling the target
-        srom = SROM(sromsize, self._target._dim)
-        self._SROM = srom
+#        srom = SROM(sromsize, self._target._dim)
+#        self._SROM = srom
+        self._sromsize = srom._size
+        self._dim = srom._dim
 
         #Initialize objective function defining SROM vs target error
         self._srom_obj = ObjectiveFunction(srom, target, obj_weights, error,
@@ -99,8 +101,8 @@ p
         #Flag indicating if SROM has been optimized already
         self.optimized = False
 
-    def generate_srom(self, joint_opt=False, num_test_samples=500, 
-                      tol=None, options=None, method=None):
+    def get_optimal_params(self, num_test_samples=500, tol=None, options=None,
+                           method=None):
         '''
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -115,54 +117,50 @@ p
             -options, dict, options for scipy optimization algorithm
             -method, str, method specifying scipy optimization algorithm
     
-        returns SROM object with optimum parameters
+        returns optimal SROM samples & probabilities
 
         '''
 
-        sromsize = self._SROM._size
-        dim = self._SROM._dim
-        bounds = self.get_param_bounds(joint_opt, sromsize)
-        constraints = self.get_constraints(joint_opt, sromsize, dim)
-        initial_guess = self.get_initial_guess(joint_opt, sromsize)
+#        sromsize = self._SROM._size
+#        dim = self._SROM._dim
+        joint_opt = False #Not implemented yet
+        bounds = self.get_param_bounds(joint_opt, self._sromsize)
+        constraints = self.get_constraints(joint_opt, self._sromsize, self._dim)
+        initial_guess = self.get_initial_guess(joint_opt, self._sromsize)
 
-        #Sequential optimization - draw random samples, optimize for probs
-        if not joint_opt:
 
-            #Track optimal func value with corresonding samples/probs
-            opt_probs = None
-            opt_samples = None        
-            opt_fun = 1e6
+        #Track optimal func value with corresonding samples/probs
+        opt_probs = None
+        opt_samples = None        
+        opt_fun = 1e6
+
+        print "SROM Sequential Optimizer:"
+
+        for i in xrange(num_test_samples):
     
-            print "SROM Sequential Optimizer:"
+            #Randomly draw new 
+            srom_samples =  self._target.draw_random_sample(self._sromsize)
 
-            for i in xrange(num_test_samples):
-        
-                #Randomly draw new 
-                srom_samples =  self._target.draw_random_sample(sromsize)
+            #Optimize using scipy
+            opt_res = opt.minimize(scipy_obj_fun, initial_guess,
+                                   args=(self._srom_obj, self._srom_grad,
+                                            srom_samples),
+                                   jac=self._grad,
+                                   constraints=(constraints), 
+                                   method=method,
+                                   bounds=bounds)
 
-                #Optimize using scipy
-                opt_res = opt.minimize(scipy_obj_fun, initial_guess,
-                                       args=(self._srom_obj, self._srom_grad,
-                                                srom_samples),
-                                       jac=self._grad,
-                                       constraints=(constraints), 
-                                       method=method,
-                                       bounds=bounds)
+            #If error is lower than lowest so far, keep track of results
+            if opt_res['fun'] < opt_fun:
+                opt_samples = srom_samples
+                opt_probs = opt_res['x']
+                opt_fun = opt_res['fun']
+            
+            print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
+            print "Optimal:", opt_fun
 
-                #If error is lower than lowest so far, keep track of results
-                if opt_res['fun'] < opt_fun:
-                    opt_samples = srom_samples
-                    opt_probs = opt_res['x']
-                    opt_fun = opt_res['fun']
-                
-                print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
-                print "Optimal:", opt_fun
 
-        else:
-            raise NotImplementedError("SROM joint optimization not implemented")
-
-        self._SROM.set_params(opt_samples, opt_probs)
-        return self._SROM
+        return (opt_samples, opt_probs)
 
 
     #-----Helper funcs----

@@ -5,6 +5,8 @@ Define stochastic reduced order model (SROM) class
 import numpy as np
 import os
 
+from optimize import Optimizer
+
 class SROM:
 
     def __init__(self, size, dim):
@@ -154,6 +156,44 @@ class SROM:
             corr = corr + np.outer(sample, sample) * self._probs[k]
 
         return corr
+
+    def optimize(self, targetRV, weights=None, num_test_samples=500, 
+                 error='SSE', max_moment=5, cdf_grid_pts=100, 
+                 tol=None, options=None, method=None):
+        '''
+        Optimize for the SROM samples & probabilities to best match the 
+        target random vector statistics. 
+        
+        inputs:
+            -target - initialized RandomVector object (either AnalyticRV or 
+                SampleRV) that is being modeled with the SROM
+            -weights - array of floats defining the relative weight of the 
+                terms in the objective function. Terms are error in moments,
+                CDFs, and correlation matrix in that order. Default will give
+                each term equal weight
+            -num_test_samples - int,  # of randomly drawn sample sets of the 
+                target random vector to optimize probaiblities for during
+                optimization process.
+            -error -string 'sse', 'mean' or 'max' defining how error is 
+                quantified between the statistics of the SROM & target
+            -max_moment - int, max order to evaluate moment errors up to 
+            -cdf_grid_pts - int, # pts to evaluate CDF errors on
+            -tol, float, tolerance of scipy optimization algorithm TODO 
+            -options, dict, options for scipy optimization algorithm TODO 
+            -method, str, method specifying scipy optimization algorithm TODO
+
+        '''
+           
+
+        #Use optimizer to form SROM objective func & gradient and minimize:
+        opt = Optimizer(targetRV, self, weights, error, max_moment, 
+                                                       cdf_grid_pts)
+    
+        (samples, probs) = opt.get_optimal_params(num_test_samples, tol, 
+                                                 options, method)
+
+        self.set_params(samples, probs)
+
 
     def save_params(self, outfile="srom_params.txt"):
         '''

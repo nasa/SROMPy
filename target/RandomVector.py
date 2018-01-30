@@ -17,15 +17,16 @@ class RandomVector(object):
 
     @abc.abstractmethod
     def compute_moments(self, max_order):
-
         return
     
     @abc.abstractmethod
     def compute_CDF(self, x_grid):
-
         return
 
     @abc.abstractmethod
     def compute_corr_mat(self):
+        return
 
+    @abc.abstractmethod
+    def draw_random_sample(self, sample_size):
         return
