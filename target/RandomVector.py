@@ -14,7 +14,6 @@ class RandomVector(object):
 
         self._dim = int(dim)
 
-
     @abc.abstractmethod
     def compute_moments(self, max_order):
         return

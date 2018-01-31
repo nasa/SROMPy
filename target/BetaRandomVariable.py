@@ -31,7 +31,10 @@ class BetaRandomVariable(object):
         self._beta = beta
         self._shift = shift
         self._scale = scale
+        #set dimension (scalar), min/max 
         self._dim = 1
+        self._min = shift
+        self._max = shift + scale
 
     @staticmethod
     def get_beta_shape_params(min_val, max_val, mean, var):
