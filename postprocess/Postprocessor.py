@@ -43,8 +43,8 @@ class Postprocessor:
 
         xgrids = self.generate_cdf_grids()
         sromCDFs = self._SROM.compute_CDF(xgrids)
-        #targetCDFs = self._target.compute_CDF(xgrids)
-        (targetgrids, targetCDFs) = self._target.get_plot_CDFs()
+        targetCDFs = self._target.compute_CDF(xgrids)
+        #(targetgrids, targetCDFs) = self._target.get_plot_CDFs()
 
         #Start plot name string if it's being stored
         if saveFig:
@@ -75,7 +75,7 @@ class Postprocessor:
                 xlims = xlimits[i]
             else:
                 xlims = None
-            self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], targetgrids[:,i], 
+            self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], xgrids[:,i], 
                 targetCDFs[:,i],  variable, ylabel, plotname_, showFig, xlims)
 
 

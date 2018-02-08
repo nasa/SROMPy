@@ -1,5 +1,9 @@
 import copy
+import time
 import numpy as np
+
+from scipy.stats import multivariate_normal, norm
+from scipy import integrate, interpolate
 
 from target import RandomVector
 
@@ -42,9 +46,7 @@ class AnalyticRV(RandomVector.RandomVector):
             raise ValueError("Dimension mismatch btwn corr mat & random vars")
 
         #Parent class (RandomVector) constructor, sets self._dim
-#        super(AnalyticRV, self).__init__(len(random_variables))
-
-        self._dim = len(random_variables)
+        super(AnalyticRV, self).__init__(len(random_variables))
 
         #Get min/max values for each component
         self._components = copy.deepcopy(random_variables)
@@ -52,9 +54,14 @@ class AnalyticRV(RandomVector.RandomVector):
         self._maxs = np.zeros(self._dim)
         
         for i in range(self._dim):
-            self._mins[i] = self._components[i]._min
-            self._maxs[i] = self._components[i]._max
+            self._mins[i] = self._components[i]._mins[0]
+            self._maxs[i] = self._components[i]._maxs[0]
 
+        #Generate Gaussian correlation matrix for sampling translation RV:
+        self.generate_gaussian_correlation()
+
+        #Generate unscaled correlation that is matched by SROM during opt.
+        self.generate_unscaled_correlation()
 
     def verify_correlation_matrix(self, corr_matrix):
         '''
@@ -88,7 +95,7 @@ class AnalyticRV(RandomVector.RandomVector):
         #Get moments up to max_order for each component of the vector
         moments = np.zeros((max_order, self._dim))
         for i in range(self._dim):
-            moments[:, i] = self._components[i].get_moments(max_order)
+            moments[:, i] = self._components[i].compute_moments(max_order)
 
         return moments
 
@@ -132,13 +139,140 @@ class AnalyticRV(RandomVector.RandomVector):
         '''
         Returns the correlation matrix
         '''
-        return self._corr
+        return self._unscaled_corr
 
-    def draw_random_samples(self, sample_size):
+    def draw_random_sample(self, sample_size):
         '''
-        TODO 
+        Implements the translation model to generate general random vectors with
+        non-gaussian components. Nonlinear transformation of a std gaussian
+        vector according to method in S.R. Arwade 2005 paper.
+
+        random component sample: theta = inv_cdf(std_normal_cdf(normal_vec))
+                                 \Theta = F^{-1}(\Phi(G))
+
         '''
-        return
-               
+
+        samples = np.zeros((sample_size, self._dim))
+        chol = np.linalg.cholesky(self._gaussian_corr)
+        
+        #Is there a way to optimize this sampling loop? 
+        for i in range(sample_size):
+
+            #Draw standard std normal random vector with given correlation
+            norm_vec = chol*norm.rvs(size=self._dim)
+            
+            #Evaluate std normal CDF at the random vec
+            norm_cdf = norm.cdf(norm_vec)
+
+            #Transform by inverse CDF of random vec's components
+            for j in range(self._dim):
+                rv_j = self._components[j].compute_inv_CDF(norm_cdf[j])[0]
+                samples[i][j] = rv_j
+
+        return samples
+        
+
+    def integrand_helper(self, u, v, k, j, rho_kj):
+        '''
+        Helper function for numerical integration in the 
+        generate_gaussian_correlation() function. Implements the integrand of 
+        equation 6 of J.M. Emery 2015 paper that needs to be integrated w/ 
+        scipy
+        Passing in values of the k^th and j^th component of the random variable
+        - u and v - and the specified correlation between them rho_kj.
+        '''
+ 
+        normal_pdf_kj = multivariate_normal.pdf([u, v], 
+                                                cov=[[1, rho_kj], [rho_kj, 1]])
+
+        #f_k(x) = InvCDF_k ( Gaussian_CDF( x ) ) 
+        f_k = self._components[k].compute_inv_CDF(norm.cdf(u))
+        f_j = self._components[j].compute_inv_CDF(norm.cdf(v))
+
+        integrand = f_k*f_j*normal_pdf_kj 
+
+        return integrand
 
 
+    def get_corr_entry(self, k, j, rho_kj):
+        '''
+        Get the correlation between this random vector's k & j components from
+        the correlation btwn the Gaussian random vector's k & j components.
+        Helper function for generate_gaussian_correlation
+        Need to integrate product of k/j component's inv cdf & a standard
+        2D normal pdf with correlation rho_kj. This is equation 6 in J.M. Emery
+        et al 2015.
+        '''
+
+        #Integrate using scipy
+        k_lims = [-4, 4]    
+        j_lims = [-4, 4]
+
+        #Get product of moments & std deviations for equation 6
+        mu_k_mu_j = (self._components[k].compute_moments(1)[0]*
+                     self._components[j].compute_moments(1)[0])
+        std_k_std_j = (self._components[k].get_variance()*
+                       self._components[j].get_variance())**0.5
+
+        #Try adjusting tolerance to speed this up:
+        #1.49e-8 is default for both
+        opts = {'epsabs':1.e-8, 'epsrel':1e-8}
+        E_integral = integrate.nquad(self.integrand_helper, [k_lims, j_lims],
+                                args=(k, j, rho_kj), opts=opts)
+
+        eta_kj = (E_integral - mu_k_mu_j)/std_k_std_j
+
+        return eta_kj[0]
+
+    def generate_gaussian_correlation(self):
+        '''
+        Generates the Gaussian correlation matrix that will achieve the 
+        covariance matrix specified for this random vector when using a 
+        translation random vector sampling approach. See J.M. Emery 2015 paper 
+        pages 922,923 on this procedure.
+        Helper function - no inputs, operates on self._corr correlation matrix
+        and generates self._gaussian_corr 
+        '''
+        
+        self._gaussian_corr = np.ones(self._corr.shape)
+
+        #Want to build interpolant from eta correlation values to rho corr vals
+        numpts = 15
+        rho_kj_grid = np.linspace(-0.99, 0.99, numpts)  #-1 made matrix singular
+        eta_jk_grid = np.zeros(numpts)
+
+        for k in range(self._dim):
+            for j in range(k+1, self._dim):
+                print "Determining correlation entry ", k, " ", j
+                #Compute grid of eta/rho pts:
+                for i, rho_kj in enumerate(rho_kj_grid):
+                    print "\t\ti = ", i
+                    eta_jk_grid[i] = self.get_corr_entry(k, j, rho_kj)
+                    print "\t\tEta = ", eta_jk_grid[i]
+                #Build interpolant to find rho value for specified eta
+                rho_interp = interpolate.interp1d(eta_jk_grid, rho_kj_grid)
+                #Use symmetry to save time:
+                self._gaussian_corr[k][j] = rho_interp(self._corr[k][j])
+                self._gaussian_corr[j][k] = rho_interp(self._corr[k][j])
+
+
+    def generate_unscaled_correlation(self):
+        '''
+        Generates the unscaled correlation matrix that is matched by the SROM
+        during optimization. No inputs / outputs. INternally produces
+        self._unscaled_corr from self._corr.
+
+        >> C_ij = E[ X_i X_j]
+
+        '''
+
+        self._unscaled_corr = copy.deepcopy(self._corr)
+    
+        for i in range(self._dim):
+            for j in range(self._dim):
+                mu_i_mu_j = (self._components[i].compute_moments(1)[0]*
+                     self._components[j].compute_moments(1)[0]) 
+                std_i_std_j = (self._components[i].get_variance()*
+                       self._components[j].get_variance())**0.5
+                self._unscaled_corr[i][j] *= std_i_std_j
+                self._unscaled_corr[i][j] += mu_i_mu_j

@@ -90,6 +90,10 @@ class ObjectiveFunction:
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
 
+        #Reshape to 2D if returned as 1D for scalar RV
+        if len(target_moments.shape)==1:
+            target_moments = target_moments.reshape((self._max_moment, 1))
+
         #Squared relative difference:
         if self._metric == "SSE":
             rel_diffs = ((srom_moments-target_moments)/target_moments)**2.0
@@ -115,6 +119,11 @@ class ObjectiveFunction:
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
 
+        #Check for 0 cdf vals to prevent divide by zero
+        nonzeroind = np.where(target_cdfs[:,0]>0)[0]
+        srom_cdfs = srom_cdfs[nonzeroind, :]
+        target_cdfs = target_cdfs[nonzeroind, :]
+
         if self._metric == "SSE":
             squared_diffs = (srom_cdfs - target_cdfs)**2.0
             rel_diffs = squared_diffs / target_cdfs**2.0
@@ -135,6 +144,10 @@ class ObjectiveFunction:
         '''
         Calculate error in correlation matrix between SROM & target
         ''' 
+
+        #Neglect for 1D random variable:
+        if self._target._dim == 1:
+            return 0.0
 
         srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_corr_mat()

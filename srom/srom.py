@@ -161,7 +161,7 @@ class SROM(object):
 
         return corr
 
-    def optimize(self, targetRV, weights=None, num_test_samples=500,
+    def optimize(self, targetRV, weights=None, num_test_samples=50,
                  error='SSE', max_moment=5, cdf_grid_pts=100,
                  tol=None, options=None, method=None):
         '''

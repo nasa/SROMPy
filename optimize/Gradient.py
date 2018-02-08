@@ -104,6 +104,12 @@ class Gradient:
         #Compute relative diffs btwn srom/target CDFs
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
+
+        #Check for 0 cdf vals to prevent divide by zero
+        nonzeroind = np.where(target_cdfs[:,0]>0)[0]
+        srom_cdfs = srom_cdfs[nonzeroind, :]
+        target_cdfs = target_cdfs[nonzeroind, :]
+
         diffs = (srom_cdfs - target_cdfs)/target_cdfs**2.0
 
         grad = np.zeros(size)
@@ -114,7 +120,8 @@ class Gradient:
             grad_i = 0
 
             for i in range(dim):
-                grid_i = self._x_grid[:, i]
+#                grid_i = self._x_grid[:, i]
+                grid_i = self._x_grid[nonzeroind, i]
 
                 #Implement indictator function in vectorized way:
                 indz = grid_i >= samples_k[i]
@@ -134,9 +141,14 @@ class Gradient:
         
         #Compute relative diffs btwn srom/target moments
         srom_moments = self._SROM.compute_moments(self._max_moment)
-        target_moments = self._target.compute_moments(self._max_moment)
-        diffs = (srom_moments - target_moments)/target_moments**2.0
 
+        #Reshape target moments to 2D if returned as 1D for scalar RV:
+        target_moments = self._target.compute_moments(self._max_moment)
+        if len(target_moments.shape)==1:
+            target_moments = target_moments.reshape((self._max_moment, 1))
+
+        diffs = (srom_moments - target_moments)/target_moments**2.0
+    
         samples_flat = samples.flatten()
         grad = np.zeros(size)
 

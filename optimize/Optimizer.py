@@ -7,7 +7,7 @@ from optimize import ObjectiveFunction
 from optimize import Gradient
 
 
-#-----------------------------------------------------------------
+#------------Helper funcs for scipy optimize-----------------------------
 def scipy_obj_fun(x, objfun, grad, samples):
     '''
     Function to pass to scipy minimize defining objective. Wraps the 
@@ -79,9 +79,7 @@ p
         #TODO Do some error checking on target
         self._target = target
         
-        #Initialize SROM for modeling the target
-#        srom = SROM(sromsize, self._target._dim)
-#        self._SROM = srom
+        #Get srom size & dimension
         self._sromsize = srom._size
         self._dim = srom._dim
 
@@ -97,9 +95,6 @@ p
             self._grad = scipy_grad
         else:
             self._grad = None
-
-        #Flag indicating if SROM has been optimized already
-        self.optimized = False
 
     def get_optimal_params(self, num_test_samples=500, tol=None, options=None,
                            method=None):
@@ -121,13 +116,10 @@ p
 
         '''
 
-#        sromsize = self._SROM._size
-#        dim = self._SROM._dim
         joint_opt = False #Not implemented yet
         bounds = self.get_param_bounds(joint_opt, self._sromsize)
         constraints = self.get_constraints(joint_opt, self._sromsize, self._dim)
         initial_guess = self.get_initial_guess(joint_opt, self._sromsize)
-
 
         #Track optimal func value with corresonding samples/probs
         opt_probs = None
@@ -159,9 +151,7 @@ p
             print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
             print "Optimal:", opt_fun
 
-
         return (opt_samples, opt_probs)
-
 
     #-----Helper funcs----
     

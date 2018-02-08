@@ -5,7 +5,7 @@ from scipy.stats import beta as scipybeta
 
 class BetaRandomVariable(object):
 
-    def __init__(self, alpha, beta, shift=0, scale=1):
+    def __init__(self, alpha, beta, shift=0, scale=1, max_moment=10):
         '''
         Initialize the beta random variable with the standard alpha and beta
         shape parameters (follows convention for a & b in numpy.random.beta).
@@ -33,8 +33,13 @@ class BetaRandomVariable(object):
         self._scale = scale
         #set dimension (scalar), min/max 
         self._dim = 1
-        self._min = shift
-        self._max = shift + scale
+        self._mins = [shift]
+        self._maxs = [shift + scale]
+
+        #cache moments        
+        self.generate_moments(max_moment)
+        self._max_moment = max_moment       
+
 
     @staticmethod
     def get_beta_shape_params(min_val, max_val, mean, var):
@@ -65,16 +70,26 @@ class BetaRandomVariable(object):
 
         return [alpha, beta, shift, scale]
 
+    def get_variance(self):
+        ''' 
+        Returns variance of beta random variable
+        '''
+        a = self._alpha
+        b = self._beta
+        var = (a*b)/(((a+b)**2) * (a + b + 1))*self._scale**2
+        return var
+
     def compute_moments(self, max_order):
         '''
         Returns moments up to order 'max_order' in numpy array.
         '''
 
-        #Rely on scipy.stats to return non-central moment
-        moments = np.zeros(max_order)
-        for i in range(max_order):
-            moments[i] = scipybeta.moment(i+1, self._alpha, self._beta, 
-                                          self._shift, self._scale)
+        #TODO - calculate moments above max_moment on the fly & append to stored
+        if max_order <= self._max_moment:
+            moments = self._moments[:max_order]
+        else:
+            raise NotImplementedError("Moment above max_moment not handled yet")
+
         return moments
 
 
@@ -84,6 +99,13 @@ class BetaRandomVariable(object):
         '''
 
         return scipybeta.cdf(x_grid, self._alpha, self._beta, self._shift,
+                             self._scale)
+
+    def compute_inv_CDF(self, x_grid):
+        '''
+        Returns np array of inverse beta CDF values at pts in x_grid
+        '''
+        return scipybeta.ppf(x_grid, self._alpha, self._beta, self._shift,
                              self._scale)
 
     def compute_pdf(self, x_grid):
@@ -103,3 +125,15 @@ class BetaRandomVariable(object):
         return scipybeta.rvs(self._alpha, self._beta, self._shift, self._scale,
                              sample_size)
         
+    def generate_moments(self, max_moment):
+        '''
+        Calculate & store moments to retrieve more efficiently later
+        '''
+    
+        self._moments = np.zeros((max_moment, 1))
+
+        #Rely on scipy.stats to return non-central moment
+        for i in range(max_moment):
+            self._moments[i] = scipybeta.moment(i+1, self._alpha, self._beta,
+                                                self._shift, self._scale)
+            
