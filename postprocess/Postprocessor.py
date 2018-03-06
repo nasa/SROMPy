@@ -44,7 +44,6 @@ class Postprocessor:
         xgrids = self.generate_cdf_grids()
         sromCDFs = self._SROM.compute_CDF(xgrids)
         targetCDFs = self._target.compute_CDF(xgrids)
-        #(targetgrids, targetCDFs) = self._target.get_plot_CDFs()
 
         #Start plot name string if it's being stored
         if saveFig:

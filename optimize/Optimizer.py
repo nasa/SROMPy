@@ -71,7 +71,6 @@ class Optimizer:
             -error - string 'mean' or 'max' defining how error is defined 
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
-p
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
 
         '''

@@ -85,7 +85,6 @@ class SampleRV(RandomVector):
             grid[np.where(grid>self._maxs[d])] = self._maxs[d]
 
             CDF_d = self._CDFs[d](grid)
-
             CDF_vals[:,d] = CDF_d
 
         return CDF_vals

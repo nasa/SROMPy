@@ -97,6 +97,8 @@ class FiniteDifference:
                     | dy(x^{(m)})/dx_1, ..., dy(x^{(m)})/dx_d |
         '''
 
+        if len(perturbed_outputs.shape)==1:
+            perturbed_outputs.shape = (len(perturbed_outputs), 1)
         (sromsize, dim) = perturbed_outputs.shape
         
         if len(outputs) != sromsize:
@@ -107,8 +109,6 @@ class FiniteDifference:
 
         gradients = np.zeros((sromsize, dim))
 
-        print "pertrub shape: ", perturbed_outputs.shape
-        print "out shape : ", outputs.shape
         for i in range(dim):
             grad = (perturbed_outputs[:,i] - outputs.flatten()) /perturb_vals[i]
             gradients[:,i] = grad

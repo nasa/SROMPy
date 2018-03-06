@@ -61,6 +61,11 @@ class SROM(object):
         self._samples = copy.deepcopy(samples)
         self._probs = copy.deepcopy(probs.reshape((self._size, 1)))
 
+    def get_params(self):
+        '''
+        Return tuple of SROM samples & probabilities
+        '''
+        return (self._samples, self._probs)
 
     def compute_moments(self, max_order):
         '''

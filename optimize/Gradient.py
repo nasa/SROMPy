@@ -109,7 +109,6 @@ class Gradient:
         nonzeroind = np.where(target_cdfs[:,0]>0)[0]
         srom_cdfs = srom_cdfs[nonzeroind, :]
         target_cdfs = target_cdfs[nonzeroind, :]
-
         diffs = (srom_cdfs - target_cdfs)/target_cdfs**2.0
 
         grad = np.zeros(size)
@@ -120,7 +119,6 @@ class Gradient:
             grad_i = 0
 
             for i in range(dim):
-#                grid_i = self._x_grid[:, i]
                 grid_i = self._x_grid[nonzeroind, i]
 
                 #Implement indictator function in vectorized way:
