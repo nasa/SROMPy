@@ -7,3 +7,4 @@ optimize/*.pyc
 srom/*swp*
 target/*swp*
 optimize/*swp*
+examples/phm17/data/*
