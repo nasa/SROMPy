@@ -66,10 +66,13 @@ class Postprocessor:
         for i in range(self._SROM._dim):
 
             variable = variablenames[i]
-            plotname_ = plotname + "_" + variable + ".pdf"
             ylabel = "F(" + variable + ")"
             #Remove latex math symbol from plot name
-            plotname_ = plotname_.translate(None, "$")
+            if plotname is not None:
+                plotname_ = plotname + "_" + variable + ".pdf"
+                plotname_ = plotname_.translate(None, "$")
+            else:
+                plotname_ = None
             if xlimits is not None:
                 xlims = xlimits[i]
             else:
