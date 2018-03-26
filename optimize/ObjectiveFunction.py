@@ -55,6 +55,29 @@ class ObjectiveFunction:
 
         self._max_moment = max_moment
 
+    def get_moment_error(self, samples, probs):
+        '''
+        Returns moment error for given samples & probs
+        '''
+        self._SROM.set_params(samples, probs)
+        return self.compute_moment_error()
+
+
+    def get_cdf_error(self, samples, probs):
+        '''
+        Returns CDF error for given samples & probs
+        '''
+        self._SROM.set_params(samples, probs)
+        return self.compute_CDF_error()
+
+
+    def get_corr_error(self, samples, probs):
+        '''
+        Returns correlation error for given samples & probs
+        '''
+        self._SROM.set_params(samples, probs)
+        return self.compute_correlation_error()
+
 
     def evaluate(self, samples, probs):
         '''

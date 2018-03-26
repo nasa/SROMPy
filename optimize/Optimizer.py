@@ -1,6 +1,7 @@
 
 import numpy as np
 import scipy.optimize as opt
+import time
 
 #from srom import SROM
 from optimize import ObjectiveFunction
@@ -126,6 +127,7 @@ class Optimizer:
         opt_fun = 1e6
 
         print "SROM Sequential Optimizer:"
+        t0 = time.time()
 
         for i in xrange(num_test_samples):
     
@@ -149,6 +151,17 @@ class Optimizer:
             
             print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
             print "Optimal:", opt_fun
+
+        #Display final errors in statistics:
+        momenterror = self._srom_obj.get_moment_error(opt_samples, opt_probs)
+        cdferror = self._srom_obj.get_cdf_error(opt_samples, opt_probs)
+        correlationerror = self._srom_obj.get_corr_error(opt_samples, opt_probs)
+
+        print "\tOptimization time: ", time.time()-t0, "seconds"
+        print "\tFinal SROM errors:"
+        print "\t\tCDF: ", cdferror
+        print "\t\tMoment: ", momenterror
+        print "\t\tCorrelation: ", correlationerror
 
         return (opt_samples, opt_probs)
 
