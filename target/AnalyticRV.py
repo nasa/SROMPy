@@ -86,16 +86,16 @@ class AnalyticRV(RandomVector.RandomVector):
             raise ValueError("Correlation matrix entries must be positive!")
  
 
-    def compute_moments(self, max_order):
+    def compute_moments(self, max_):
         '''
         Calculate random vector moments up to order max_moment based
         on samples. Moments from 1,...,max_order
         '''
 
-        #Get moments up to max_order for each component of the vector
-        moments = np.zeros((max_order, self._dim))
+        #Get moments up to max_ for each component of the vector
+        moments = np.zeros((max_, self._dim))
         for i in range(self._dim):
-            moments[:, i] = self._components[i].compute_moments(max_order)
+            moments[:, i] = self._components[i].compute_moments(max_).flatten()
 
         return moments
 
