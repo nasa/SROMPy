@@ -55,7 +55,7 @@ class SpringMass_1D(object):
         Returns the max displacement over the course of the simulation
         '''
 
-        state = odeint(mass_spring, self._state0, self._t, args=(k, self._m))
+        state = self.simulate(k)
         return max(state[:,0])
 
 
@@ -87,7 +87,7 @@ class SpringMass_2D(object):
         Returns the max displacement over the course of the simulation
         '''
 
-        state = odeint(mass_spring, self._state0, self._t, args=(k, m))
+        state = self.simulate(k, m)
         return max(state[:,0])
 
 
