@@ -1,5 +1,6 @@
 *swp*
 *.pyc
+docs/_*
 srom/*.pyc
 srom/__init__.pyc
 target/*.pyc
