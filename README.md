@@ -1,3 +1,6 @@
+SROMPy - **S**tochastic **R**educed **O**rder **M**odels with **Py**thon 
+==========================================================================
+
 Notices:
 Copyright 2018 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
  
@@ -8,6 +11,7 @@ No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF AN
 
 ------------------------------------------------------------------------------
 
+Python module for generating Stochastic Reduced Order Models (SROMs) and applying them for uncertainty quantification problems. 
 
-Python module for generating stochastic reduced order models (SROMs)
+See documentation in docs/ directory for details. 
 
