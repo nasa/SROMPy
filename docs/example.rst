@@ -2,13 +2,36 @@
 Example - Spring Mass System
 =============================
 
-.. _simulation-layout:
+.. _spring-mass:
 
 .. figure:: images/spring_mass_diagram.png
     :align: center
     :width: 2in
 
     Spring-mass system
+
+SROMPy is now applied to an example of uncertainty propagation in a simple 
+spring-mass system (:ref:`spring-mass`), demonstrating the functionality introduced in the previous section. The governing equation of motion for the system is given by
+
+.. math:: m_s \ddot{z}  = -k_s z + m_s g
+    :label: springmass
+
+where :math:`m_s` is the mass, :math:`k_s` is the spring stiffness, :math:`g` 
+is the acceleration due to gravity, :math:`z` is the vertical displacement 
+of the mass, and :math:`\ddot{z}` is the acceleration of the mass. The 
+source of uncertainty in the system will be the spring stiffness, which is 
+modeled as a random variable of the following form:
+
+.. math:: K_s = \gamma + \eta B 
+    :label: random-stiffness
+
+where :math:`\gamma` and :math:`\eta` are shift and scale parameters, 
+respectively, and :math:`B = \text{Beta}(\alpha, \beta)` is a standard Beta 
+random variable with shape parameters :math:`\alpha` and :math:`\beta`. Let 
+these parameters take the following values: :math:`\gamma=1.0N/m`, 
+:math:`\eta = 2.5N/m`, :math:`\alpha=3.0`, and :math:`\beta=2.0`. The mass 
+is assumed to be deterministic, :math:`m_s = 1.5kg`, and the acceleration due 
+to gravity is :math:`g = 9.8 m^2/s`. 
 
 
 Step 1: Define target random variable and initialize model
