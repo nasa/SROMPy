@@ -21,8 +21,6 @@ from srom import SROM
 from target import NormalRandomVariable
 
 #Initialize Normal random variable object to be modeled by SROM:
-mean = 3
-std = 1.5
 normal = NormalRandomVariable(mean=3., std_dev=1.5)
 
 #Initialize SROM & optimize to model the normal random variable:
