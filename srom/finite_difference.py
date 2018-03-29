@@ -5,7 +5,9 @@ import copy
 
 class FiniteDifference:
     '''
-    Class for handling gradient estimation for SROM surrogates
+    Class that contains static methods for assisting in computing gradients 
+    needed to implement the piecewise-linear SROM surrogate using the finite
+    difference method.
     '''
 
     def __init__(self):
