@@ -30,4 +30,9 @@ srom.optimize(normal)
 #Compare the CDF of the SROM & target normal variable:
 pp = Postprocessor(srom, normal)
 pp.compare_CDFs()
-  ```
+```
+  
+The above code snippet produces the following CDF comparison plot: 
+  
+![CDF comparison](https://github.com/nasa/SROMPy/blob/master/examples/basic_tests/normal_rv_srom.png)
+  
