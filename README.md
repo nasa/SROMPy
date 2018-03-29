@@ -16,13 +16,20 @@ Python module for generating Stochastic Reduced Order Models (SROMs) and applyin
 See documentation in docs/ directory for details. 
 
 ```python
-  #Generate SROM for random stiffness
-  sromsize = 10
-  dim = 1
-  input_srom = SROM(sromsize, dim)
-  input_srom.optimize(stiffness_rv)
+from postprocess import Postprocessor
+from srom import SROM
+from target import NormalRandomVariable
 
-  #Compare SROM vs target stiffness distribution:
-  pp_input = Postprocessor(input_srom, stiffness_rv)
-  pp_input.compare_CDFs()
+#Initialize Normal random variable object to be modeled by SROM:
+mean = 3
+std = 1.5
+normal = NormalRandomVariable(mean=3., std_dev=1.5)
+
+#Initialize SROM & optimize to model the normal random variable:
+srom = SROM(size=10, dim=1)
+srom.optimize(normal)
+
+#Compare the CDF of the SROM & target normal variable:
+pp = Postprocessor(srom, normal)
+pp.compare_CDFs()
   ```
