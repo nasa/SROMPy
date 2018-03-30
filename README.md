@@ -28,7 +28,7 @@ The above code snippet produces the following CDF comparison plot:
 
 -------------------------------------------------------------------------------
 
-Author: <br />
+**Author**: <br />
 James Warner <br />
 UQ Center of Excellence <br />
 NASA Langley Research Center <br /> 
