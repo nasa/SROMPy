@@ -25,12 +25,13 @@ pp.compare_CDFs()
 The above code snippet produces the following CDF comparison plot: 
   
 ![CDF comparison](https://github.com/nasa/SROMPy/blob/master/examples/basic_tests/normal_rv_srom.png)
- 
 
-Author: 
-James Warner
-UQ Center of Excellence
-NASA Langley Research Center 
+-------------------------------------------------------------------------------
+
+**Author**: <br />
+James Warner <br />
+UQ Center of Excellence <br />
+NASA Langley Research Center <br /> 
 james.e.warner@nasa.gov
 
 -------------------------------------------------------------------------------
