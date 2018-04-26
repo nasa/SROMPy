@@ -1,9 +1,16 @@
+'''
+Class for implementing a beta random variable
+'''
 
 import numpy as np
 from scipy.stats import beta as scipybeta
 
 
 class BetaRandomVariable(object):
+    '''
+    Class for implementing a beta random variable
+    '''
+
 
     def __init__(self, alpha, beta, shift=0, scale=1, max_moment=10):
         '''
@@ -12,33 +19,33 @@ class BetaRandomVariable(object):
         Optionally specify shift & scale parameters to translate and scale the
         random variable, e.g.:
             new_beta = shift + scale * standard_beta.
-    
-        If one wants to specify a beta random variable to match a given 
+
+        If one wants to specify a beta random variable to match a given
         support (min, max), mean, and variance, use the static method
         get_beta_shape_params() to convert to inputs for this constructor.
-    
+
         Implementation wraps scipy.stats.beta to get statistics/samples.
         '''
-     
+
         if alpha < 0:
             raise ValueError("Alpha shape param must be non-negative")
         if beta < 0:
             raise ValueError("Beta shape param must be non-negative")
-        if scale <= 0: 
-            raise ValueErorr("Scale param must be positive")
-    
+        if scale <= 0:
+            raise ValueError("Scale param must be positive")
+
         self._alpha = alpha
         self._beta = beta
         self._shift = shift
         self._scale = scale
-        #set dimension (scalar), min/max 
+        #set dimension (scalar), min/max
         self._dim = 1
         self._mins = [shift]
         self._maxs = [shift + scale]
 
-        #cache moments        
+        #cache moments
         self.generate_moments(max_moment)
-        self._max_moment = max_moment       
+        self._max_moment = max_moment
 
 
     @staticmethod
@@ -48,10 +55,10 @@ class BetaRandomVariable(object):
         parameters that produce a beta random variable with the specified
         minimum value, maximum value, mean, and variance. Can be called prior
         to initialization of this class if only this info is known about the
-        random variable being modeled. 
+        random variable being modeled.
         Returns a list of length 4 ordered [alpha, beta, shift, scale]
         '''
-    
+
         #Cast to make sure we have floats for calculations
         min_val = float(min_val)
         max_val = float(max_val)
@@ -59,11 +66,11 @@ class BetaRandomVariable(object):
         var = float(var)
 
         #Scale mean/variance to lie in [0,1] for standard beta distribution
-        mean_std = (mean - min_val)/(max_val - min_val)
+        mean_std = (mean_val - min_val)/(max_val - min_val)
         var_std = (1. / (max_val - min_val))**2.0 * var
 
         #Get shape params based on scaled mean/variance:
-        alpha = mean_std*( mean_std*(1. - mean_std)/ var_std - 1.)
+        alpha = mean_std*(mean_std*(1. - mean_std)/ var_std - 1.)
         beta = (mean_std*(1 - mean_std)/var_std - 1) - alpha
         shift = min_val
         scale = max_val - min_val
@@ -71,7 +78,7 @@ class BetaRandomVariable(object):
         return [alpha, beta, shift, scale]
 
     def get_variance(self):
-        ''' 
+        '''
         Returns variance of beta random variable
         '''
         a = self._alpha
@@ -124,16 +131,16 @@ class BetaRandomVariable(object):
         #Use scipy beta rv to return shifted/scaled samples automatically
         return scipybeta.rvs(self._alpha, self._beta, self._shift, self._scale,
                              sample_size)
-        
+
     def generate_moments(self, max_moment):
         '''
         Calculate & store moments to retrieve more efficiently later
         '''
-    
+
         self._moments = np.zeros((max_moment, 1))
 
         #Rely on scipy.stats to return non-central moment
         for i in range(max_moment):
             self._moments[i] = scipybeta.moment(i+1, self._alpha, self._beta,
                                                 self._shift, self._scale)
-            
+ 

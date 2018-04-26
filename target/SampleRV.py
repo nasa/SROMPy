@@ -1,4 +1,7 @@
-import os
+'''
+Class for defining a sample-based random vector with empirical estimators
+'''
+
 import numpy as np
 from scipy import interpolate
 
@@ -14,16 +17,16 @@ class SampleRV(RandomVector):
     def __init__(self, samples, max_moment=10):
         '''
         Initialize SampleRV with an array of samples of the random vector.
-        Must be an array of size (# samples x dim). Statistics of the 
+        Must be an array of size (# samples x dim). Statistics of the
         SampleRV are precomputed during initialization - max_moment is the
-        maximum moment order to compute & store for later use. If higher 
+        maximum moment order to compute & store for later use. If higher
         moments are anticipated, this can be increased (or visa versa)
         '''
 
         #Check for 1D case (random variable):
         if len(samples.shape) == 1:
-            samples = samples.reshape((len(samples),1))
-        
+            samples = samples.reshape((len(samples), 1))
+
         (num_samples, dim) = samples.shape
 
         if dim > num_samples:
@@ -35,11 +38,11 @@ class SampleRV(RandomVector):
 
         self._num_samples = num_samples
         self._samples = samples
-        self._max_moment = max_moment 
-   
+        self._max_moment = max_moment
+
         #Precompute & store statistics so they can be returned quickly later
         self.generate_statistics(max_moment)
- 
+
     def compute_moments(self, max_order):
         '''
         Return precomputed moments up to specified order
@@ -56,19 +59,19 @@ class SampleRV(RandomVector):
     def compute_CDF(self, x_grid):
         '''
         Evaluates the precomputed/stored CDFs at the specified x_grid values
-        and returns. x_grid can be a 1D array in which case the CDFs for each 
-        dimension are evaluated at the same points, or it can be a 
-        (num_grid_pts x dim) array, specifying different points for each 
+        and returns. x_grid can be a 1D array in which case the CDFs for each
+        dimension are evaluated at the same points, or it can be a
+        (num_grid_pts x dim) array, specifying different points for each
         dimension - each dimension can have a different range of values but
         must have the same # of grid pts across it. Returns a (num_grid_pts x
         dim) array of corresponding CDF values at the grid points
-    
+
         '''
 
         #NOTE - should deep copy x_grid since were modifying?
         #1D random variable case
         if len(x_grid.shape) == 1:
-            x_grid = x_grid.reshape((len(x_grid),1))
+            x_grid = x_grid.reshape((len(x_grid), 1))
         (num_pts, dim) = x_grid.shape
 
         #If only one grid was provided for multiple dims, repeat to generalize
@@ -79,13 +82,13 @@ class SampleRV(RandomVector):
 
         #Evaluate CDF interpolants on grid
         for d, grid in enumerate(x_grid.T):
-    
+
             #Make sure grid values lie within max/min along each dimension
-            grid[np.where(grid<self._mins[d])] = self._mins[d]
-            grid[np.where(grid>self._maxs[d])] = self._maxs[d]
+            grid[np.where(grid < self._mins[d])] = self._mins[d]
+            grid[np.where(grid > self._maxs[d])] = self._maxs[d]
 
             CDF_d = self._CDFs[d](grid)
-            CDF_vals[:,d] = CDF_d
+            CDF_vals[:, d] = CDF_d
 
         return CDF_vals
 
@@ -124,13 +127,13 @@ class SampleRV(RandomVector):
 
         x_grid = np.zeros((self._num_samples, self._dim))
         CDF_vals = np.zeros((self._num_samples, self._dim))
-        
+
         for i, samples_i in enumerate(self._samples.T):
             #Generate empirical CDF:
             sorted_i = np.sort(samples_i)
-            cdf_vals = np.arange(1,len(sorted_i)+1)/float(len(sorted_i))
-            x_grid[:,i] = sorted_i
-            CDF_vals[:,i] = cdf_vals
+            cdf_vals = np.arange(1, len(sorted_i) + 1)/float(len(sorted_i))
+            x_grid[:, i] = sorted_i
+            CDF_vals[:, i] = cdf_vals
 
         return (x_grid, CDF_vals)
 
@@ -151,16 +154,16 @@ class SampleRV(RandomVector):
         '''
 
         self._moments = np.zeros((max_moment, self._dim))
- 
+
         #TODO - is there a faster numpy/scipy function for non-centered moments?
         factor = (1./float(self._num_samples))
         for q in range(0, max_moment):
 
-            moment_q = np.zeros((1,self._dim))
-            for k, sample in enumerate(self._samples):
+            moment_q = np.zeros((1, self._dim))
+            for sample in self._samples:
                 moment_q += factor*np.power(sample, q+1)
 
-            self._moments[q,:] = moment_q
+            self._moments[q, :] = moment_q
 
     def generate_CDFs(self):
         '''
@@ -170,24 +173,24 @@ class SampleRV(RandomVector):
                             %20how-to-plot-empirical-cdf-in-matplotlib-in-python
         to calculate CDF from samples
         '''
-        
+
         self._CDFs = []
 
-        #Need to store max/min samples in each dimension to prevent out of 
+        #Need to store max/min samples in each dimension to prevent out of
         #bounds values in the interpolators later
         self._mins = []
-        self._maxs = []    
+        self._maxs = []
 
         #Get all samples of the i^th dimension at a time to generate CDF
         #NOTE - does iterating over / sorting happen in place? Need deep copy?
-        for i, samples_i in enumerate(self._samples.T):
-        
+        for samples_i in self._samples.T:
+
             #Generate/store interpolant for empirical CDF:
             sorted_i = np.sort(samples_i)
-            cdf_vals = np.arange(1,len(sorted_i)+1)/float(len(sorted_i))
+            cdf_vals = np.arange(1, len(sorted_i) + 1)/float(len(sorted_i))
             cdf_func = interpolate.interp1d(sorted_i, cdf_vals)
             self._CDFs.append(cdf_func)
-            
+
             self._mins.append(sorted_i[0])
             self._maxs.append(sorted_i[-1])
 
@@ -197,12 +200,12 @@ class SampleRV(RandomVector):
         Calculates and stores sample-based correlation matrix for random vector
         '''
 
-        #TODO - find faster numpy/scipy function 
+        #TODO - find faster numpy/scipy function
         self._corr = np.zeros((self._dim, self._dim))
 
         factor = (1./float(self._num_samples))
-        for k, sample in enumerate(self._samples):
-            self._corr = self._corr + factor*np.outer(sample, sample) 
+        for sample in self._samples:
+            self._corr = self._corr + factor*np.outer(sample, sample)
 
 
 

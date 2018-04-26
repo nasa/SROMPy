@@ -1,9 +1,15 @@
+'''
+Class for implementing a gamma random variable
+'''
 
 import numpy as np
 from scipy.stats import gamma as scipygamma
 
 
 class GammaRandomVariable(object):
+    '''
+    Class for implementing a gamma random variable
+    '''
 
     def __init__(self, alpha, shift=0, scale=1, max_moment=10):
         '''
@@ -12,30 +18,30 @@ class GammaRandomVariable(object):
         Optionally specify shift & scale parameters to translate and scale the
         random variable, e.g.:
             new_gamma = shift + scale * standard_gamma.
-    
+
         Implementation wraps scipy.stats.gamma to get statistics/samples.
         '''
-     
+
         if alpha < 0:
             raise ValueError("Alpha shape param must be non-negative")
-        if scale <= 0: 
-            raise ValueErorr("Scale param must be positive")
-    
+        if scale <= 0:
+            raise ValueError("Scale param must be positive")
+
         self._alpha = alpha
         self._shift = shift
         self._scale = scale
-        #set dimension (scalar), min/max 
+        #set dimension (scalar), min/max
         self._dim = 1
         self._mins = [shift]
         #NOTE Gamma max is technically infinite, do this on variance (3 STDs)?
         self._maxs = [shift + 2*self.get_variance()**0.5]
 
-        #cache moments        
+        #cache moments
         self.generate_moments(max_moment)
-        self._max_moment = max_moment       
+        self._max_moment = max_moment
 
     def get_variance(self):
-        ''' 
+        '''
         Returns variance of gamma random variable
         '''
         return scipygamma.var(self._alpha, self._shift, self._scale)
@@ -73,25 +79,25 @@ class GammaRandomVariable(object):
         '''
         return scipygamma.pdf(x_grid, self._alpha, self._shift, self._scale)
 
-    def draw_random_sample(self, sample_size):
+    def draw_random_sample(self, sample_sz):
         '''
         Draws random samples from the gamma random variable. Returns numpy
         array of length 'sample_size' containing these samples
         '''
 
         #Use scipy gamma rv to return shifted/scaled samples automatically
-        return scipygamma.rvs(self._alpha, self._shift,self._scale, sample_size)
-        
+        return scipygamma.rvs(self._alpha, self._shift, self._scale, sample_sz)
+
     def generate_moments(self, max_moment):
         '''
         Calculate & store moments to retrieve more efficiently later
         '''
-    
+
         self._moments = np.zeros((max_moment, 1))
 
         #Rely on scipy.stats to return non-central moment
         for i in range(max_moment):
             self._moments[i] = scipygamma.moment(i+1, self._alpha, self._shift,
                                                  self._scale)
-            
+
 

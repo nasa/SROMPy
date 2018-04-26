@@ -1,3 +1,8 @@
+'''
+Class for implementing a translation random vector for non-gaussian random
+vectors whose components are governed by analytic probability distributions.
+'''
+
 import copy
 import time
 import numpy as np
@@ -7,26 +12,26 @@ from scipy import integrate, interpolate
 
 from target import RandomVector
 
-#TODO - why the F do i need to do RV.RV??? Treating RV as the module not class
+#TODO - why do i need to do RV.RV??? Treating RV as the module not class
 class AnalyticRV(RandomVector.RandomVector):
     '''
     Analytically-specified random vector whose components follow standard
-    probability distributions (beta, gamma, normal, etc.). 
+    probability distributions (beta, gamma, normal, etc.).
     '''
 
     def __init__(self, random_variables, correlation_matrix):
         '''
-        Create analytic random vector with components that follow 
-        standard probability distributions. Initialize using a list of 
-        random variable objects that define each dimension as well as a 
+        Create analytic random vector with components that follow
+        standard probability distributions. Initialize using a list of
+        random variable objects that define each dimension as well as a
         correlation matrix specifying the correlation structure between
         components
 
         inputs:
             random_variables - list of random variable objects with length
                                equal to the desired dimension of the analytic
-                               random vector being created. Must have 
-                               compute_moments and compute_CDF functions 
+                               random vector being created. Must have
+                               compute_moments and compute_CDF functions
                                implemented.
             correlation_matrix - numpy array with size (dimension x dimension)
                                with correlation between each component. Must be
@@ -40,7 +45,7 @@ class AnalyticRV(RandomVector.RandomVector):
         #Error checking on correlation matrix:
         self.verify_correlation_matrix(correlation_matrix)
         self._corr = copy.deepcopy(correlation_matrix)
- 
+
         #Size of correlation matrix must match # random variable components:
         if self._corr.shape[0] != len(random_variables):
             raise ValueError("Dimension mismatch btwn corr mat & random vars")
@@ -52,7 +57,7 @@ class AnalyticRV(RandomVector.RandomVector):
         self._components = copy.deepcopy(random_variables)
         self._mins = np.zeros(self._dim)
         self._maxs = np.zeros(self._dim)
-        
+
         for i in range(self._dim):
             self._mins[i] = self._components[i]._mins[0]
             self._maxs[i] = self._components[i]._maxs[0]
@@ -65,15 +70,15 @@ class AnalyticRV(RandomVector.RandomVector):
 
     def verify_correlation_matrix(self, corr_matrix):
         '''
-        Do error checking on the provided correlation matrix, e.g., is it 
-        square? is it symmetric? 
+        Do error checking on the provided correlation matrix, e.g., is it
+        square? is it symmetric?
         '''
-        
+
         corr_matrix = np.array(corr_matrix)  #make sure it's an numpy array
 
-        if len(corr_matrix.shape)==1:
+        if len(corr_matrix.shape) == 1:
             raise ValueError("Correlation matrix must be a 2D array!")
-    
+
         if corr_matrix.shape[0] != corr_matrix.shape[1]:
             raise ValueError("Correlation matrix must be square!")
 
@@ -84,7 +89,7 @@ class AnalyticRV(RandomVector.RandomVector):
         #Make sure all entries are positive:
         if np.any(corr_matrix < 0):
             raise ValueError("Correlation matrix entries must be positive!")
- 
+
 
     def compute_moments(self, max_):
         '''
@@ -103,19 +108,18 @@ class AnalyticRV(RandomVector.RandomVector):
     def compute_CDF(self, x_grid):
         '''
         Evaluates the precomputed/stored CDFs at the specified x_grid values
-        and returns. x_grid can be a 1D array in which case the CDFs for each 
-        dimension are evaluated at the same points, or it can be a 
-        (num_grid_pts x dim) array, specifying different points for each 
+        and returns. x_grid can be a 1D array in which case the CDFs for each
+        dimension are evaluated at the same points, or it can be a
+        (num_grid_pts x dim) array, specifying different points for each
         dimension - each dimension can have a different range of values but
         must have the same # of grid pts across it. Returns a (num_grid_pts x
         dim) array of corresponding CDF values at the grid points
-    
         '''
 
         #NOTE - should deep copy x_grid since were modifying?
         #1D random variable case
         if len(x_grid.shape) == 1:
-            x_grid = x_grid.reshape((len(x_grid),1))
+            x_grid = x_grid.reshape((len(x_grid), 1))
         (num_pts, dim) = x_grid.shape
 
         #If only one grid was provided for multiple dims, repeat to generalize
@@ -128,8 +132,8 @@ class AnalyticRV(RandomVector.RandomVector):
         for d, grid in enumerate(x_grid.T):
 
             #Make sure grid values lie within max/min along each dimension
-            grid[np.where(grid<self._mins[d])] = self._mins[d]
-            grid[np.where(grid>self._maxs[d])] = self._maxs[d]
+            grid[np.where(grid < self._mins[d])] = self._mins[d]
+            grid[np.where(grid > self._maxs[d])] = self._maxs[d]
 
             CDF_vals[:, d] = self._components[d].compute_CDF(grid)
 
@@ -154,13 +158,13 @@ class AnalyticRV(RandomVector.RandomVector):
 
         samples = np.zeros((sample_size, self._dim))
         chol = np.linalg.cholesky(self._gaussian_corr)
-        
-        #Is there a way to optimize this sampling loop? 
+
+        #Is there a way to optimize this sampling loop?
         for i in range(sample_size):
 
             #Draw standard std normal random vector with given correlation
             norm_vec = chol*norm.rvs(size=self._dim)
-            
+
             #Evaluate std normal CDF at the random vec
             norm_cdf = norm.cdf(norm_vec)
 
@@ -170,26 +174,26 @@ class AnalyticRV(RandomVector.RandomVector):
                 samples[i][j] = rv_j
 
         return samples
-        
+
 
     def integrand_helper(self, u, v, k, j, rho_kj):
         '''
-        Helper function for numerical integration in the 
-        generate_gaussian_correlation() function. Implements the integrand of 
-        equation 6 of J.M. Emery 2015 paper that needs to be integrated w/ 
+        Helper function for numerical integration in the
+        generate_gaussian_correlation() function. Implements the integrand of
+        equation 6 of J.M. Emery 2015 paper that needs to be integrated w/
         scipy
         Passing in values of the k^th and j^th component of the random variable
         - u and v - and the specified correlation between them rho_kj.
         '''
- 
-        normal_pdf_kj = multivariate_normal.pdf([u, v], 
+
+        normal_pdf_kj = multivariate_normal.pdf([u, v],
                                                 cov=[[1, rho_kj], [rho_kj, 1]])
 
-        #f_k(x) = InvCDF_k ( Gaussian_CDF( x ) ) 
+        #f_k(x) = InvCDF_k ( Gaussian_CDF( x ) )
         f_k = self._components[k].compute_inv_CDF(norm.cdf(u))
         f_j = self._components[j].compute_inv_CDF(norm.cdf(v))
 
-        integrand = f_k*f_j*normal_pdf_kj 
+        integrand = f_k*f_j*normal_pdf_kj
 
         return integrand
 
@@ -205,7 +209,7 @@ class AnalyticRV(RandomVector.RandomVector):
         '''
 
         #Integrate using scipy
-        k_lims = [-4, 4]    
+        k_lims = [-4, 4]
         j_lims = [-4, 4]
 
         #Get product of moments & std deviations for equation 6
@@ -218,7 +222,7 @@ class AnalyticRV(RandomVector.RandomVector):
         #1.49e-8 is default for both
         opts = {'epsabs':1.e-8, 'epsrel':1e-8}
         E_integral = integrate.nquad(self.integrand_helper, [k_lims, j_lims],
-                                args=(k, j, rho_kj), opts=opts)
+                                     args=(k, j, rho_kj), opts=opts)
 
         eta_kj = (E_integral - mu_k_mu_j)/std_k_std_j
 
@@ -226,14 +230,14 @@ class AnalyticRV(RandomVector.RandomVector):
 
     def generate_gaussian_correlation(self):
         '''
-        Generates the Gaussian correlation matrix that will achieve the 
-        covariance matrix specified for this random vector when using a 
-        translation random vector sampling approach. See J.M. Emery 2015 paper 
+        Generates the Gaussian correlation matrix that will achieve the
+        covariance matrix specified for this random vector when using a
+        translation random vector sampling approach. See J.M. Emery 2015 paper
         pages 922,923 on this procedure.
         Helper function - no inputs, operates on self._corr correlation matrix
-        and generates self._gaussian_corr 
+        and generates self._gaussian_corr
         '''
-        
+
         self._gaussian_corr = np.ones(self._corr.shape)
 
         #Want to build interpolant from eta correlation values to rho corr vals
@@ -246,9 +250,7 @@ class AnalyticRV(RandomVector.RandomVector):
                 print "Determining correlation entry ", k, " ", j
                 #Compute grid of eta/rho pts:
                 for i, rho_kj in enumerate(rho_kj_grid):
-                    print "\t\ti = ", i
                     eta_jk_grid[i] = self.get_corr_entry(k, j, rho_kj)
-                    print "\t\tEta = ", eta_jk_grid[i]
                 #Build interpolant to find rho value for specified eta
                 rho_interp = interpolate.interp1d(eta_jk_grid, rho_kj_grid)
                 #Use symmetry to save time:
@@ -267,12 +269,13 @@ class AnalyticRV(RandomVector.RandomVector):
         '''
 
         self._unscaled_corr = copy.deepcopy(self._corr)
-    
+
         for i in range(self._dim):
             for j in range(self._dim):
                 mu_i_mu_j = (self._components[i].compute_moments(1)[0]*
-                     self._components[j].compute_moments(1)[0]) 
+                             self._components[j].compute_moments(1)[0])
                 std_i_std_j = (self._components[i].get_variance()*
-                       self._components[j].get_variance())**0.5
+                               self._components[j].get_variance())**0.5
                 self._unscaled_corr[i][j] *= std_i_std_j
                 self._unscaled_corr[i][j] += mu_i_mu_j
+
