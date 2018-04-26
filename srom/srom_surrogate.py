@@ -65,8 +65,8 @@ class SROMSurrogate:
         self._gradients = outputgradients
 
         #Make SROM for output? 
-        self._outsrom = SROM(size, dim)
-        self._outsrom.set_params(outputsamples, inputsrom._probs)
+        self._outputsrom = SROM(size, dim)
+        self._outputsrom.set_params(outputsamples, inputsrom._probs)
 
  
     #Do these change for linear surrogate?    
