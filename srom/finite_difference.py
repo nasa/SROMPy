@@ -1,9 +1,12 @@
-import numpy as np
-import os
+'''
+Finite Difference static class for calculating gradients
+'''
+
 import copy
+import numpy as np
 
 
-class FiniteDifference:
+class FiniteDifference(object):
     '''
     Class for handling gradient estimation for SROM surrogates
     '''
@@ -14,28 +17,28 @@ class FiniteDifference:
     @staticmethod
     def get_perturbed_samples(samples, perturb_fact=None, perturb_vals=None):
         '''
-        Returns the perturbed SROM samples that must be run through model 
-        to estimate gradients with finite difference. 
+        Returns the perturbed SROM samples that must be run through model
+        to estimate gradients with finite difference.
 
         input:
             samples: np array (m x d) - original input srom samples
             perturb_fact: float - if specified, computes the perturbation size
                             in each dimension as (max_i - min_i)*perturb_fact.
                             max/min_i are the max/min sample values in dim. i.
-            perturb_vals: list of float - if specified uses the values in the 
-                            array for perturbations in each dimension. 
+            perturb_vals: list of float - if specified uses the values in the
+                            array for perturbations in each dimension.
 
         -Must specify either perturb_fact or perturb_vals
 
         output:
-            returns perturbed_samples: np array (m*d x d) 
-            samples =  |  x^(1)_1 + delta_1, ..., x^(1)_d | 
-                       |  ...    , ...,      ...     |              
-                       |  x^(m)_1 + delta_1, ..., x^(m)_d |             
+            returns perturbed_samples: np array (m*d x d)
+            samples =  |  x^(1)_1 + delta_1, ..., x^(1)_d |
+                       |  ...    , ...,      ...          |
+                       |  x^(m)_1 + delta_1, ..., x^(m)_d |
                                     ....
-                       |  x^(1)_1, ..., x^(1)_d + delta_d| 
-                       |  ...    , ...,      ...         |              
-                       |  x^(m)_1, ..., x^(m)_d + delta_d|             
+                       |  x^(1)_1, ..., x^(1)_d + delta_d|
+                       |  ...    , ...,      ...         |
+                       |  x^(m)_1, ..., x^(m)_d + delta_d|
 
         '''
 
@@ -47,44 +50,44 @@ class FiniteDifference:
         if len(samples.shape) == 1:
             samples.shape = (len(samples), 1)
         (sromsize, dim) = samples.shape
-        FD_samples = np.zeros((sromsize*dim, dim))
+        fd_samples = np.zeros((sromsize*dim, dim))
 
         #Calculate perturb_vals from perturb_fact if vals werent specified:
         if perturb_vals is None:
-            perturb_vals = np.array((dim,1))
+            perturb_vals = np.array((dim, 1))
             for i in range(dim):
-                ran = np.max(samples[:,i]) - np.min(samples[:,i]) 
+                ran = np.max(samples[:, i]) - np.min(samples[:, i])
                 perturb_vals[i] = ran*perturb_fact
         else:
             if len(perturb_vals) != dim:
-               raise ValueError("Length of perturb_vals must equal dimension!")
+                raise ValueError("Length of perturb_vals must equal dimension!")
 
         for i in range(dim):
             samples_i = copy.deepcopy(samples)
-            samples_i[:,i] += perturb_vals[i]
-            FD_samples[i*sromsize:(i+1)*sromsize,:] = samples_i
+            samples_i[:, i] += perturb_vals[i]
+            fd_samples[i*sromsize:(i+1)*sromsize, :] = samples_i
 
-        return FD_samples
+        return fd_samples
 
 
     @staticmethod
     def compute_gradient(outputs, perturbed_outputs, perturb_vals):
         '''
-        Calculates gradients based on original sample outputs,  perturbed 
+        Calculates gradients based on original sample outputs,  perturbed
         sample outputs, and the size or perturbations.
-    
+
         NOTE - it is being assumed here and other places that the output is
-        scalar        
+        scalar
 
         inputs:
          (mx1 array)
          outputs =            |  y(x^(1))|
-                              |  ...     |              
+                              |  ...     |
                               |  y(x^(m))|
 
          (mxd array)
          perturbed_outputs =  |  y(x^(1) + delta_1), ..., y(x^(1)+ delta_d)|
-                              |  ...    , ...,      ...     |              
+                              |  ...    , ...,      ...     |
                               |  y(x^(m) + delta_1), ..., y(x^(m)+delta_d)|
 
         (dx1 array)
@@ -97,10 +100,10 @@ class FiniteDifference:
                     | dy(x^{(m)})/dx_1, ..., dy(x^{(m)})/dx_d |
         '''
 
-        if len(perturbed_outputs.shape)==1:
+        if len(perturbed_outputs.shape) == 1:
             perturbed_outputs.shape = (len(perturbed_outputs), 1)
         (sromsize, dim) = perturbed_outputs.shape
-        
+
         if len(outputs) != sromsize:
             raise ValueError("# output samples must match perturbed outputs")
 
@@ -110,8 +113,9 @@ class FiniteDifference:
         gradients = np.zeros((sromsize, dim))
 
         for i in range(dim):
-            grad = (perturbed_outputs[:,i] - outputs.flatten()) /perturb_vals[i]
-            gradients[:,i] = grad
+            grad = ((perturbed_outputs[:, i] - outputs.flatten())
+                    /perturb_vals[i])
+            gradients[:, i] = grad
 
         return gradients
-            
+
