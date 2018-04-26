@@ -27,6 +27,13 @@ The above code snippet produces the following CDF comparison plot:
 ![CDF comparison](https://github.com/nasa/SROMPy/blob/master/examples/basic_tests/normal_rv_srom.png)
 
 -------------------------------------------------------------------------------
+If you use SROMPy for your research, please cite the technical report:
+
+Warner, J. E. (2018). Stochastic reduced order models with Python (SROMPy). NASA/TM-2018-219824. 
+
+The report can be found in the docs/references directory. Thanks!
+
+-------------------------------------------------------------------------------
 
 **Author**: <br />
 James Warner <br />
