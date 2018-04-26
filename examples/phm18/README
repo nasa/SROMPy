@@ -1,0 +1,29 @@
+This readme file provides an overview of the source code and data provided in this directory that reproduces the results and figures in the PHM18 Conference Paper, "Rapid Uncertainty Quantification for High-Fidelity Prognostics Using SROMPy and Python" by J. E. Warner, P. E. Leser, and J. D. Hochhalter.
+
+Two data directories provided are mc_data and srom_data, containing the sample data files for the Monte Carlo solution and data files needed for SROM solutions, respectively.
+
+The scripts that implement the procedure are as follows:
+    *Step 1 - generate_input_srom.py
+    *Step 2 - run_model.py
+    *Step 3 - generate_pwconstant_eol.py or generate_pwlinear_eol.py
+
+    Notes:
+        *Step 1 solves the SROM optimization problem which has inherent randomness due to numerical sampling, so the SROMs and results produced will vary slightly from those in the paper.
+        *Step 2 is only a representative script and will not run. The true model used in this study depends on a commercial code and is therefore not included. However, the code reflects a common SROM workflow
+        
+
+Scripts for producing Figures in paper:
+Figure 1 - test_normal_rv_srom.py
+    *Note - due to randomness of the SROM optimization algorithm, the resulting
+    plot will vary from the one shown in the paper when re-run.
+Figure 3 - plot_input_pdfs.py
+Figure 4 - compare_input_srom_CDFs.py
+Figure 5(a) - compare_pwconst_srom_eol_CDFs.py
+Figure 5(b) - compare_pwlin_srom_eol_CDFs.py
+Figure 6 - generate_input_srom.py
+    *Note - due to randomness of the SROM optimization algorithm, the resulting
+    plots will vary from those shown in the paper when re-run.
+Figure 7 - plot_pwconstant_eol_demo.py
+
+Script from the SROMPy demo in Section 3.3/Appendix of the paper:
+srompy_demo_script.py
