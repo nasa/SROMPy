@@ -1,3 +1,6 @@
+'''
+Class to solve SROM optimization problem.
+'''
 
 import numpy as np
 import scipy.optimize as opt
@@ -97,7 +100,7 @@ class Optimizer:
             self._grad = None
 
     def get_optimal_params(self, num_test_samples=500, tol=None, options=None,
-                           method=None):
+                           method=None, output_interval=10):
         '''
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -111,7 +114,8 @@ class Optimizer:
             -tol, float, tolerance of scipy optimization algorithm
             -options, dict, options for scipy optimization algorithm
             -method, str, method specifying scipy optimization algorithm
-    
+            -output_interval, int, how often to print optimization progress    
+
         returns optimal SROM samples & probabilities
 
         '''
@@ -149,8 +153,9 @@ class Optimizer:
                 opt_probs = opt_res['x']
                 opt_fun = opt_res['fun']
             
-            print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
-            print "Optimal:", opt_fun
+            if i==0 or (i+1)%output_interval==0:
+                print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
+                print "Optimal:", opt_fun
 
         #Display final errors in statistics:
         momenterror = self._srom_obj.get_moment_error(opt_samples, opt_probs)
