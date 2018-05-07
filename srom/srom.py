@@ -133,17 +133,13 @@ class SROM(object):
 
         CDF_vals = np.zeros((num_pts, self._dim))
 
-        #Note probably a more efficient implementation - vectorize?:
-        for d, grid in enumerate(x_grid.T):
+        #Vectorized indicator implementation for CDF
+        #CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
+        for i, grid in enumerate(x_grid.T):
+            for k, sample in enumerate(self._samples):
+                indz = grid >= sample[i]
+                CDF_vals[indz, i] += self._probs[k]
 
-            #CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
-            CDF_d = np.zeros((num_pts))
-            for i, x_pt in enumerate(grid):
-                for k, sample in enumerate(self._samples):
-                    if sample[d] <= x_pt:
-                        CDF_d[i] += self._probs[k]
-
-            CDF_vals[:, d] = CDF_d
 
         return CDF_vals
 
