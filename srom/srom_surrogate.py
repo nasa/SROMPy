@@ -109,37 +109,6 @@ class SROMSurrogate:
 
     #Do these change for linear surrogate?
     def compute_moments(self, max_order):
-<<<<<<< HEAD
-        '''
-        Calculate SROM moments up to order 'max_order'. Returns a
-        (max_order x dim) size numpy array with SROM moments for each dimension.
-        Computes moments from 1,...,max_order
-        '''
-        return self._outputsrom.compute_moments(max_order)
-
-    def compute_CDF(self, x_grid):
-        '''
-        Evaluates the SROM CDF values for each dimension at each point in
-        x_grid. x_grid can be a 1D array in which case the CDFs for each random
-        vector dimension are evaluated at the same points, or it can be a
-        (num_grid_pts x dim) array, specifying different points for each
-        dimension - each dimension can have a different range of values but
-        must have the same # of grid pts across it. Returns a (num_grid_pts x
-        dim) array of corresponding CDF values at the grid points
-
-        Note:
-             -this is marginal CDFs along each dimension
-             -increasing size of x_grid will slow this down a lot
-
-        inputs:
-            x_grid, (#grid pts x 1 ) or (#grid pts x dim) array of points to
-                evaluate the SROM CDF at for case of the same grid for each dim
-                or different grid, respectively.
-
-        returns:
-            cdf_vals, (#grid pts x dim) array of SROM CDF values at x_grid pts
-        '''
-=======
         """
         Calculates and returns SROM moments.
 
@@ -173,7 +142,6 @@ class SROMSurrogate:
               of values for each dimension, but must use the same number of pts.
         """
 
->>>>>>> release
         return self._outputsrom.compute_CDF(x_grid)
 
     def sample(self, inputsamples):
@@ -184,16 +152,6 @@ class SROMSurrogate:
         :param inputsamples: samples of inputs to draw output samples for
         :type inputsamples: 2d Numpy array.
 
-<<<<<<< HEAD
-        inputsamples =  |  x^(1)_1, ..., x^(1)_di |
-                        |  ...    , ..., ...      |
-                        |  x^(N)_1, ..., x^(N)_di |
-
-
-        surr_samples =      |  y^(1)_1, ..., y^(1)_do |
-                            |  ...    , ..., ...      |
-                            |  y^(N)_1, ..., y^(N)_do |
-=======
         Returns: 2d Numpy array of output samples corresponding to input samples
 
         Convention:
@@ -215,7 +173,6 @@ class SROMSurrogate:
         Note that the samples are drawn from a piecewise-linear SROM 
         surrogate when gradients are provided to the constructor of this class,
         and drawn from a piecewise-constant SROM surrogate if not.
->>>>>>> release
 
         '''
 
@@ -258,11 +215,7 @@ class SROMSurrogate:
 
         return surr_samples
 
-<<<<<<< HEAD
-    def sample_pwlinear_surrogate(self, inputsamples):
-=======
     def _sample_pwlinear_surrogate(self, inputsamples): 
->>>>>>> release
         '''
         Evaluate the linear output surrogate model using input SROM samples
         and gradients
@@ -298,12 +251,8 @@ class SROMSurrogate:
             diffs_k = diffs[sromindex, :]
             grad_k = self._gradients[sromindex, :]
 
-<<<<<<< HEAD
             out = output_k + np.dot(grad_k, diffs_k)
             surr_samples[i, :] = out
 
-
         return surr_samples
 
-=======
->>>>>>> release
