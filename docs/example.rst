@@ -2,7 +2,7 @@
 Example - Spring Mass System
 =============================
 
-This example will use 𝚂𝚁𝙾𝙼𝙿𝚢 to simulate a spring-mass system with random spring stiffness (:ref:`spring-mass`). The example covers modeling the random stiffness using a Beta random variable in 𝚂𝚁𝙾𝙼𝙿𝚢, generating a SROM to represent the stiffness, then propagating uncertainty though the model to obtain the distribution for maximum displacement. The SROM solution will be compared to standard Monte Carlo simulation.
+This example will use SROMPy to simulate a spring-mass system with random spring stiffness (:ref:`spring-mass`). The example covers modeling the random stiffness using a Beta random variable in SROMPy, generating a SROM to represent the stiffness, then propagating uncertainty though the model to obtain the distribution for maximum displacement. The SROM solution will be compared to standard Monte Carlo simulation.
 
 .. _spring-mass:
 
@@ -35,12 +35,12 @@ is assumed to be deterministic, :math:`m_s = 1.5kg`, and the acceleration due
 to gravity is :math:`g = 9.8 m^2/s`. 
 
 
-With uncertainty in an input parameter, the resulting displacement, :math:`Z`, is a random variable as well. The quantity of interest in this example with be the maximum displacement over a specified time window, :math:`Z_{max}=max_t(Z)`. It is assumed we have access to a computational model that numerically integrates the governing equation over this time window for a given sample of the random stiffness and returns the maximum displacement. The goal of this example will be to approximate the CDF, :math:`F(z_{max})`, using the SROM approach with 𝚂𝚁𝙾𝙼𝙿𝚢 and compare it to a Monte Carlo simulation solution.
+With uncertainty in an input parameter, the resulting displacement, :math:`Z`, is a random variable as well. The quantity of interest in this example with be the maximum displacement over a specified time window, :math:`Z_{max}=max_t(Z)`. It is assumed we have access to a computational model that numerically integrates the governing equation over this time window for a given sample of the random stiffness and returns the maximum displacement. The goal of this example will be to approximate the CDF, :math:`F(z_{max})`, using the SROM approach with SROMPy and compare it to a Monte Carlo simulation solution.
 
 
 Step 1: Define target random variable, initialize model, generate reference solution
 -------------------------------------------------------------------------------------
-Begin by importing the needed 𝚂𝚁𝙾𝙼𝙿𝚢 classes as well as the 𝚂𝚙𝚛𝚒𝚗𝚐𝙼𝚊𝚜𝚜⎯𝟷𝙳 class that defines the spring mass model:
+Begin by importing the needed SROMPy classes as well as the SpringMass1D class that defines the spring mass model:
 
 .. code-block:: python
 
@@ -52,7 +52,7 @@ Begin by importing the needed 𝚂𝚁𝙾𝙼𝙿𝚢 classes as well as the �
   from srom import SROM, SROMSurrogate, FiniteDifference as FD
   from target import SampleRV, BetaRandomVariable 
 
-The first step in the analysis is to define the target random variable to represent the spring stiffness Ks using the 𝙱𝚎𝚝𝚊𝚁𝚊𝚗𝚍𝚘𝚖𝚅𝚊𝚛𝚒𝚊𝚋𝚕𝚎 class in 𝚂𝚁𝙾𝙼𝙿𝚢:
+The first step in the analysis is to define the target random variable to represent the spring stiffness :math:`K_s` using the BetaRandomVariable class in SROMPy:
 
 .. code-block:: python
 
@@ -69,7 +69,7 @@ Next, the computational model of the spring-mass system is initialized:
   t_grid = np.arange(0., 10., 0.1)  #time discretization
   model = SpringMass_1D(m, state0, t_grid)
 
-A reference solution using Monte Carlo simulation is now generated for comparison later on. This is done by sampling the random spring stiffness, evaluating the model for each sample, and then using the 𝚂𝚁𝙾𝙼𝙿𝚢 𝚂𝚊𝚖𝚙𝚕𝚎𝚁𝚅 class to represent the Monte Carlo solution for maximum displacement:
+A reference solution using Monte Carlo simulation is now generated for comparison later on. This is done by sampling the random spring stiffness, evaluating the model for each sample, and then using the SROMPy SampleRV class to represent the Monte Carlo solution for maximum displacement:
 
 .. code-block:: python
 
@@ -90,7 +90,7 @@ A reference solution using Monte Carlo simulation is now generated for compariso
 Step 2: Construct SROM for the input
 -------------------------------------
 
-A SROM, :math:`\tilde{K}_s` is now formed to model the random stiffness input, :math:`K_s`, with 𝚂𝚁𝙾𝙼𝙿𝚢. The following code initializes the 𝚂𝚁𝙾𝙼 class for a model size of 10 and uses the 𝚘𝚙𝚝𝚒𝚖𝚒𝚣𝚎 function to set the optimal SROM parameters to represent the random spring stiffness:
+A SROM, :math:`\tilde{K}_s` is now formed to model the random stiffness input, :math:`K_s`, with SROMPy. The following code initializes the SROM class for a model size of 10 and uses the optimize function to set the optimal SROM parameters to represent the random spring stiffness:
 
 .. code-block:: python
     
@@ -100,7 +100,7 @@ A SROM, :math:`\tilde{K}_s` is now formed to model the random stiffness input, :
   input_srom = SROM(sromsize, dim)
   input_srom.optimize(stiffness_rv)
 
-The CDF of the resulting SROM can be compared to the original Beta random variable for spring stiffness using the 𝚂𝚁𝙾𝙼𝙿𝚢 𝙿𝚘𝚜𝚝𝚙𝚛𝚘𝚌𝚎𝚜𝚜𝚘𝚛 class:
+The CDF of the resulting SROM can be compared to the original Beta random variable for spring stiffness using the SROMPy Postprocessor class:
 
 .. code-block:: python
 
@@ -140,7 +140,7 @@ Step 4: Form SROM surrogate model for output
 Approach a) Piecewise-constant approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A simple piecewise-constant approximation to the output (maximum displacement) can be generated with the 𝚂𝚁𝙾𝙼𝚂𝚞𝚛𝚛𝚘𝚐𝚊𝚝𝚎 class using the input SROM formed previously and the calculated maximum displacement samples:
+A simple piecewise-constant approximation to the output (maximum displacement) can be generated with the SROMSurrogate class using the input SROM formed previously and the calculated maximum displacement samples:
 
 
 .. code-block:: python
@@ -168,9 +168,9 @@ This produces the following comparison plot:
 Approach b) Piecewise-linear approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now a more accurate piecewise-linear SROM surrogate model is formed to estimate the CDF of the maximum displacement. To do so, gradients must be calculated using finite difference and provided to the 𝚂𝚁𝙾𝙼𝚂𝚞𝚛𝚛𝚘𝚐𝚊𝚝𝚎 class upon initialization.
+Now a more accurate piecewise-linear SROM surrogate model is formed to estimate the CDF of the maximum displacement. To do so, gradients must be calculated using finite difference and provided to the SROMSurrogate class upon initialization.
 
-The finite different gradients are calculated with the help of the 𝙵𝚒𝚗𝚒𝚝𝚎𝙳𝚒𝚏𝚏𝚎𝚛𝚎𝚗𝚌𝚎 class (𝙵𝙳), requiring extra model evaluations for perturbed inputs:
+The finite different gradients are calculated with the help of the FiniteDifference class (FD), requiring extra model evaluations for perturbed inputs:
 
 
 .. code-block:: python
