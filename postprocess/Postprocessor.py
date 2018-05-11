@@ -26,7 +26,10 @@ class Postprocessor:
 
     def compare_CDFs(self, variable="x", plotdir='.', plotsuffix="CDFcompare", 
                      showFig=True, saveFig=True, variablenames=None, 
-                     xlimits=None):
+                     xlimits=None, ylimits=None, xticks=None,
+                     cdfylabel=False, xaxispadding=None,
+                     axisfontsize=30, labelfontsize=24,
+                     legendfontsize=25):
         '''
         Generates plots comparing the srom & target cdfs for each dimension
         of the random vector.
@@ -80,6 +83,23 @@ class Postprocessor:
             self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], xgrids[:,i], 
                 targetCDFs[:,i],  variable, ylabel, plotname_, showFig, xlims)
 
+    def compute_moment_error(self, max_moment=4):
+        '''
+        Performs a comparison of the moments between the SROM and target, 
+        calculates the percent errors up to moments of order 'max_moment'.
+        Optionally generates text file with the latex source to generate
+        a table.
+        '''
+
+        #Get moment arrays (max_order x dim)
+        srom_moments = self._SROM.compute_moments(max_moment)   
+        target_moments = self._target.compute_moments(max_moment)   
+        
+        percent_errors = np.abs(srom_moments-target_moments)
+        percent_errors = percent_errors/np.abs(target_moments)
+
+        return percent_errors*100
+
 
     def plot_cdfs(self, xgrid, sromcdf, xtarget, targetcdf, xlabel="x", 
                  ylabel="F(x)",  plotname=None, showFig=True, xlimits=None):
@@ -114,6 +134,11 @@ class Postprocessor:
             label.set_fontname(labelFont)
             label.set_fontsize(labelSize)
 
+        #NOTE TMP HACK FOR PHM18
+        #xticks = ['', r'$1.2 \times 10^6$','',r'$1.6 \times 10^6$','',
+        #   r'$2.0 \times 10^6$','']
+        #ax.set_xticklabels(xticks)       
+
         plt.tight_layout()
 
         if plotname is not None:
@@ -140,13 +165,17 @@ class Postprocessor:
         return x_grid
 
 
+
 #Need to make this whole class static
 #----------------Gross down here, don't look -----------------------
     @staticmethod
     def compare_srom_CDFs(size2srom, target, variable="x", plotdir=".",
                             plotsuffix="CDFscompare", showFig=True, 
                             saveFig = True, variablenames=None,
-                            xlimits=None):
+                            xlimits=None, ylimits=None, xticks=None,
+                            cdfylabel=False, xaxispadding=None, 
+                            axisfontsize=30, labelfontsize=24,
+                            legendfontsize=25):
         '''
         Generates plots comparing CDFs from sroms of different sizes versus 
         the target variable for each dimension of the vector.
@@ -161,6 +190,9 @@ class Postprocessor:
             saveFig, bool, save or not save generated plot
             variablenames, list of strings, names of variable in each dimension
                 optional. Used for x axes labels if provided. 
+            cdfylabel, bool, use "CDF" as y-axis label? If False, uses 
+                            F(<variable_name>)
+            xaxispadding, int, spacing between xtick labels and x-axis
         '''
 
         #Make x grids for plotting
@@ -172,6 +204,10 @@ class Postprocessor:
                                target._maxs[i],
                                cdf_grid_pts)
             xgrids[:,i] = grid
+
+        #If xticks is None (default), cast to list of Nones for plotting:
+        if xticks is None:
+            xticks = target._dim * [None]
 
         #Get CDFs for each size SROM
         sromCDFs = OrderedDict()
@@ -204,7 +240,11 @@ class Postprocessor:
 
             variable = variablenames[i]
             plotname_ = plotname + "_" + variable + ".pdf"
-            ylabel = r'$F($' + variable + r'$)$'
+            if not cdfylabel:
+                ylabel = r'$F($' + variable + r'$)$'
+            else:
+                ylabel = "CDF"             
+   
             #Remove latex math symbol from plot name
             plotname_ = plotname_.translate(None, "$")
 
@@ -213,10 +253,11 @@ class Postprocessor:
             #Text formatting for plot
             title_font = {'fontname':'Arial', 'size':22, 'weight':'bold',
                                     'verticalalignment':'bottom'}
-            axis_font = {'fontname':'Arial', 'size':26, 'weight':'normal'}
+            axis_font = {'fontname':'Arial', 'size':axisfontsize, 
+                         'weight':'normal'}
             labelFont = 'Arial'
-            labelSize =  20
-            legendFont = 22
+            labelSize =  labelfontsize
+            legendFont = legendfontsize
        
             xgrid=xgrids[:,i]
             xtarget = target_grids[:,i]
@@ -238,10 +279,25 @@ class Postprocessor:
             y_limz = ax.get_ylim()
             x_limz = ax.get_xlim()
             ax.axis([min(xgrid), max(xgrid), 0, 1.1])
-            if(xlimits is not None):
+            if (xlimits is not None and ylimits is None):
                 ax.axis([xlimits[i][0], xlimits[i][1], 0, 1.1])
+            elif (xlimits is None and ylimits is not None): 
+                ax.axis([x_limz[0], x_limz[1], ylimits[i][0], ylimits[i][1]])
+            elif (xlimits is not None and ylimits is not None): 
+                ax.axis([xlimits[i][0], xlimits[i][1], 
+                         ylimits[i][0], ylimits[i][1]])
+            else:
+                ax.axis([min(xgrid), max(xgrid), 0, 1.1])
+
             ax.set_xlabel(variable, **axis_font)
             ax.set_ylabel(ylabel, **axis_font)
+
+            if xaxispadding:
+                ax.tick_params(axis='x', which='major', pad=xaxispadding)
+
+            #Adjust tick labels:    
+            if xticks[i] is not None:
+                ax.set_xticklabels(xticks[i])
 
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
                 label.set_fontname(labelFont)
