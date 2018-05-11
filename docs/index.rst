@@ -13,6 +13,7 @@ Contents:
 
    intro
    example
+   source_code
 
 
 Indices and tables

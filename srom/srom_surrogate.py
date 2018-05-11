@@ -6,13 +6,46 @@ import numpy as np
 
 from srom import SROM
 
-class SROMSurrogate(object):
-    '''
-    Class that implements the SROM surrogate model for propagating uncertainty.
-    Implements either piecewise constant or piecewise linear models depending
-    on whether or not gradients are provided. Can be used to draw output samples
-    directly given input samples
-    '''
+class SROMSurrogate:
+    """
+    SROMPy class that provides a closed-form surrogate model for a model output
+    that can be sampled as a means of efficiently propagating uncertainty.
+    Enables both a piecewise-constant model and a piecewise-linear model, if
+    gradient information is provided. 
+
+    :param inputsrom: The input SROM that was used to generate the outputs.
+    :type inputsrom: SROMPy SROM object.
+    :param outputsamples: Output samples corresponding to each input SROM sample
+    :type outputsamples: 2d Numpy Array
+    :param outputgradients: Gradient of output with respect to input samples
+    :type outputgradients: 2d Numpy Array
+    
+    Conventions:
+
+    * m denotes the SROM size (superscripts). di denotes the dimension of the 
+      SROM input (subscripts). do denotes dimension of SROM output (subscripts).
+    * The output samples array has the following layout (m x d0):
+
+        | [[ y^(1)_1,   y_2^(1), ..., y_do^(1)],
+        | [y_1^(2), y_2^(2), ..., y_d0^(2)],
+        | ...     ...   ...    ....  
+        | [y_1^(m), y_2^(m),  ...  y_d0^(m)]]    
+    
+    * The gradients array has the following layout (m x di):
+
+        | [[dy(x^{(1)})/dx_1, ..., dy(x^{(1)})/dx_di ],
+        | ...             , ...,    ...           
+        | [dy(x^{(m)})/dx_1, ..., dy(x^{(m)})/dx_di ]]
+
+    Note
+
+    * the order of the output samples array must match the order of the
+      samples array from the input SROM!
+    * If gradients array is provided, the piecewise-linear surrogate 
+      model is implemented. Otherwise, the piecewise-constant surrogate is
+      used.
+
+    """
 
     def __init__(self, inputsrom, outputsamples, outputgradients=None):
         '''
@@ -76,6 +109,7 @@ class SROMSurrogate(object):
 
     #Do these change for linear surrogate?
     def compute_moments(self, max_order):
+<<<<<<< HEAD
         '''
         Calculate SROM moments up to order 'max_order'. Returns a
         (max_order x dim) size numpy array with SROM moments for each dimension.
@@ -105,6 +139,41 @@ class SROMSurrogate(object):
         returns:
             cdf_vals, (#grid pts x dim) array of SROM CDF values at x_grid pts
         '''
+=======
+        """
+        Calculates and returns SROM moments.
+
+        :param max_order: Maximum order of moments to return
+        :type max_order: int
+
+        Returns (max_order x dim) size Numpy array with SROM moments for 
+        each dimension.
+        """
+
+        return self._outputsrom.compute_moments(max_order)
+
+    def compute_CDF(self, x_grid):
+        """
+        Computes the SROM marginal CDF values in each dimension.
+
+        :param x_grid: Grid of points to compute CDF values on. If 1d array is
+            provided, the same points are used to evaluate CDF in each 
+            dimension. If 2d array is provided, calculates CDF values on
+            different points, but must have same # points for each dimension. 
+            Size is (# grid pts) x (dim) or (# grid pts) x (1).
+        :type x_grid: Numpy array.
+
+        Returns: Numpy array of CDF values at x_grid points. Size is (# grid 
+        pts) x (dim).
+
+        Note: 
+            * Increasing the number of grid points can significantly slow 
+              down the SROM optimization problem.
+            * Providing a 2d array for x_grid can specify a different range
+              of values for each dimension, but must use the same number of pts.
+        """
+
+>>>>>>> release
         return self._outputsrom.compute_CDF(x_grid)
 
     def sample(self, inputsamples):
@@ -112,8 +181,10 @@ class SROMSurrogate(object):
         Generates output samples from the SROM surrogate corresponding to
         the provided input samples.
 
-        inputsamples (numpy array):  (N: # samples, di: input dim, do: out dim)
+        :param inputsamples: samples of inputs to draw output samples for
+        :type inputsamples: 2d Numpy array.
 
+<<<<<<< HEAD
         inputsamples =  |  x^(1)_1, ..., x^(1)_di |
                         |  ...    , ..., ...      |
                         |  x^(N)_1, ..., x^(N)_di |
@@ -122,6 +193,29 @@ class SROMSurrogate(object):
         surr_samples =      |  y^(1)_1, ..., y^(1)_do |
                             |  ...    , ..., ...      |
                             |  y^(N)_1, ..., y^(N)_do |
+=======
+        Returns: 2d Numpy array of output samples corresponding to input samples
+
+        Convention:
+            * N - number of samples. di - dimension of the input. do - dimension
+              of the output. 
+            * input samples array has following layout (N x di):
+
+
+              | [[x^(1)_1, ..., x^(1)_di ],    
+              |  ...    , ..., ...   
+              | [x^(N)_1, ..., x^(N)_di ]]   
+        
+            * surrogate output samples has following layout (N x do):
+
+              | [[y^(1)_1, ..., y^(1)_do ],    
+              |  ...    , ..., ...      
+              | [y^(N)_1, ..., y^(N)_do ]]   
+
+        Note that the samples are drawn from a piecewise-linear SROM 
+        surrogate when gradients are provided to the constructor of this class,
+        and drawn from a piecewise-constant SROM surrogate if not.
+>>>>>>> release
 
         '''
 
@@ -137,13 +231,13 @@ class SROMSurrogate(object):
 
         #Evaluate piecewise constant or linear surrogate model to get samples:
         if self._gradients is None:
-            surr_samples = self.sample_pwconstant_surrogate(inputsamples)
+            surr_samples = self._sample_pwconstant_surrogate(inputsamples)
         else:
-            surr_samples = self.sample_pwlinear_surrogate(inputsamples)
+            surr_samples = self._sample_pwlinear_surrogate(inputsamples)
 
         return surr_samples
 
-    def sample_pwconstant_surrogate(self, inputsamples):
+    def _sample_pwconstant_surrogate(self, inputsamples):
         '''
         Evaluate standard piecewise constant output surrogate model
         '''
@@ -164,7 +258,11 @@ class SROMSurrogate(object):
 
         return surr_samples
 
+<<<<<<< HEAD
     def sample_pwlinear_surrogate(self, inputsamples):
+=======
+    def _sample_pwlinear_surrogate(self, inputsamples): 
+>>>>>>> release
         '''
         Evaluate the linear output surrogate model using input SROM samples
         and gradients
@@ -200,9 +298,12 @@ class SROMSurrogate(object):
             diffs_k = diffs[sromindex, :]
             grad_k = self._gradients[sromindex, :]
 
+<<<<<<< HEAD
             out = output_k + np.dot(grad_k, diffs_k)
             surr_samples[i, :] = out
 
 
         return surr_samples
 
+=======
+>>>>>>> release
