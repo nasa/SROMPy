@@ -10,7 +10,7 @@ from optimize import Optimizer
 
 class SROM(object):
     """
-    This is the primary SROMPy class for defining and utilizing a 
+    This is the primary SROMPy class for defining and utilizing a
     stochastic reduced order model (SROM). Main capability is optimizing
     for the defining SROM parameters to model a given target random quantity.
     Other functions provided to calculate SROM statistics, set/get defining
@@ -50,12 +50,12 @@ class SROM(object):
 
         | [[ x_1^(1),   x_2^(1), ..., x_d^(1)],
         | [x_1^(2), x_2^(2), ..., x_d^(2)],
-        | ...     ...   ...    ....  
+        | ...     ...   ...    ....
         | [x_1^(m), x_2^(m),  ...  x_d^(m)]]
-    
+ 
         Probabilities:
 
-        | [p^(1), p^(2), ..., p^(m)]^T 
+        | [p^(1), p^(2), ..., p^(m)]^T
 
         """
 
@@ -88,12 +88,12 @@ class SROM(object):
 
         | [[ x_1^(1),   x_2^(1), ..., x_d^(1)],
         | [x_1^(2), x_2^(2), ..., x_d^(2)],
-        | ...     ...   ...    ....  
+        | ...     ...   ...    ....
         | [x_1^(m), x_2^(m),  ...  x_d^(m)]]
-    
+
         Probabilities:
 
-        | [p^(1), p^(2), ..., p^(m)]^T 
+        | [p^(1), p^(2), ..., p^(m)]^T
 
         '''
         return (self._samples, self._probs)
@@ -105,7 +105,7 @@ class SROM(object):
         :param max_order: Maximum order of moments to return
         :type max_order: int
 
-        Returns (max_order x dim) size Numpy array with SROM moments for 
+        Returns (max_order x dim) size Numpy array with SROM moments for
         each dimension.
         '''
 
@@ -132,23 +132,21 @@ class SROM(object):
         Computes the SROM marginal CDF values in each dimension.
 
         :param x_grid: Grid of points to compute CDF values on. If 1d array is
-            provided, the same points are used to evaluate CDF in each 
+            provided, the same points are used to evaluate CDF in each
             dimension. If 2d array is provided, calculates CDF values on
-            different points, but must have same # points for each dimension. 
+            different points, but must have same # points for each dimension.
             Size is (# grid pts) x (dim) or (# grid pts) x (1).
         :type x_grid: Numpy array.
 
-        Returns: Numpy array of CDF values at x_grid points. Size is (# grid 
+        Returns: Numpy array of CDF values at x_grid points. Size is (# grid
         pts) x (dim).
 
-        Note: 
-            * Increasing the number of grid points can significantly slow 
+        Note:
+            * Increasing the number of grid points can significantly slow
               down the SROM optimization problem.
             * Providing a 2d array for x_grid can specify a different range
               of values for each dimension, but must use the same number of pts.
         '''
-
-        #NOTE - should deep copy x_grid since were modifying?
 
         #Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
@@ -171,7 +169,6 @@ class SROM(object):
                 indz = grid >= sample[i]
                 CDF_vals[indz, i] += self._probs[k]
 
-
         return CDF_vals
 
 
@@ -185,6 +182,7 @@ class SROM(object):
         #Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before computing moments")
+
         corr = np.zeros((self._dim, self._dim))
 
         for k, sample in enumerate(self._samples):
@@ -198,31 +196,31 @@ class SROM(object):
         '''
         Optimize for the SROM samples & probabilities to best match the
         target random vector statistics. The main functionality provided
-        by the SROM class. Solves SROM the optimization problem and sets 
+        by the SROM class. Solves SROM the optimization problem and sets
         the samples and probabilities for the SROM object to the optimized
         values.
 
         :param targetRV: the target random quantity (variable/vector) being
             modeled by the SROM.
         :type targetRV: SROMPy target object (AnalyticRV, SampleRV, or random
-            variable class) 
-        :param weights: relative weights specifying importance of matching 
+            variable class)
+        :param weights: relative weights specifying importance of matching
             CDFs, moments, and correlation of the target during optimization.
             Default is equal weights [1,1,1].
         :type weights: 1d Numpy array (length = 3)
-        :param num_test_samples: Number of sample sets (iterations) to run 
+        :param num_test_samples: Number of sample sets (iterations) to run
             optimization.
         :type num_test_samples: int
-        :param error: Type of error metric to use in objective ("SSE", "MAX", 
+        :param error: Type of error metric to use in objective ("SSE", "MAX",
             "MEAN").
         :type error: string
-        :param max_moment: Max. number of target moments to consider matching 
+        :param max_moment: Max. number of target moments to consider matching
         :type max_moment: int
         :param cdf_grid_pts: Number of points to evaluate CDF error on
         :type cdf_grid_pts: int
         :param tol: tolerance for scipy optimization algorithm (TODO)
         :type tol: float
-        :param options: scipy optimization algorithm options (TODO) 
+        :param options: scipy optimization algorithm options (TODO)
         :type options: dict
         :param method: method used for scipy optimization  (TODO)
         :type method: string
@@ -230,10 +228,10 @@ class SROM(object):
         Returns: None. Sets samples/probabilities member variables.
 
         Assumes the targetRV object has been properly initialized beforehand.
-        The optimization for SROM samples & probabilities is currently 
+        The optimization for SROM samples & probabilities is currently
         performed sequentially - a random set of samples are first drawn and the
-        probabilities are then optimization for those samples. The input 
-        "num_test_samples" is the number of random sample sets this is 
+        probabilities are then optimization for those samples. The input
+        "num_test_samples" is the number of random sample sets this is
         performed for before terminating. The random sample set and optimal
         probabilities found that produce the lowest objective function value
         are used as the optimal parameters.
@@ -252,15 +250,15 @@ class SROM(object):
     def save_params(self, outfile="srom_params.txt", delim=None):
         '''
         Write the SROM parameters to file.
-    
-        :param outfile: output file name 
+ 
+        :param outfile: output file name
         :type outfile: string
         :param delim: delimiter used in output file (default - whitespace)
         :type delim: string
 
         Returns: None. Produces output file.
 
-        Writes output file with the following format (samples in each row with 
+        Writes output file with the following format (samples in each row with
         prob after):
 
         | x_1^(1),   x_2^(1), ..., x_d^(1),  p^(1)
@@ -275,7 +273,7 @@ class SROM(object):
             raise ValueError("Must initalize SROM before saving to disk")
 
         srom_params = np.hstack((self._samples, self._probs))
-        np.savetxt(outfile, srom_params)
+        np.savetxt(outfile, srom_params, delimiter=delim)
 
     def load_params(self, infile="srom_params.txt", delim=None):
         """
@@ -288,7 +286,7 @@ class SROM(object):
 
         Returns: None. Sets sample/probability member variables.
 
-        Assumes input file has the following format (samples in each row with 
+        Assumes input file has the following format (samples in each row with
         prob after):
 
         | x_1^(1),   x_2^(1), ..., x_d^(1),  p^(1)
@@ -296,7 +294,7 @@ class SROM(object):
         | ...     ...   ...    ....   ...
         | x_1^(m), x_2^(m),  ...     x_d^(m),  p^(m)
 
-        The dimension of the samples and probabilities arrays must be 
+        The dimension of the samples and probabilities arrays must be
         compatible with the SROM size and dimension that was used to initialize
         the SROM class.
         """
