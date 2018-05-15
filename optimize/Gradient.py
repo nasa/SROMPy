@@ -26,7 +26,7 @@ class Gradient:
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
         '''
 
-        #NOTE - gradients won't make sense for MAX error metric NOTE NOTE NOTE
+        #NOTE - gradients won't make sense for MAX error metric
         #Need to decide if objective function terms are normalized by true val
 
         #Error checking/handling should have already been done by obj fun prior

@@ -11,7 +11,13 @@ from target import RandomVector
 class SampleRV(RandomVector):
     '''
     Sample-based random vector. Defines a target random vector to match with
-    an SROM based on a set of realizations of that random vector
+    an SROM based on a set of realizations of that random vector. Implements
+    basic statistics to use in SROM optimization and comparisons.
+
+    :param samples: set of realizations/samples of the random vector
+    :type samples: np array, size: (# samples x dim)
+    :param max_moment: max. order moment to precompute and store
+    :type max_moment: int
     '''
 
     def __init__(self, samples, max_moment=10):
@@ -45,7 +51,14 @@ class SampleRV(RandomVector):
 
     def compute_moments(self, max_order):
         '''
-        Return precomputed moments up to specified order
+        Return precomputed moments up to specified order.
+
+        :param max_order: Maximum order of moments to return
+        :type max_order: int
+
+        Returns (max_order x dim) size Numpy array with SROM moments for
+        each dimension.
+
         '''
 
         #TODO - calculate moments above max_moment on the fly & append to stored
@@ -59,16 +72,19 @@ class SampleRV(RandomVector):
     def compute_CDF(self, x_grid):
         '''
         Evaluates the precomputed/stored CDFs at the specified x_grid values
-        and returns. x_grid can be a 1D array in which case the CDFs for each
-        dimension are evaluated at the same points, or it can be a
-        (num_grid_pts x dim) array, specifying different points for each
-        dimension - each dimension can have a different range of values but
-        must have the same # of grid pts across it. Returns a (num_grid_pts x
-        dim) array of corresponding CDF values at the grid points
+        and returns. 
 
+        :param x_grid: Grid of points to compute CDF values on. If 1d array is
+            provided, the same points are used to evaluate CDF in each
+            dimension. If 2d array is provided, calculates CDF values on
+            different points, but must have same # points for each dimension.
+            Size is (# grid pts) x (dim) or (# grid pts) x (1).
+        :type x_grid: Numpy array.
+
+        Returns: Numpy array of CDF values at x_grid points. Size is (# grid
+        pts) x (dim).
         '''
 
-        #NOTE - should deep copy x_grid since were modifying?
         #1D random variable case
         if len(x_grid.shape) == 1:
             x_grid = x_grid.reshape((len(x_grid), 1))
@@ -94,13 +110,17 @@ class SampleRV(RandomVector):
 
     def compute_corr_mat(self):
         '''
-        Returns precomputed correlation matrix
+        Returns precomputed correlation matrix.
         '''
         return self._corr
 
     def draw_random_sample(self, sample_size):
         '''
-        Randomly draws a sample of this random vector of size 'sample_size'.
+        Randomly draws a sample of this random vector.
+
+        :param sample_size: number of samples to return
+        :type sample_size: int
+
         sample_size must be smaller than total # of samples. For sample-based
         random vector, we return a randomly selected # of samples
         '''
@@ -155,7 +175,6 @@ class SampleRV(RandomVector):
 
         self._moments = np.zeros((max_moment, self._dim))
 
-        #TODO - is there a faster numpy/scipy function for non-centered moments?
         factor = (1./float(self._num_samples))
         for q in range(0, max_moment):
 
