@@ -15,8 +15,19 @@ from target import RandomVector
 #TODO - why do i need to do RV.RV??? Treating RV as the module not class
 class AnalyticRV(RandomVector.RandomVector):
     '''
-    Analytically-specified random vector whose components follow standard
-    probability distributions (beta, gamma, normal, etc.).
+    Class for implementing a translation random vector for non-gaussian random
+    vectors whose components are governed by analytic probability distributions
+    and have known correlation.
+
+    :param random_variables: list of SROMPy target random variable objects 
+                             defining each component of the random vector.
+    :type random_variables: list of SROMPy random variable objects
+    :param correlation_matrix: specifies correlation between vector components.
+    :type correlation_matrix: np array, size: dim x dim
+
+    random_variables list must have length equal to the random vector dimension.
+    Each SROMPy random variable object in the list must be properly
+    initialized and have compute_moments and compute_CDF functions implemented.
     '''
 
     def __init__(self, random_variables, correlation_matrix):
