@@ -192,7 +192,8 @@ class SROM(object):
 
     def optimize(self, targetRV, weights=None, num_test_samples=50,
                  error='SSE', max_moment=5, cdf_grid_pts=100,
-                 tol=None, options=None, method=None):
+                 tol=None, options=None, method=None, joint_opt=False,
+                 output_interval=10):
         '''
         Optimize for the SROM samples & probabilities to best match the
         target random vector statistics. The main functionality provided
@@ -224,6 +225,11 @@ class SROM(object):
         :type options: dict
         :param method: method used for scipy optimization  (TODO)
         :type method: string
+        :param joint_opt: Flag to optimize jointly for samples & probabilities.
+        :type joint_opt: bool
+        :param output_interval: If using sequential optimization, this controls
+                                how often to print opt. progress to screen.
+        :type output_interval: int
 
         Returns: None. Sets samples/probabilities member variables.
 
@@ -234,7 +240,9 @@ class SROM(object):
         "num_test_samples" is the number of random sample sets this is
         performed for before terminating. The random sample set and optimal
         probabilities found that produce the lowest objective function value
-        are used as the optimal parameters.
+        are used as the optimal parameters. The joint_opt input flag can 
+        specify to do the optimization over samples and probabilities 
+        simultaenously.
         '''
 
         #Use optimizer to form SROM objective func & gradient and minimize:
@@ -242,12 +250,13 @@ class SROM(object):
                         cdf_grid_pts)
 
         (samples, probs) = opt.get_optimal_params(num_test_samples, tol,
-                                                  options, method)
+                                                  options, method, joint_opt,
+                                                  output_interval)
 
         self.set_params(samples, probs)
 
 
-    def save_params(self, outfile="srom_params.txt", delim=None):
+    def save_params(self, outfile="srom_params.txt", delim=' '):
         '''
         Write the SROM parameters to file.
  
@@ -275,7 +284,7 @@ class SROM(object):
         srom_params = np.hstack((self._samples, self._probs))
         np.savetxt(outfile, srom_params, delimiter=delim)
 
-    def load_params(self, infile="srom_params.txt", delim=None):
+    def load_params(self, infile="srom_params.txt", delim=' '):
         """
         Load SROM parameters from file.
 
