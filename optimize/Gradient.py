@@ -27,7 +27,6 @@ class Gradient:
         '''
 
         #NOTE - gradients won't make sense for MAX error metric
-        #Need to decide if objective function terms are normalized by true val
 
         #Error checking/handling should have already been done by obj fun prior
         self._SROM = SROM
@@ -145,12 +144,15 @@ class Gradient:
         if len(target_moments.shape)==1:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
+        #Prevent divide by zero
+        zeroinds = np.where(np.abs(target_moments) < 1e-12)[0]
+        target_moments[zeroinds] = 1.0
+
         diffs = (srom_moments - target_moments)/target_moments**2.0
-    
-        samples_flat = samples.flatten()
-        grad = np.zeros(size)
 
         #compute gradient in relatively obscure-looking but fast/vectorized way
+        samples_flat = samples.flatten()
+        grad = np.zeros(size)
         for q in range(self._max_moment):
             samples_q = samples_flat**(q+1)
             diffs_tiled = np.tile(diffs[q,:], size)

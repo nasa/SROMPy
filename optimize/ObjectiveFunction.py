@@ -117,6 +117,10 @@ class ObjectiveFunction:
         if len(target_moments.shape)==1:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
+        #Prevent divide by zero
+        zeroinds = np.where(np.abs(target_moments) <= 1e-12)[0]
+        target_moments[zeroinds] = 1.0
+
         #Squared relative difference:
         if self._metric == "SSE":
             rel_diffs = ((srom_moments-target_moments)/target_moments)**2.0
