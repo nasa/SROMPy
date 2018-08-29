@@ -2,9 +2,10 @@ import numpy
 from postprocess import Postprocessor
 from srom import SROM, SROMSurrogate
 from target import SampleRV
+from os import path
 
 #Define target random vector from samples
-samplesfile = "input_samples_MC.txt"
+samplesfile = path.join("mc_data", "input_samples_MC.txt")
 MCsamples = numpy.genfromtxt(samplesfile)
 target = SampleRV(MCsamples)
 
