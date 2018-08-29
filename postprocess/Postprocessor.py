@@ -116,10 +116,11 @@ class Postprocessor:
         legendFont = 22
     
         #Plot CDFs
-        fig,ax = plt.subplots(1)
+        fig, ax = plt.subplots(1)
         ax.plot(xgrid, sromcdf, 'r--', linewidth=4.5, label = 'SROM')
         ax.plot(xtarget, targetcdf, 'k-', linewidth=2.5, label = 'Target')
         ax.legend(loc='best', prop={'size': legendFont})
+        fig.canvas.set_window_title("CDF Comparison")
 
         #Labels/limits    
         y_limz = ax.get_ylim()
