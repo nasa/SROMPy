@@ -190,7 +190,7 @@ class SROM(object):
 
         return corr
 
-    def optimize(self, targetRV, weights=None, num_test_samples=50,
+    def optimize(self, target_random_variable, weights=None, num_test_samples=50,
                  error='SSE', max_moment=5, cdf_grid_pts=100,
                  tol=None, options=None, method=None, joint_opt=False,
                  output_interval=10):
@@ -201,9 +201,9 @@ class SROM(object):
         the samples and probabilities for the SROM object to the optimized
         values.
 
-        :param targetRV: the target random quantity (variable/vector) being
+        :param target_random_variable: the target random quantity (variable/vector) being
             modeled by the SROM.
-        :type targetRV: SROMPy target object (AnalyticRV, SampleRV, or random
+        :type target_random_variable: SROMPy target object (AnalyticRV, SampleRV, or random
             variable class)
         :param weights: relative weights specifying importance of matching
             CDFs, moments, and correlation of the target during optimization.
@@ -246,7 +246,7 @@ class SROM(object):
         '''
 
         #Use optimizer to form SROM objective func & gradient and minimize:
-        opt = Optimizer(targetRV, self, weights, error, max_moment,
+        opt = Optimizer(target_random_variable, self, weights, error, max_moment,
                         cdf_grid_pts)
 
         (samples, probs) = opt.get_optimal_params(num_test_samples, tol,
