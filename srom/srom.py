@@ -96,7 +96,7 @@ class SROM(object):
         | [p^(1), p^(2), ..., p^(m)]^T
 
         '''
-        return (self._samples, self._probs)
+        return self._samples, self._probs
 
     def compute_moments(self, max_order):
         '''
@@ -150,7 +150,7 @@ class SROM(object):
 
         #Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
-            raise ValueError("Must initalize SROM before computing moments")
+            raise ValueError("Must initalize SROM before computing CDF")
 
         if len(x_grid.shape) == 1:
             x_grid = x_grid.reshape((len(x_grid), 1))
