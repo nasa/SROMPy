@@ -100,7 +100,7 @@ class Optimizer:
             self._grad = None
 
     def get_optimal_params(self, num_test_samples=500, tol=None, options=None,
-                           method=None, output_interval=10):
+                           method=None, joint_opt=False, output_interval=10):
         '''
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -120,7 +120,6 @@ class Optimizer:
 
         '''
 
-        joint_opt = False #Not implemented yet
         bounds = self.get_param_bounds(joint_opt, self._sromsize)
         constraints = self.get_constraints(joint_opt, self._sromsize, self._dim)
         initial_guess = self.get_initial_guess(joint_opt, self._sromsize)
