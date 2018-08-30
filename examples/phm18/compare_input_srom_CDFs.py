@@ -2,9 +2,9 @@ import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRandomVector
-from srom import SROM
-from postprocess import Postprocessor
+from src.target import SampleRandomVector
+from src.srom import SROM
+from src.postprocess import Postprocessor
 
 '''
 Compare SROMs for inputs - produce figure 3 in the paper

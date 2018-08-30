@@ -1,7 +1,6 @@
 import numpy as np
 
-from model import Model
-from srom import SROM
+from src.srom import SROM
 
 '''
 Run computational model for each input SROM sample - step 2

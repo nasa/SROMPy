@@ -1,8 +1,8 @@
 import numpy as np
 
-from postprocess import Postprocessor
-from srom import SROM
-from target import SampleRandomVector
+from src.postprocess import Postprocessor
+from src.srom import SROM
+from src.target import SampleRandomVector
 
 '''
 Script to generate PW constant SROM approximation to EOL and compare it with the
