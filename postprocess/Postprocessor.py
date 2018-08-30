@@ -83,6 +83,72 @@ class Postprocessor:
             self.plot_cdfs(xgrids[:,i], sromCDFs[:,i], xgrids[:,i], 
                 targetCDFs[:,i],  variable, ylabel, plotname_, showFig, xlims)
 
+
+    def compare_pdfs(self, variable="x", plotdir='.', plotsuffix="pdf_compare", 
+                     showFig=True, saveFig=True, variablenames=None, 
+                     xlimits=None, ylimits=None, xticks=None,
+                     cdfylabel=False, xaxispadding=None,
+                     axisfontsize=30, labelfontsize=24,
+                     legendfontsize=25):
+        '''
+        Generates plots comparing the srom & target cdfs for each dimension
+        of the random vector.
+
+        inputs:
+            variable, str, name of variable being plotted
+            plotsuffix, str, name for saving plot (will append dim & .pdf)
+            plotdir, str, name of directory to store plots
+            showFig, bool, show or not show generated plot
+            saveFig, bool, save or not save generated plot
+            variablenames, list of strings, names of variable in each dimension
+                optional. Used for x axes labels if provided. 
+        '''
+
+        xgrids = self.generate_cdf_grids()
+        targetCDFs = self._target.compute_pdf(xgrids)
+
+        (samples, probs) = self._SROM.get_params()
+
+        #Start plot name string if it's being stored
+        if saveFig:
+            plotname = os.path.join(plotdir, plotsuffix)
+        else:
+            plotname = None
+
+        #Get variable names:
+        if variablenames is not None:
+            if len(variablenames) != self._SROM._dim:
+                raise ValueError("Wrong number of variable names provided")
+        else:
+            variablenames = []
+            for i in range(self._SROM._dim):
+                if self._SROM._dim==1:
+                    variablenames.append(variable)
+                else:
+                    variablenames.append(variable + "_" + str(i+1))
+
+        if len(samples.shape)==1:
+            samples = samples.reshape((1, len(samples)))
+
+        for i in range(self._SROM._dim):
+
+            variable = variablenames[i]
+            ylabel = "f(" + variable + ")"
+            #Remove latex math symbol from plot name
+            if plotname is not None:
+                plotname_ = plotname + "_" + variable + ".pdf"
+                plotname_ = plotname_.translate(None, "$")
+            else:
+                plotname_ = None
+            if xlimits is not None:
+                xlims = xlimits[i]
+            else:
+                xlims = None
+            print "samples = ", samples[:,i]
+            self.plot_pdfs(samples[:, i], probs.flatten(),  xgrids[:,i], 
+                targetCDFs[:,i],  variable, ylabel, plotname_, showFig, xlims)
+
+
     def compute_moment_error(self, max_moment=4):
         '''
         Performs a comparison of the moments between the SROM and target, 
@@ -138,6 +204,56 @@ class Postprocessor:
         #xticks = ['', r'$1.2 \times 10^6$','',r'$1.6 \times 10^6$','',
         #   r'$2.0 \times 10^6$','']
         #ax.set_xticklabels(xticks)       
+
+        plt.tight_layout()
+
+        if plotname is not None:
+            plt.savefig(plotname)
+        if showFig:
+            plt.show()    
+
+
+    def plot_pdfs(self, samples, probs, xtarget, targetpdf, xlabel="x", 
+                 ylabel="f(x)",  plotname=None, showFig=True, xlimits=None):
+        '''
+        Plotting routine for comparing a single srom/target cdf
+        '''
+        
+        #Text formatting for plot
+        title_font = {'fontname':'Arial', 'size':22, 'weight':'bold',
+                                    'verticalalignment':'bottom'}
+        axis_font = {'fontname':'Arial', 'size':26, 'weight':'normal'}
+        labelFont = 'Arial'
+        labelSize =  20      
+        legendFont = 22
+    
+        #Scale SROM probs such that max(SROM_prob) = max(target_prob)
+        scale = max(targetpdf) / max(probs)
+        probs *= scale
+
+        #Get width of bars in some intelligent way:
+        xlen = max(xtarget) - min(xtarget)
+        width = 0.1*xlen/len(samples)  #bars take up 10% of x axis? 
+
+        #Plot CDFs
+        fig,ax = plt.subplots(1)
+        ax.plot(xtarget, targetpdf, 'k-', linewidth=2.5, label = 'Target')
+        ax.bar(samples, probs, width, color='red', label='SROM')
+
+        ax.legend(loc='best', prop={'size': legendFont})
+
+        #Labels/limits    
+        y_limz = ax.get_ylim()
+        x_limz = ax.get_xlim()
+#        ax.axis([min(xtarget), max(xtarget), 0, 1.1])
+        if(xlimits is not None):
+            ax.axis([xlimits[0], xlimits[1], 0, 1.1])
+        ax.set_xlabel(xlabel, **axis_font)
+        ax.set_ylabel(ylabel, **axis_font)
+
+        for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+            label.set_fontname(labelFont)
+            label.set_fontsize(labelSize)
 
         plt.tight_layout()
 
