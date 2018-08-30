@@ -3,7 +3,7 @@ import numpy as np
 from model import SpringMass_1D
 from postprocess import Postprocessor
 from srom import SROM, FiniteDifference as FD, SROMSurrogate
-from target import SampleRV, BetaRandomVariable 
+from target import SampleRandomVector, BetaRandomVariable
 
 #Random variable for spring stiffness
 stiffness_rv = BetaRandomVariable(alpha=3., beta=2., shift=1., scale=2.5)
@@ -28,7 +28,7 @@ for i, stiff in enumerate(stiffness_samples):
     disp_samples[i] = model.get_max_disp(stiff)
 
 #Get Monte carlo solution as a sample-based random variable:
-mc_solution = SampleRV(disp_samples)
+mc_solution = SampleRandomVector(disp_samples)
 
 #-------------SROM-----------------------
 
@@ -73,7 +73,7 @@ gradient = FD.compute_gradient(srom_disps, perturbed_disps, [stepsize])
 surrogate_PWL = SROMSurrogate(input_srom, srom_disps, gradient)
 stiffness_samples = stiffness_rv.draw_random_sample(num_samples)
 output_samples = surrogate_PWL.sample(stiffness_samples)
-solution_PWL = SampleRV(output_samples)
+solution_PWL = SampleRandomVector(output_samples)
 
 pp_pwl = Postprocessor(solution_PWL, mc_solution)
 pp_pwl.compare_CDFs()

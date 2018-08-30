@@ -321,8 +321,8 @@ class Postprocessor:
         the target variable for each dimension of the vector.
 
         inputs:
-            RV1, SampleRV, target random variable object
-            RV2, SampleRV, target random variable object
+            RV1, SampleRandomVector, target random variable object
+            RV2, SampleRandomVector, target random variable object
             variable, str, name of variable being plotted
             plotsuffix, str, name for saving plot (will append dim & .pdf)
             plotdir, str, name of directory to store plots

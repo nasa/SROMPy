@@ -2,12 +2,12 @@ import numpy
 from os import path
 from postprocess import Postprocessor
 from srom import SROM, SROMSurrogate
-from target import SampleRV
+from target import SampleRandomVector
 
 #Define target random vector from samples
 monte_carlo_input_samples_filename = path.join("mc_data", "input_samples_MC.txt")
 monte_carlo_input_samples = numpy.genfromtxt(monte_carlo_input_samples_filename)
-target_vector = SampleRV(monte_carlo_input_samples)
+target_vector = SampleRandomVector(monte_carlo_input_samples)
 
 #Define SROM and determine optimal parameters
 srom_size = 20
@@ -38,7 +38,7 @@ srom_surrogate_model = SROMSurrogate(input_srom, srom_results)
 #Make random variable with MC end of life solution
 monte_carlo_results_filename = "eol_samples_MC.txt"
 monte_carlo_results_samples = numpy.genfromtxt(monte_carlo_results_filename)
-target_vector = SampleRV(monte_carlo_results_samples)
+target_vector = SampleRandomVector(monte_carlo_results_samples)
 
 #Compare final EOL solutions SROM vs MC:
 # (produces Figure 7)

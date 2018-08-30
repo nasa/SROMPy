@@ -67,7 +67,7 @@ class Optimizer:
 
         inputs:
             -target - initialized RandomVector object (either AnalyticRV or 
-                SampleRV) 
+                SampleRandomVector)
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. Default will give
