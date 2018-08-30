@@ -2,7 +2,7 @@ import numpy as np
 
 from postprocess import Postprocessor
 from srom import SROM
-from target import SampleRV
+from target import SampleRandomVector
 
 '''
 Script to generate PW constant SROM approximation to EOL and compare it with the
@@ -26,7 +26,7 @@ srom_probs = np.genfromtxt(srom_input_file)[:,-1]  #probs in last column
 #Make MC random variable & SROM to compare
 eol_srom = SROM(sromsize, dim=1)
 eol_srom.set_params(srom_eols, srom_probs)
-eol_mc = SampleRV(MC_eols)
+eol_mc = SampleRandomVector(MC_eols)
 
 pp = Postprocessor(eol_srom, eol_mc)
 pp.compare_CDFs(variablenames=["EOL"])

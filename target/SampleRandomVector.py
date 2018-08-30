@@ -8,7 +8,7 @@ from scipy import interpolate
 from target import RandomVector
 
 
-class SampleRV(RandomVector):
+class SampleRandomVector(RandomVector):
     '''
     Sample-based random vector. Defines a target random vector to match with
     an SROM based on a set of realizations of that random vector. Implements
@@ -22,14 +22,14 @@ class SampleRV(RandomVector):
 
     def __init__(self, samples, max_moment=10):
         '''
-        Initialize SampleRV with an array of samples of the random vector.
+        Initialize SampleRandomVector with an array of samples of the random vector.
         Must be an array of size (# samples x dim). Statistics of the
-        SampleRV are precomputed during initialization - max_moment is the
+        SampleRandomVector are precomputed during initialization - max_moment is the
         maximum moment order to compute & store for later use. If higher
         moments are anticipated, this can be increased (or visa versa)
         '''
 
-        #Check for 1D case (random variable):
+        #Check for 1D case (random variable)
         if len(samples.shape) == 1:
             samples = samples.reshape((len(samples), 1))
 
@@ -40,7 +40,7 @@ class SampleRV(RandomVector):
             raise ValueError(msg)
 
         #Parent class (RandomVector) constructor, sets self._dim
-        super(SampleRV, self).__init__(dim)
+        super(SampleRandomVector, self).__init__(dim)
 
         self._num_samples = num_samples
         self._samples = samples

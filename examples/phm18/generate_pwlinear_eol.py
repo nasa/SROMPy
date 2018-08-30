@@ -2,7 +2,7 @@ import numpy as np
 
 from postprocess import Postprocessor
 from srom import SROM, SROMSurrogate, FiniteDifference as FD
-from target import SampleRV
+from target import SampleRandomVector
 
 '''
 Script to generate PW linear SROM approximation to EOL and compare it with the
@@ -41,14 +41,14 @@ gradient = FD.compute_gradient(srom_eols, srom_fd_eols, stepsizes)
 #Create SROM surrogate, sample, and create random variable solution
 surrogate_PWL = SROMSurrogate(input_srom, srom_eols, gradient)
 srom_eol_samples = surrogate_PWL.sample(MC_inputs)
-solution_PWL = SampleRV(srom_eol_samples)
+solution_PWL = SampleRandomVector(srom_eol_samples)
 
 #Store EOL samples for plotting later:
 eolfile = "srom_data/srom_eol_samples_m" + str(sromsize) + ".txt"
 np.savetxt(eolfile, srom_eol_samples)
 
 #Make MC random variable solution
-eol_mc = SampleRV(MC_eols)
+eol_mc = SampleRandomVector(MC_eols)
 
 #COmpare solutions
 pp = Postprocessor(solution_PWL, eol_mc)
