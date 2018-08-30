@@ -2,7 +2,7 @@ import numpy as np
 
 from postprocess import Postprocessor
 from srom import SROM
-from target import SampleRV
+from target import SampleRandomVector
 
 '''
 Generate SROM to model input distribution (samples)
@@ -16,7 +16,7 @@ outfile = "srom_data_tmp/srom_m" + str(srom_size) + ".txt"
 
 #Define target random variable from samples
 MCsamples = np.genfromtxt(samplesfile)
-target = SampleRV(MCsamples)
+target = SampleRandomVector(MCsamples)
 
 #Define SROM, determine optimal parameters, store parameters
 srom = SROM(srom_size, dim)

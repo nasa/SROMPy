@@ -182,10 +182,11 @@ class Postprocessor:
         legendFont = 22
     
         #Plot CDFs
-        fig,ax = plt.subplots(1)
+        fig, ax = plt.subplots(1)
         ax.plot(xgrid, sromcdf, 'r--', linewidth=4.5, label = 'SROM')
         ax.plot(xtarget, targetcdf, 'k-', linewidth=2.5, label = 'Target')
         ax.legend(loc='best', prop={'size': legendFont})
+        fig.canvas.set_window_title("CDF Comparison")
 
         #Labels/limits    
         y_limz = ax.get_ylim()
@@ -436,8 +437,8 @@ class Postprocessor:
         the target variable for each dimension of the vector.
 
         inputs:
-            RV1, SampleRV, target random variable object
-            RV2, SampleRV, target random variable object
+            RV1, SampleRandomVector, target random variable object
+            RV2, SampleRandomVector, target random variable object
             variable, str, name of variable being plotted
             plotsuffix, str, name for saving plot (will append dim & .pdf)
             plotdir, str, name of directory to store plots

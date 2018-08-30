@@ -96,7 +96,7 @@ class SROM(object):
         | [p^(1), p^(2), ..., p^(m)]^T
 
         '''
-        return (self._samples, self._probs)
+        return self._samples, self._probs
 
     def compute_moments(self, max_order):
         '''
@@ -150,7 +150,7 @@ class SROM(object):
 
         #Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
-            raise ValueError("Must initalize SROM before computing moments")
+            raise ValueError("Must initalize SROM before computing CDF")
 
         if len(x_grid.shape) == 1:
             x_grid = x_grid.reshape((len(x_grid), 1))
@@ -190,7 +190,7 @@ class SROM(object):
 
         return corr
 
-    def optimize(self, targetRV, weights=None, num_test_samples=50,
+    def optimize(self, target_random_variable, weights=None, num_test_samples=50,
                  error='SSE', max_moment=5, cdf_grid_pts=100,
                  tol=None, options=None, method=None, joint_opt=False,
                  output_interval=10):
@@ -201,9 +201,9 @@ class SROM(object):
         the samples and probabilities for the SROM object to the optimized
         values.
 
-        :param targetRV: the target random quantity (variable/vector) being
+        :param target_random_variable: the target random quantity (variable/vector) being
             modeled by the SROM.
-        :type targetRV: SROMPy target object (AnalyticRV, SampleRV, or random
+        :type target_random_variable: SROMPy target object (AnalyticRV, SampleRandomVector, or random
             variable class)
         :param weights: relative weights specifying importance of matching
             CDFs, moments, and correlation of the target during optimization.
@@ -246,7 +246,7 @@ class SROM(object):
         '''
 
         #Use optimizer to form SROM objective func & gradient and minimize:
-        opt = Optimizer(targetRV, self, weights, error, max_moment,
+        opt = Optimizer(target_random_variable, self, weights, error, max_moment,
                         cdf_grid_pts)
 
         (samples, probs) = opt.get_optimal_params(num_test_samples, tol,

@@ -3,7 +3,7 @@ import numpy as np
 #from model import Model (assume this exists)
 from postprocess import Postprocessor
 from srom import SROM, SROMSurrogate
-from target import SampleRV
+from target import SampleRandomVector
 
 '''
 Generate SROM to model input distribution (samples)
@@ -17,7 +17,7 @@ mc_eol_file = "mc_data/eol_samples_MC.txt"
 
 #Define target random variable from samples
 MCsamples = np.genfromtxt(samplesfile)
-target = SampleRV(MCsamples)
+target = SampleRandomVector(MCsamples)
 
 #Define SROM, determine optimal parameters, store parameters
 input_srom = SROM(srom_size, dim)
@@ -38,7 +38,7 @@ eol_srom = SROMSurrogate(input_srom, srom_eols)
 
 #Make random variable with MC eol solution
 MC_eols = np.genfromtxt(mc_eol_file)
-eol_mc = SampleRV(MC_eols)
+eol_mc = SampleRandomVector(MC_eols)
 
 #Compare final EOL solutions SROM vs MC:
 pp = Postprocessor(eol_srom, eol_mc)

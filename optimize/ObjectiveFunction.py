@@ -23,7 +23,7 @@ class ObjectiveFunction:
         inputs:
             -SROM - initialized SROM object
             -targetRV - initialized RandomVector object (either AnalyticRV or 
-                SampleRV) with same dimension as SROM
+                SampleRandomVector) with same dimension as SROM
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. Default is equal 

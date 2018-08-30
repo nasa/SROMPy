@@ -6,7 +6,7 @@ from model import SpringMass_1D, SpringMass_2D
 from postprocess import Postprocessor
 from srom import SROM
 from target import BetaRandomVariable as beta
-from target import SampleRV 
+from target import SampleRandomVector
 
 #Specify spring-mass system:
 state0 = [0., 0.]                   #initial conditions
@@ -38,7 +38,7 @@ for i in range(num_samples):
     disp_samples[i] = model.get_max_disp(k_samples[i], m_samples[i])
 
 #Get Monte carlo solution as a sample-based random variable:
-mc_solution = SampleRV(disp_samples)
+mc_solution = SampleRandomVector(disp_samples)
 
 #-------------SROM-----------------------
 
@@ -48,7 +48,7 @@ dim = 2
 
 #Assume we only have access to samples in this example and want SROM from them:
 km_samples = np.array([k_samples, m_samples]).T
-km_random_vector = SampleRV(km_samples)
+km_random_vector = SampleRandomVector(km_samples)
 
 srom = SROM(sromsize, dim)
 srom.optimize(km_random_vector)

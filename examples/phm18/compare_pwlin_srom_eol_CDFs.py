@@ -2,7 +2,7 @@ import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRV
+from target import SampleRandomVector
 from srom import SROM, SROMSurrogate
 from postprocess import Postprocessor
 
@@ -39,19 +39,19 @@ for m in sromsizes:
 
 #Load / initialize target random variable from samples:
 samples = np.genfromtxt(targetsamples)
-target = SampleRV(samples)
+target = SampleRandomVector(samples)
 
 #Build up sromsize-to-SROM object map for plotting routine
 sroms = OrderedDict()
 
 for sromsize in sromsizes:
 
-    #Get EOL SROM Surrogate samples to make SampleRV representation of CDF
+    #Get EOL SROM Surrogate samples to make SampleRandomVector representation of CDF
     eolsamplefile = "srom_eol_samples_m" + str(sromsize) + ".txt"
     eolsamplefile = os.path.join(srom_dir, eolsamplefile)
     eolsamples = np.genfromtxt(eolsamplefile)
 
-    sroms[sromsize] = SampleRV(eolsamples)
+    sroms[sromsize] = SampleRandomVector(eolsamples)
  
 Postprocessor.compare_srom_CDFs(sroms, target, plotdir="plots",
                                 plotsuffix=plot_suffix, variablenames=varz,                                     xlimits=xlimits, ylimits=ylimits, xticks=xticks,

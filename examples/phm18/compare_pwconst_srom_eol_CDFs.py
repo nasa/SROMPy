@@ -2,7 +2,7 @@ import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRV
+from target import SampleRandomVector
 from srom import SROM, SROMSurrogate
 from postprocess import Postprocessor
 
@@ -37,7 +37,7 @@ for m in sromsizes:
 
 #Load / initialize target random variable from samples:
 samples = np.genfromtxt(targetsamples)
-target = SampleRV(samples)
+target = SampleRandomVector(samples)
 
 #Set x limits for each variable based on target:
 #xlimits = [[np.min(samples), np.max(samples)]]

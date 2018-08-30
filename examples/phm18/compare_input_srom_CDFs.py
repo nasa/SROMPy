@@ -2,7 +2,7 @@ import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRV
+from target import SampleRandomVector
 from srom import SROM
 from postprocess import Postprocessor
 
@@ -32,7 +32,7 @@ xticks = [None, y0ticks, None]
 
 #Load / initialize target random variable from samples:
 samples = np.genfromtxt(targetsamples)
-target = SampleRV(samples)
+target = SampleRandomVector(samples)
 
 #Set x limits for each variable based on target:
 xlimits = []
