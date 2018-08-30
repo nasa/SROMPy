@@ -2,7 +2,7 @@ import abc
 
 '''
 Abstract class defining the target random vector being matched by an SROM.
-Inherited by AnalyticRV and SampleRandomVector to define analytically specified and 
+Inherited by AnalyticRandomVector and SampleRandomVector to define analytically specified and 
 sample-based random vectors, respectively.
 '''
 

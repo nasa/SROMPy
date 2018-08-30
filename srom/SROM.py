@@ -203,7 +203,7 @@ class SROM(object):
 
         :param target_random_variable: the target random quantity (variable/vector) being
             modeled by the SROM.
-        :type target_random_variable: SROMPy target object (AnalyticRV, SampleRandomVector, or random
+        :type target_random_variable: SROMPy target object (AnalyticRandomVector, SampleRandomVector, or random
             variable class)
         :param weights: relative weights specifying importance of matching
             CDFs, moments, and correlation of the target during optimization.

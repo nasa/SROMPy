@@ -4,7 +4,7 @@ Define SROM-based output surrogate class
 
 import numpy as np
 
-from srom import SROM
+from SROM import SROM
 
 class SROMSurrogate:
     """

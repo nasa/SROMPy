@@ -13,7 +13,7 @@ from scipy import integrate, interpolate
 from target import RandomVector
 
 #TODO - why do i need to do RV.RV??? Treating RV as the module not class
-class AnalyticRV(RandomVector.RandomVector):
+class AnalyticRandomVector(RandomVector.RandomVector):
     '''
     Class for implementing a translation random vector for non-gaussian random
     vectors whose components are governed by analytic probability distributions
@@ -62,7 +62,7 @@ class AnalyticRV(RandomVector.RandomVector):
             raise ValueError("Dimension mismatch btwn corr mat & random vars")
 
         #Parent class (RandomVector) constructor, sets self._dim
-        super(AnalyticRV, self).__init__(len(random_variables))
+        super(AnalyticRandomVector, self).__init__(len(random_variables))
 
         #Get min/max values for each component
         self._components = copy.deepcopy(random_variables)

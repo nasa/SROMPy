@@ -91,7 +91,7 @@ class Postprocessor:
                      axisfontsize=30, labelfontsize=24,
                      legendfontsize=25):
         '''
-        Generates plots comparing the srom & target cdfs for each dimension
+        Generates plots comparing the srom & target pdfs for each dimension
         of the random vector.
 
         inputs:
@@ -217,7 +217,7 @@ class Postprocessor:
     def plot_pdfs(self, samples, probs, xtarget, targetpdf, xlabel="x", 
                  ylabel="f(x)",  plotname=None, showFig=True, xlimits=None):
         '''
-        Plotting routine for comparing a single srom/target cdf
+        Plotting routine for comparing a single srom/target pdf
         '''
         
         #Text formatting for plot
@@ -236,12 +236,13 @@ class Postprocessor:
         xlen = max(xtarget) - min(xtarget)
         width = 0.1*xlen/len(samples)  #bars take up 10% of x axis? 
 
-        #Plot CDFs
-        fig,ax = plt.subplots(1)
+        #Plot PDFs
+        fig, ax = plt.subplots(1)
         ax.plot(xtarget, targetpdf, 'k-', linewidth=2.5, label = 'Target')
         ax.bar(samples, probs, width, color='red', label='SROM')
 
         ax.legend(loc='best', prop={'size': legendFont})
+        fig.canvas.set_window_title("PDF Comparison")
 
         #Labels/limits    
         y_limz = ax.get_ylim()

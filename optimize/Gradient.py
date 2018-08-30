@@ -17,7 +17,7 @@ class Gradient:
 
         inputs:
             -SROM - initialized SROM object
-            -targetRV - initialized RandomVector object (either AnalyticRV or 
+            -targetRV - initialized RandomVector object (either AnalyticRandomVector or
                 SampleRandomVector) with same dimension as SROM
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,

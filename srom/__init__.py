@@ -1,4 +1,4 @@
 
-from srom import SROM
-from srom_surrogate import SROMSurrogate
-from finite_difference import FiniteDifference
+from SROM import SROM
+from SROMSurrogate import SROMSurrogate
+from FiniteDifference import FiniteDifference
