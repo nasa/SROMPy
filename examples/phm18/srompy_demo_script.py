@@ -1,8 +1,8 @@
 import numpy
 from os import path
-from postprocess import Postprocessor
-from srom import SROM, SROMSurrogate
-from target import SampleRandomVector
+from src.postprocess import Postprocessor
+from src.srom import SROM, SROMSurrogate
+from src.target import SampleRandomVector
 
 #Define target random vector from samples
 monte_carlo_input_samples_filename = path.join("mc_data", "input_samples_MC.txt")

@@ -1,9 +1,9 @@
 import numpy as np
 
 from model import SpringMass_1D
-from postprocess import Postprocessor
-from srom import SROM, FiniteDifference as FD, SROMSurrogate
-from target import SampleRandomVector, BetaRandomVariable
+from src.postprocess import Postprocessor
+from src.srom import SROM, FiniteDifference as FD, SROMSurrogate
+from src.target import SampleRandomVector, BetaRandomVariable
 
 #Random variable for spring stiffness
 stiffness_rv = BetaRandomVariable(alpha=3., beta=2., shift=1., scale=2.5)
