@@ -6,7 +6,7 @@ import copy
 import os
 import numpy as np
 
-from optimize import Optimizer
+from src.optimize import Optimizer
 
 class SROM(object):
     """

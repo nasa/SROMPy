@@ -5,7 +5,7 @@ Class for defining a sample-based random vector with empirical estimators
 import numpy as np
 from scipy import interpolate
 
-from target import RandomVector
+from src.target import RandomVector
 
 
 class SampleRandomVector(RandomVector):

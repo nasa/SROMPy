@@ -1,8 +1,8 @@
 import numpy as np
 
-from postprocess import Postprocessor
-from srom import SROM
-from target import SampleRandomVector
+from src.postprocess import Postprocessor
+from src.srom import SROM
+from src.target import SampleRandomVector
 
 '''
 Generate SROM to model input distribution (samples)

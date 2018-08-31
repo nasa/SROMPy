@@ -4,13 +4,12 @@ vectors whose components are governed by analytic probability distributions.
 '''
 
 import copy
-import time
 import numpy as np
 
 from scipy.stats import multivariate_normal, norm
 from scipy import integrate, interpolate
 
-from target import RandomVector
+from src.target import RandomVector
 
 #TODO - why do i need to do RV.RV??? Treating RV as the module not class
 class AnalyticRandomVector(RandomVector.RandomVector):

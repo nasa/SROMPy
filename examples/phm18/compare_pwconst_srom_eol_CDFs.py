@@ -2,9 +2,9 @@ import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRandomVector
-from srom import SROM, SROMSurrogate
-from postprocess import Postprocessor
+from src.target import SampleRandomVector
+from src.srom import SROM, SROMSurrogate
+from src.postprocess import Postprocessor
 
 '''
 Compare piecewise constant SROM approximations to the EOL for m=5,10,20

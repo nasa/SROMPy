@@ -1,12 +1,11 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
 
-from model import SpringMass_1D, SpringMass_2D
-from postprocess import Postprocessor
-from srom import SROM
-from target import BetaRandomVariable as beta
-from target import SampleRandomVector
+from model import SpringMass_2D
+from src.postprocess import Postprocessor
+from src.srom import SROM
+from src.target import BetaRandomVariable as beta
+from src.target import SampleRandomVector
 
 #Specify spring-mass system:
 state0 = [0., 0.]                   #initial conditions
