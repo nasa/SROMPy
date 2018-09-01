@@ -1,7 +1,7 @@
 SROMPy - **S**tochastic **R**educed **O**rder **M**odels with **Py**thon 
 ==========================================================================
 
-Python module for generating Stochastic Reduced Order Models (SROMs) and applying them for uncertainty quantification problems. See documentation in docs/ directory for details. 
+Python module for generating Stochastic Reduced Order Models (SROMs) and applying them for uncertainty quantification problems. See documentation in `docs/` directory for details. 
 
 Example usage:
 
@@ -31,7 +31,7 @@ If you use SROMPy for your research, please cite the technical report:
 
 Warner, J. E. (2018). Stochastic reduced order models with Python (SROMPy). NASA/TM-2018-219824. 
 
-The report can be found in the docs/references directory. Thanks!
+The report can be found in the `docs/references` directory. Thanks!
 
 -------------------------------------------------------------------------------
 
