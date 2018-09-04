@@ -5,8 +5,10 @@ Class for defining a uniform random variable
 import numpy as np
 from scipy.stats import uniform as scipyuniform
 
+from src.target.RandomVariable import RandomVariable
 
-class UniformRandomVariable(object):
+
+class UniformRandomVariable(RandomVariable):
     '''
     Class for defining a uniform random variable
     '''
