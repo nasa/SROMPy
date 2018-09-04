@@ -29,7 +29,7 @@ class SROM(object):
         m = SROM size, d = dimension;
         """
 
-        if size <=0:
+        if size <= 0:
             raise(ValueError("SROM size must be greater than zero."))
 
         if dim <= 0 or dim > 2:
@@ -177,7 +177,6 @@ class SROM(object):
                 CDF_vals[indz, i] += self._probs[k]
 
         return CDF_vals
-
 
     def compute_corr_mat(self):
         '''
