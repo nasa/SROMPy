@@ -7,6 +7,7 @@ import os
 import numpy as np
 
 from src.optimize import Optimizer
+from src.target import RandomVector
 
 class SROM(object):
     """
@@ -27,6 +28,12 @@ class SROM(object):
         Initialize SROM w/ specified size for random vector of dimension dim
         m = SROM size, d = dimension;
         """
+
+        if size <=0:
+            raise(ValueError("SROM size must be greater than zero."))
+
+        if dim <= 0 or dim > 2:
+            raise(ValueError("SROM dimensions must be one or two."))
 
         self._size = int(size)
         self._dim = int(dim)
@@ -244,6 +251,9 @@ class SROM(object):
         specify to do the optimization over samples and probabilities 
         simultaenously.
         '''
+
+        if not isinstance(target_random_variable, RandomVector):
+            raise TypeError("target_random_variable must inherit from RandomVector.")
 
         #Use optimizer to form SROM objective func & gradient and minimize:
         opt = Optimizer(target_random_variable, self, weights, error, max_moment,

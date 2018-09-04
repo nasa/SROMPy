@@ -7,21 +7,18 @@ from src.target.SampleRandomVector import SampleRandomVector
 
 class TestGradient():
 
-    def test_init_exception_if_obj_weights_param_too_small(self):
+    def test_invalid_init_parameter_values_rejected(self):
 
         sample_random_vector = SampleRandomVector(np.zeros(10))
+
+        # Ensure no exception using default parameters.
+        Gradient(SROM=None, targetRV=sample_random_vector)
+
+        # Ensure exception if obj_weights parameter is too small.
         with pytest.raises(ValueError):
             Gradient(SROM=None, targetRV=sample_random_vector, obj_weights=np.ones((2,)))
 
-    def test_init_exception_if_error_param_invalid(self):
-
-        sample_random_vector = SampleRandomVector(np.zeros(10))
+        # Ensure exception if specified error parameter is invalid.
         with pytest.raises(ValueError):
             Gradient(SROM=None, targetRV=sample_random_vector, error='test')
-
-    def test_failure(self):
-
-        assert 1 == 2
-
-
 

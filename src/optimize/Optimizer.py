@@ -9,6 +9,8 @@ import time
 #from srom import SROM
 from src.optimize import ObjectiveFunction
 from src.optimize import Gradient
+from src.target import RandomVector
+from src.target import RandomVariable
 
 
 #------------Helper funcs for scipy optimize-----------------------------
@@ -79,9 +81,15 @@ class Optimizer:
 
         '''
 
-        #TODO Do some error checking on target
+        # Test target
+        if target is None:
+            raise ValueError("Optimizer target cannot be None.")
+
+        if not (isinstance(target, RandomVector) or isinstance(target, RandomVariable)):
+            raise TypeError("Optimizer target must inherit from RandomVector.")
+
         self._target = target
-        
+
         #Get srom size & dimension
         self._sromsize = srom._size
         self._dim = srom._dim
@@ -167,7 +175,7 @@ class Optimizer:
         print "\t\tMoment: ", momenterror
         print "\t\tCorrelation: ", correlationerror
 
-        return (opt_samples, opt_probs)
+        return opt_samples, opt_probs
 
     #-----Helper funcs----
     
