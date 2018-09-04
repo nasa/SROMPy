@@ -6,7 +6,6 @@ Inherited by AnalyticRandomVector and SampleRandomVector to define analytically 
 sample-based random vectors, respectively.
 '''
 
-#Any overlapping functions/variables that make this necessary?
 
 class RandomVector(object):
 

@@ -5,12 +5,13 @@ Class for implementing a beta random variable
 import numpy as np
 from scipy.stats import beta as scipybeta
 
+from src.target.RandomVariable import RandomVariable
 
-class BetaRandomVariable(object):
+
+class BetaRandomVariable(RandomVariable):
     '''
     Class for implementing a beta random variable
     '''
-
 
     def __init__(self, alpha, beta, shift=0, scale=1, max_moment=10):
         '''

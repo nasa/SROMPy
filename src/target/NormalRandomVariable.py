@@ -5,8 +5,10 @@ Class for defining a normal random variable
 import numpy as np
 from scipy.stats import norm as scipynormal
 
+from src.target.RandomVariable import RandomVariable
 
-class NormalRandomVariable(object):
+
+class NormalRandomVariable(RandomVariable):
     '''
     Class for defining a normal random variable
     '''
