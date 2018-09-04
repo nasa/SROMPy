@@ -5,8 +5,10 @@ Class for implementing a gamma random variable
 import numpy as np
 from scipy.stats import gamma as scipygamma
 
+from src.target.RandomVariable import RandomVariable
 
-class GammaRandomVariable(object):
+
+class GammaRandomVariable(RandomVariable):
     '''
     Class for implementing a gamma random variable
     '''
