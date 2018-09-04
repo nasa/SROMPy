@@ -14,7 +14,10 @@ from src.target import RandomVariable
 
 
 #------------Helper funcs for scipy optimize-----------------------------
-def scipy_obj_fun(x, objfun, grad, samples):
+def scipy_obj_fun(x,
+                  objfun,
+                  grad,
+                  samples):
     '''
     Function to pass to scipy minimize defining objective. Wraps the 
     ObjectiveFunction.evaluate() function that defines SROM error. Need to 
@@ -34,7 +37,10 @@ def scipy_obj_fun(x, objfun, grad, samples):
 
     return error
 
-def scipy_grad(x, objfun, grad, samples):
+def scipy_grad(x,
+               objfun,
+               grad,
+               samples):
     '''
     Function to pass to scipy minimize defining objective. Wraps the 
     ObjectiveFunction.evaluate() function that defines SROM error. Need to 
@@ -63,8 +69,13 @@ class Optimizer:
     SROM & target random vector
     '''
 
-    def __init__(self, target, srom, obj_weights=None, error='SSE',
-                 max_moment=5, cdf_grid_pts=100):
+    def __init__(self,
+                 target,
+                 srom,
+                 obj_weights=None,
+                 error='SSE',
+                 max_moment=5,
+                 cdf_grid_pts=100):
         '''
 
         inputs:
@@ -107,8 +118,14 @@ class Optimizer:
         else:
             self._grad = None
 
-    def get_optimal_params(self, num_test_samples=500, tol=None, options=None,
-                           method=None, joint_opt=False, output_interval=10):
+    def get_optimal_params(self,
+                           num_test_samples=500,
+                           tol=None,
+                           options=None,
+                           method=None,
+                           joint_opt=False,
+                           output_interval=10,
+                           verbose=True):
         '''
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -137,7 +154,9 @@ class Optimizer:
         opt_samples = None        
         opt_fun = 1e6
 
-        print "SROM Sequential Optimizer:"
+        if verbose:
+            print "SROM Sequential Optimizer:"
+
         t0 = time.time()
 
         for i in xrange(num_test_samples):
@@ -160,8 +179,8 @@ class Optimizer:
                 opt_probs = opt_res['x']
                 opt_fun = opt_res['fun']
             
-            if i==0 or (i+1)%output_interval==0:
-                print "\tIteration",i+1, "Objective Function:", opt_res['fun'],
+            if verbose and (i == 0 or (i + 1) % output_interval == 0):
+                print "\tIteration", i + 1, "Objective Function:", opt_res['fun'],
                 print "Optimal:", opt_fun
 
         #Display final errors in statistics:
@@ -169,11 +188,12 @@ class Optimizer:
         cdferror = self._srom_obj.get_cdf_error(opt_samples, opt_probs)
         correlationerror = self._srom_obj.get_corr_error(opt_samples, opt_probs)
 
-        print "\tOptimization time: ", time.time()-t0, "seconds"
-        print "\tFinal SROM errors:"
-        print "\t\tCDF: ", cdferror
-        print "\t\tMoment: ", momenterror
-        print "\t\tCorrelation: ", correlationerror
+        if verbose:
+            print "\tOptimization time: ", time.time()-t0, "seconds"
+            print "\tFinal SROM errors:"
+            print "\t\tCDF: ", cdferror
+            print "\t\tMoment: ", momenterror
+            print "\t\tCorrelation: ", correlationerror
 
         return opt_samples, opt_probs
 

@@ -42,9 +42,7 @@ def test_get_optimal_params_expected_output(sample_random_vector, valid_srom):
 
     optimizer = Optimizer(sample_random_vector, valid_srom)
 
-    samples, probs = optimizer.get_optimal_params(num_test_samples=10)
-    print samples
-    print probs
+    samples, probs = optimizer.get_optimal_params(num_test_samples=10, verbose=False)
 
     expected_samples = np.array([[3.96767474e-01],
                                  [3.02332573e-01],

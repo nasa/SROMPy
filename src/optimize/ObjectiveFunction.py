@@ -11,8 +11,13 @@ class ObjectiveFunction:
     essentially wraps this class's evaluate function
     '''
 
-    def __init__(self, SROM, targetRV, obj_weights=None, error='mean',
-                 max_moment=5, cdf_grid_pts=100):
+    def __init__(self,
+                 SROM,
+                 targetRV,
+                 obj_weights=None,
+                 error='mean',
+                 max_moment=5,
+                 cdf_grid_pts=100):
         '''
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
