@@ -29,7 +29,7 @@ class SROM(object):
         m = SROM size, d = dimension;
         """
 
-        if size <=0:
+        if size <= 0:
             raise(ValueError("SROM size must be greater than zero."))
 
         if dim <= 0 or dim > 2:
@@ -178,7 +178,6 @@ class SROM(object):
 
         return CDF_vals
 
-
     def compute_corr_mat(self):
         '''
         Returns the SROM correlation matrix as (dim x dim) numpy array
@@ -197,10 +196,18 @@ class SROM(object):
 
         return corr
 
-    def optimize(self, target_random_variable, weights=None, num_test_samples=50,
-                 error='SSE', max_moment=5, cdf_grid_pts=100,
-                 tol=None, options=None, method=None, joint_opt=False,
-                 output_interval=10):
+    def optimize(self, target_random_variable,
+                 weights=None,
+                 num_test_samples=50,
+                 error='SSE',
+                 max_moment=5,
+                 cdf_grid_pts=100,
+                 tol=None,
+                 options=None,
+                 method=None,
+                 joint_opt=False,
+                 output_interval=10,
+                 verbose=True):
         '''
         Optimize for the SROM samples & probabilities to best match the
         target random vector statistics. The main functionality provided
@@ -259,9 +266,13 @@ class SROM(object):
         opt = Optimizer(target_random_variable, self, weights, error, max_moment,
                         cdf_grid_pts)
 
-        (samples, probs) = opt.get_optimal_params(num_test_samples, tol,
-                                                  options, method, joint_opt,
-                                                  output_interval)
+        (samples, probs) = opt.get_optimal_params(num_test_samples,
+                                                  tol,
+                                                  options,
+                                                  method,
+                                                  joint_opt,
+                                                  output_interval,
+                                                  verbose)
 
         self.set_params(samples, probs)
 
