@@ -8,6 +8,7 @@ import numpy as np
 
 from src.optimize import Optimizer
 from src.target import RandomVector
+from src.target import RandomVariable
 
 class SROM(object):
     """
@@ -40,6 +41,12 @@ class SROM(object):
 
         self._samples = None
         self._probs = None
+
+    def get_dim(self):
+        return self._dim
+
+    def get_size(self):
+        return self._size
 
     def set_params(self, samples, probs):
         """
@@ -259,11 +266,15 @@ class SROM(object):
         simultaenously.
         '''
 
-        if not isinstance(target_random_variable, RandomVector):
-            raise TypeError("target_random_variable must inherit from RandomVector.")
+        if not (isinstance(target_random_variable, RandomVector) or isinstance(target_random_variable, RandomVariable)):
+            raise TypeError("target_random_variable must inherit from RandomVector or RandomVariable.")
 
         #Use optimizer to form SROM objective func & gradient and minimize:
-        opt = Optimizer(target_random_variable, self, weights, error, max_moment,
+        opt = Optimizer(target_random_variable,
+                        self,
+                        weights,
+                        error,
+                        max_moment,
                         cdf_grid_pts)
 
         (samples, probs) = opt.get_optimal_params(num_test_samples,

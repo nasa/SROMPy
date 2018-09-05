@@ -35,6 +35,9 @@ class UniformRandomVariable(RandomVariable):
         self.generate_moments(max_moment)
         self._max_moment = max_moment
 
+    def get_dim(self):
+        return self._dim
+
     def get_variance(self):
         '''
         Returns variance of uniform random variable
