@@ -41,6 +41,12 @@ class SROM(object):
         self._samples = None
         self._probs = None
 
+    def get_dim(self):
+        return self._dim
+
+    def get_size(self):
+        return self._size
+
     def set_params(self, samples, probs):
         """
         Set defining SROM parameters - samples & corresponding probabilities.
@@ -263,7 +269,11 @@ class SROM(object):
             raise TypeError("target_random_variable must inherit from RandomVector.")
 
         #Use optimizer to form SROM objective func & gradient and minimize:
-        opt = Optimizer(target_random_variable, self, weights, error, max_moment,
+        opt = Optimizer(target_random_variable,
+                        self,
+                        weights,
+                        error,
+                        max_moment,
                         cdf_grid_pts)
 
         (samples, probs) = opt.get_optimal_params(num_test_samples,

@@ -28,3 +28,7 @@ class RandomVector(object):
     @abc.abstractmethod
     def draw_random_sample(self, sample_size):
         return
+
+    @abc.abstractmethod
+    def get_dim(self):
+        return self._dim

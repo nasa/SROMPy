@@ -6,11 +6,8 @@ import numpy as np
 import scipy.optimize as opt
 import time
 
-#from srom import SROM
 from src.optimize import ObjectiveFunction
 from src.optimize import Gradient
-from src.target import RandomVector
-from src.target import RandomVariable
 
 
 #------------Helper funcs for scipy optimize-----------------------------
@@ -92,27 +89,28 @@ class Optimizer:
 
         '''
 
-        # Test target
-        if target is None:
-            raise ValueError("Optimizer target cannot be None.")
-
-        if not (isinstance(target, RandomVector) or isinstance(target, RandomVariable)):
-            raise TypeError("Optimizer target must inherit from RandomVector.")
-
         self._target = target
 
-        #Get srom size & dimension
-        self._sromsize = srom._size
-        self._dim = srom._dim
+        # Initialize objective function defining SROM vs target error.
+        self._srom_obj = ObjectiveFunction(srom,
+                                           target,
+                                           obj_weights,
+                                           error,
+                                           max_moment,
+                                           cdf_grid_pts)
 
-        #Initialize objective function defining SROM vs target error
-        self._srom_obj = ObjectiveFunction(srom, target, obj_weights, error,
-                                           max_moment, cdf_grid_pts)
+        self._srom_grad = Gradient(srom,
+                                   target,
+                                   obj_weights,
+                                   error,
+                                   max_moment,
+                                   cdf_grid_pts)
 
-        self._srom_grad = Gradient(srom, target, obj_weights, error,
-                                           max_moment, cdf_grid_pts)
+        # Get srom size & dimension.
+        self._srom_size = srom.get_size()
+        self._dim = srom.get_dim()
 
-        #Gradient only available for SSE error obj function
+        # Gradient only available for SSE error obj function.
         if error.upper() == "SSE":
             self._grad = scipy_grad
         else:
@@ -145,11 +143,17 @@ class Optimizer:
 
         '''
 
-        bounds = self.get_param_bounds(joint_opt, self._sromsize)
-        constraints = self.get_constraints(joint_opt, self._sromsize, self._dim)
-        initial_guess = self.get_initial_guess(joint_opt, self._sromsize)
+        if not isinstance(num_test_samples, int):
+            raise TypeError("Number number of test samples must be a positive integer.")
 
-        #Track optimal func value with corresonding samples/probs
+        if num_test_samples <= 0:
+            raise ValueError("Insufficient number of test samples specified.")
+
+        bounds = self.get_param_bounds(joint_opt, self._srom_size)
+        constraints = self.get_constraints(joint_opt, self._srom_size, self._dim)
+        initial_guess = self.get_initial_guess(joint_opt, self._srom_size)
+
+        # Track optimal func value with corresponding samples/probs.
         opt_probs = None
         opt_samples = None        
         opt_fun = 1e6
@@ -161,10 +165,10 @@ class Optimizer:
 
         for i in xrange(num_test_samples):
     
-            #Randomly draw new 
-            srom_samples =  self._target.draw_random_sample(self._sromsize)
+            # Randomly draw new.
+            srom_samples =  self._target.draw_random_sample(self._srom_size)
 
-            #Optimize using scipy
+            # Optimize using scipy.
             opt_res = opt.minimize(scipy_obj_fun, initial_guess,
                                    args=(self._srom_obj, self._srom_grad,
                                             srom_samples),
@@ -173,7 +177,7 @@ class Optimizer:
                                    method=method,
                                    bounds=bounds)
 
-            #If error is lower than lowest so far, keep track of results
+            # If error is lower than lowest so far, keep track of results.
             if opt_res['fun'] < opt_fun:
                 opt_samples = srom_samples
                 opt_probs = opt_res['x']
@@ -183,7 +187,7 @@ class Optimizer:
                 print "\tIteration", i + 1, "Objective Function:", opt_res['fun'],
                 print "Optimal:", opt_fun
 
-        #Display final errors in statistics:
+        # Display final errors in statistics:
         momenterror = self._srom_obj.get_moment_error(opt_samples, opt_probs)
         cdferror = self._srom_obj.get_cdf_error(opt_samples, opt_probs)
         correlationerror = self._srom_obj.get_corr_error(opt_samples, opt_probs)
@@ -219,13 +223,14 @@ class Optimizer:
         probabilities summing to 1 for joint or sequential optimize case
         '''
 
-        #A little funky, need to return function as constraint. 
+        # A little funky, need to return function as constraint.
         #TODO - use lambda function instead?
 
-        #Sequential case - unknown vector x is probabilities directly
+        # Sequential case - unknown vector x is probabilities directly
         def seq_constraint(x):
             return 1.0 - np.sum(x)
-        #Joint case - probabilities at end of unknown vector x
+
+        # Joint case - probabilities at end of unknown vector x
         def joint_constraint(x, sromsize, dim):
             return 1.0 - np.sum(x[sromsize*dim:])
 
@@ -243,9 +248,9 @@ class Optimizer:
         '''
     
         if joint_opt:
-            #Randomly draw some samples & hstack them with probabilities 
-            #TODO - untested
-            samples  =  self._target.draw_random_sample(sromsize)
+            # Randomly draw some samples & hstack them with probabilities
+            # TODO - untested
+            samples = self._target.draw_random_sample(sromsize)
             probs = (1./float(sromsize))*np.ones((sromsize))
             initial_guess = np.hstack((samples.flatten(), probs))
         else:
