@@ -41,9 +41,6 @@ def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom
         Optimizer(sample_random_vector, None)
 
     # Ensure exception for invalid weights.
-    with pytest.raises(TypeError):
-        Optimizer(sample_random_vector, valid_srom, [1., 1., 1.])
-
     with pytest.raises(ValueError):
         Optimizer(sample_random_vector, valid_srom, np.array([[1., 1.], [1., 1.]]))
 
