@@ -4,8 +4,8 @@ Class to solve SROM optimization problem.
 
 import numpy as np
 import scipy.optimize as opt
-from mpi4py import MPI
 import time
+import imp
 
 from src.optimize import ObjectiveFunction
 from src.optimize import Gradient
@@ -117,6 +117,21 @@ class Optimizer:
         else:
             self._grad = None
 
+        # Test whether parallel processing is available.
+        try:
+            imp.find_module('mpi4py')
+
+            import mpi4py
+            comm = mpi4py.MPI.COMM_WORLD
+
+            self.number_CPUs = comm.size
+            self.cpu_rank = comm.rank
+
+        except ImportError:
+
+            self.number_CPUs = 1
+            self.cpu_rank = 0
+
     def get_optimal_params(self,
                            num_test_samples=500,
                            tol=None,
@@ -159,22 +174,19 @@ class Optimizer:
         optimal_samples = None
         best_objective_function_result = 1e6
 
-        # Get MPI information.
-        comm = MPI.COMM_WORLD
-
         # Report whether we're running in sequential or parallel mode.
         if verbose:
-            if comm.size == 1:
+            if self.number_CPUs == 1:
                 print "SROM Sequential Optimizer:"
-            elif comm.rank == 0:
-                print "SROM Parallel Optimizer (%s cpus):" % comm.size
+            elif self.cpu_rank == 0:
+                print "SROM Parallel Optimizer (%s cpus):" % self.number_CPUs
 
-            if verbose and comm.rank == 0 and num_test_samples % comm.size != 0:
+            if verbose and self.cpu_rank == 0 and num_test_samples % self.number_CPUs != 0:
                 print "Warning: specified number of test samples cannot be equally distributed among processors!"
-                print "%s per core, %s total" % (num_test_samples // comm.size, num_test_samples)
+                print "%s per core, %s total" % (num_test_samples // self.number_CPUs, num_test_samples)
 
-        np.random.seed(comm.rank)
-        num_test_samples_per_cpu = num_test_samples // comm.size
+        np.random.seed(self.cpu_rank)
+        num_test_samples_per_cpu = num_test_samples // self.number_CPUs
         t0 = time.time()
 
         for i in xrange(num_test_samples_per_cpu):
@@ -187,7 +199,7 @@ class Optimizer:
                                                args=(self._srom_obj, self._srom_grad,
                                                      srom_samples),
                                                jac=self._grad,
-                                               constraints=(constraints),
+                                               constraints=constraints,
                                                method=method,
                                                bounds=bounds)
 
@@ -198,23 +210,25 @@ class Optimizer:
                 best_objective_function_result = optimization_result['fun']
 
             # Reporting ongoing results to user if in sequential mode (parallel has confusing output).
-            if verbose and comm.size == 1 and (i == 0 or (i + 1) % output_interval == 0):
+            if verbose and self.number_CPUs == 1 and (i == 0 or (i + 1) % output_interval == 0):
                 print "\tIteration", i + 1, "Objective Function:", optimization_result['fun'],
                 print "Optimal:", best_objective_function_result
 
         # If we're running in parallel mode, we need to gather all of the data and identify the best result.
-        if comm.size > 1:
+        if self.number_CPUs > 1:
 
-            if verbose and comm.rank == 0:
+            if verbose and self.cpu_rank == 0:
                 print 'Collecting and comparing results from each cpu...'
 
             # Create a package to transmit results in.
             this_cpu_results = {'samples': optimal_samples, 'probabilities': optimal_probabilities}
 
             # Gather results.
+            import mpi4py
+            comm = mpi4py.MPI.COMM_WORLD
             all_cpu_results = comm.gather(this_cpu_results, root=0)
 
-            if comm.rank == 0:
+            if self.cpu_rank == 0:
 
                 best_mean_error = 1e6
 
@@ -236,7 +250,7 @@ class Optimizer:
         cdf_error = self._srom_obj.get_cdf_error(optimal_samples, optimal_probabilities)
         correlation_error = self._srom_obj.get_corr_error(optimal_samples, optimal_probabilities)
 
-        if verbose and comm.rank == 0:
+        if verbose and self.cpu_rank == 0:
             print "\tOptimization time: ", time.time() - t0, "seconds"
             print "\tFinal SROM errors:"
             print "\t\tCDF: ", cdf_error
