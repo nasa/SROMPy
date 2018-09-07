@@ -5,8 +5,9 @@ from src.srom import SROM
 from src.target import SampleRandomVector
 
 '''
-Script to generate PW constant SROM approximation to EOL and compare it with the
-monte carlo solution (w/ surrogate model)
+Script to generate piecewise constant SROM approximation to EOL and compare it 
+with the Monte Carlo solution - step 3. Uses the stored EOL model outputs 
+from step 2 and the stored input SROM from step 1.
 '''
 
 mc_eol_file = "mc_data/eol_samples_MC.txt"

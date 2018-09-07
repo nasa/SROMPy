@@ -17,7 +17,7 @@ input_srom.optimize(target_vector)
 #Compare the input CDFs (produces Figure 6)
 post_processor = Postprocessor(input_srom, target_vector)
 post_processor.compare_CDFs(variablenames=
-                            [r'log$C$', r'$y_{0}$', r'$n$'])
+                            [r'$y_{0}$', r'log$C$', r'$n$'])
 
 #Run the model for each input SROM sample:
 srom_results = numpy.zeros(srom_size)
