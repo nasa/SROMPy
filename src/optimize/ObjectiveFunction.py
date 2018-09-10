@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.target import RandomVector
-from src.target import RandomVariable
+from src.target.RandomEntity import RandomEntity
 
 
 class ObjectiveFunction:
@@ -13,13 +13,8 @@ class ObjectiveFunction:
     essentially wraps this class's evaluate function
     '''
 
-    def __init__(self,
-                 srom,
-                 target,
-                 obj_weights=None,
-                 error='mean',
-                 max_moment=5,
-                 cdf_grid_pts=100):
+    def __init__(self, srom, target, obj_weights=None, error='mean',
+                 max_moment=5, cdf_grid_pts=100):
         '''
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
@@ -29,8 +24,9 @@ class ObjectiveFunction:
 
         inputs:
             -SROM - initialized SROM object
-            -targetRV - initialized RandomVector object (either AnalyticRandomVector or
-                SampleRandomVector) with same dimension as SROM
+            -targetRV - initialized RandomVector object (either
+                AnalyticRandomVector or SampleRandomVector) with same
+                dimension as SROM
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. Default is equal 
@@ -42,64 +38,14 @@ class ObjectiveFunction:
 
         '''
 
-        # Test target
-        if not (isinstance(target, RandomVector) or isinstance(target, RandomVariable)):
-            raise TypeError("target must inherit from RandomVector or RandomVariable.")
-
-        # Test srom
-        from src.srom import SROM
-        if not isinstance(srom, SROM):
-            raise TypeError("srom must be of type SROM.")
-
-        # Ensure srom and target have same dimensions if target is a RandomVector.
-        if isinstance(target, RandomVector):
-
-            if target.get_dim() != srom.get_dim():
-                raise ValueError("target and srom must have same dimensions.")
+        self.__test_init_params(srom, target, obj_weights, error,
+                                max_moment, cdf_grid_pts)
 
         self._SROM = srom
         self._target = target
 
         # Generate grids for evaluating CDFs based on target RV's range
         self.generate_cdf_grids(cdf_grid_pts)
-
-        # Test obj_weights
-        if obj_weights is not None:
-
-            if not isinstance(obj_weights, np.ndarray):
-                raise TypeError("obj_weights must be of type ndarray.")
-
-            if len(obj_weights.shape) != 1:
-                raise ValueError("obj_weights must be a one dimensional array.")
-
-            if obj_weights.shape[0] != 3:
-                raise ValueError("obj_weights must have exactly three elements.")
-
-            if np.min(obj_weights) < 0.:
-                raise ValueError("obj_weights cannot have values less than zero.")
-        else:
-            self._weights = np.ones((3,))        
-
-        # Test error function name.
-        if not isinstance(error, str):
-            raise TypeError("error must be a string, either 'MEAN', 'MAX', or 'SSE'.")
-
-        if error.upper() not in ["MEAN", "MAX", "SSE"]:
-            raise ValueError("error must be either 'mean', 'max', or 'SSE'.")
-
-        # Test max_moment.
-        if not isinstance(max_moment, int):
-            raise TypeError("max_moment must be a positive integer.")
-
-        if max_moment < 1:
-            raise ValueError("max_moment must be a positive integer.")
-
-        # Test cdf_grid_pts.
-        if not isinstance(cdf_grid_pts, int):
-            raise TypeError("cf_grid_pts must be a positive integer.")
-
-        if cdf_grid_pts < 1:
-            raise ValueError("cdf_grid_pts must be a positive integer.")
 
         self._metric = error.upper()
 
@@ -135,7 +81,7 @@ class ObjectiveFunction:
 
         error = 0.0
  
-         #SROM is now defined by the current values of samples/probs for stats.
+         # SROM is now defined by the current values of samples/probs for stats.
         self._SROM.set_params(samples, probs)
 
         if self._weights[0] > 0.0:
@@ -161,7 +107,7 @@ class ObjectiveFunction:
         target_moments = self._target.compute_moments(self._max_moment)
 
         # Reshape to 2D if returned as 1D for scalar RV.
-        if len(target_moments.shape)==1:
+        if len(target_moments.shape) == 1:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
         # Prevent divide by zero.
@@ -183,7 +129,6 @@ class ObjectiveFunction:
             raise ValueError("Invalid error metric")
 
         return error
-
 
     def compute_CDF_error(self):
         '''
@@ -255,3 +200,62 @@ class ObjectiveFunction:
                                cdf_grid_pts)
             self._x_grid[:, i] = grid
 
+    def __test_init_params(self, srom, target, obj_weights, error, max_moment,
+                           cdf_grid_pts):
+        '''
+        Due to the large numbers of parameters passed into __init__() that
+        need to be tested, the testing is done in this utility function
+        instead of __init__().
+        '''
+        # Test target
+        if not (isinstance(target, RandomEntity)):
+            raise TypeError("target must inherit from RandomEntity.")
+
+        # Test srom
+        from src.srom import SROM
+        if not isinstance(srom, SROM):
+            raise TypeError("srom must be of type SROM.")
+
+        # Ensure srom and target have same dimensions if target is RandomVector.
+        if isinstance(target, RandomVector):
+
+            if target.get_dim() != srom.get_dim():
+                raise ValueError("target and srom must have same dimensions.")
+
+        # Test obj_weights
+        if obj_weights is not None:
+
+            if not isinstance(obj_weights, np.ndarray):
+                raise TypeError("obj_weights must be of type ndarray.")
+
+            if len(obj_weights.shape) != 1:
+                raise ValueError("obj_weights must be a one dimensional array.")
+
+            if obj_weights.shape[0] != 3:
+                raise ValueError("obj_weights must have exactly 3 elements.")
+
+            if np.min(obj_weights) < 0.:
+                raise ValueError("obj_weights cannot be less than zero.")
+        else:
+            self._weights = np.ones((3,))
+
+        # Test error function name.
+        if not isinstance(error, str):
+            raise TypeError("error must be a string: 'MEAN', 'MAX', or 'SSE'.")
+
+        if error.upper() not in ["MEAN", "MAX", "SSE"]:
+            raise ValueError("error must be either 'mean', 'max', or 'SSE'.")
+
+        # Test max_moment.
+        if not isinstance(max_moment, int):
+            raise TypeError("max_moment must be a positive integer.")
+
+        if max_moment < 1:
+            raise ValueError("max_moment must be a positive integer.")
+
+        # Test cdf_grid_pts.
+        if not isinstance(cdf_grid_pts, int):
+            raise TypeError("cf_grid_pts must be a positive integer.")
+
+        if cdf_grid_pts < 1:
+            raise ValueError("cdf_grid_pts must be a positive integer.")

@@ -25,7 +25,7 @@ def scipy_obj_fun(x, objfun, grad, samples):
     size = objfun._SROM._size
     dim = objfun._SROM._dim
 
-    #Unpacking simple with samples are fixed:
+    # Unpacking simple with samples are fixed:
     probs = x
 
     error = objfun.evaluate(samples, probs)
@@ -46,7 +46,7 @@ def scipy_grad(x, objfun, grad, samples):
     size = grad._SROM._size
     dim = grad._SROM._dim
 
-    #Unpacking simple with samples are fixed:
+    # Unpacking simple with samples are fixed:
     probs = x
 
     grad = grad.evaluate(samples, probs)
@@ -392,7 +392,7 @@ class Optimizer:
         '''
 
         # A little funky, need to return function as constraint.
-        #TODO - use lambda function instead?
+        # TODO - use lambda function instead?
 
         # Sequential case - unknown vector x is probabilities directly
         def seq_constraint(x):
