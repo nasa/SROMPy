@@ -90,6 +90,9 @@ print '%s test samples across %s CPUs took %s seconds.' % (num_test_samples, com
 print 'Writing results to disk...'
 print performance_data
 
+if not os.path.isdir('data'):
+    os.mkdir('data')
+
 data_file = open(data_filename, 'w')
 pickle.dump(performance_data, data_file)
 data_file.close()
