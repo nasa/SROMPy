@@ -22,8 +22,8 @@ def scipy_obj_fun(x, objfun, grad, samples):
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = objfun._SROM._size
-    dim = objfun._SROM._dim
+    size = objfun._SROM.get_size()
+    dim = objfun._SROM.get_dim()
 
     # Unpacking simple with samples are fixed:
     probs = x
@@ -43,8 +43,8 @@ def scipy_grad(x, objfun, grad, samples):
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = grad._SROM._size
-    dim = grad._SROM._dim
+    size = grad._SROM.get_size()
+    dim = grad._SROM.get_dim()
 
     # Unpacking simple with samples are fixed:
     probs = x
