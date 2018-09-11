@@ -1,4 +1,5 @@
 import abc
+from RandomEntity import RandomEntity
 
 '''
 Abstract class defining the target random variable being matched by an SROM.
@@ -6,7 +7,7 @@ Inherited by BetaRandomVariable and GammaRandomVariable, and NormalRandomVariabl
 '''
 
 
-class RandomVariable(object):
+class RandomVariable(RandomEntity):
 
     @abc.abstractmethod
     def get_variance(self, max_order):

@@ -65,7 +65,7 @@ class Gradient:
         probabilities (m x 1 array)
         '''
     
-        sromsize = self._SROM._size
+        sromsize = self._SROM.get_size()
         grad = np.zeros(sromsize)
 
         #d_e1/d_p: 

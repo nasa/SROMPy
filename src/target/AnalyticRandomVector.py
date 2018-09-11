@@ -9,10 +9,10 @@ import numpy as np
 from scipy.stats import multivariate_normal, norm
 from scipy import integrate, interpolate
 
-from src.target import RandomVector
+from src.target.RandomVector import RandomVector
 
-#TODO - why do i need to do RV.RV??? Treating RV as the module not class
-class AnalyticRandomVector(RandomVector.RandomVector):
+
+class AnalyticRandomVector(RandomVector):
     '''
     Class for implementing a translation random vector for non-gaussian random
     vectors whose components are governed by analytic probability distributions
@@ -65,6 +65,7 @@ class AnalyticRandomVector(RandomVector.RandomVector):
 
         #Get min/max values for each component
         self._components = copy.deepcopy(random_variables)
+
         self._mins = np.zeros(self._dim)
         self._maxs = np.zeros(self._dim)
 
@@ -77,6 +78,10 @@ class AnalyticRandomVector(RandomVector.RandomVector):
 
         #Generate unscaled correlation that is matched by SROM during opt.
         self.generate_unscaled_correlation()
+
+    def get_dim(self):
+
+        return self._dim
 
     def verify_correlation_matrix(self, corr_matrix):
         '''

@@ -1,4 +1,5 @@
 import abc
+from RandomEntity import RandomEntity
 
 '''
 Abstract class defining the target random vector being matched by an SROM.
@@ -7,7 +8,7 @@ sample-based random vectors, respectively.
 '''
 
 
-class RandomVector(object):
+class RandomVector(RandomEntity):
 
     def __init__(self, dim):
 
