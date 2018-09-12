@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SROMPy",
-    version="0.0.13",
+    version="0.0.01",
     author="James Warner ",
     author_email="james.e.warner@nasa.gov",
     description="Stochastic Reduced Order Models with Python",
