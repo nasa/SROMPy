@@ -12,10 +12,15 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/NASA/SROMPy",
-    packages=setuptools.find_packages(),
+    packages=["SROMPy",
+              "SROMPy.optimize",
+              "SROMPy.postprocess",
+              "SROMPy.srom",
+              "SROMPy.target"],
+    package_dir={'SROMPy': 'src'},
     classifiers=[
-        "Programming Language :: Python :: 2",
-        "License :: NASA OPEN SOURCE AGREEMENT VERSION 1.3",
+        "Programming Language :: Python :: 2.7",
+        "License :: Freeware",
         "Operating System :: OS Independent",
     ],
 )
