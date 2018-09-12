@@ -5,8 +5,12 @@ from src.srom import SROM, SROMSurrogate, FiniteDifference as FD
 from src.target import SampleRandomVector
 
 '''
-Script to generate PW linear SROM approximation to EOL and compare it with the
-monte carlo solution (w/ surrogate model)
+Script to generate piecewise linear SROM approximation to EOL and compare it 
+with the Monte Carlo solution - step 3. Uses the stored EOL model outputs 
+from step 2 and the stored input SROM from step 1. In LINEAR case, need to
+estimate gradients with finite difference. To do so, the model was run with
+perturbed values of the inputs and the resulting EOLs were stored in the files
+named "srom_fd_eol_m<>.txt". 
 '''
 
 #Monte Carlo sample data:
@@ -14,7 +18,7 @@ mc_eol_file = "mc_data/eol_samples_MC.txt"
 mc_input_file = "mc_data/input_samples_MC.txt"
 
 dim = 3
-sromsize = 10
+sromsize = 20
 
 #Data files for EOL samples, EOL finite difference samples, and SROM inputs
 srom_eol_file = "srom_data/srom_eol_m" + str(sromsize) + ".txt"
@@ -33,7 +37,7 @@ input_srom.load_params(srom_input_file)
 
 #Get FD step sizes from file (the same for all samples, just pull the first)
 #Step sizes chosen as approximately 2% of the median sample value of inputs
-stepsizes = [0.083, 0.0065, 0.025]
+stepsizes = [0.0065, 0.083, 0.025]
 
 #Calculate gradient from FiniteDifference class:
 gradient = FD.compute_gradient(srom_eols, srom_fd_eols, stepsizes)
@@ -45,7 +49,7 @@ solution_PWL = SampleRandomVector(srom_eol_samples)
 
 #Store EOL samples for plotting later:
 eolfile = "srom_data/srom_eol_samples_m" + str(sromsize) + ".txt"
-np.savetxt(eolfile, srom_eol_samples)
+#np.savetxt(eolfile, srom_eol_samples)  #NOTE - avoid overwriting paper data
 
 #Make MC random variable solution
 eol_mc = SampleRandomVector(MC_eols)

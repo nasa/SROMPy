@@ -3,6 +3,7 @@ import numpy as np
 from collections import OrderedDict
 
 from src.target import SampleRandomVector
+from src.srom import SROM, SROMSurrogate
 from src.postprocess import Postprocessor
 
 '''
@@ -27,9 +28,9 @@ xticks = [[ r'$1.0 \times 10^6$','',r'$1.4 \times 10^6$','',
            r'$1.8 \times 10^6$','']]
 
 xaxispadding = 5
-axisfontsize = 28
-labelfontsize = 24
-legendfontsize = 24
+axisfontsize = 24
+labelfontsize = 20
+legendfontsize = 20
 cdfylabel = True        #Label y axis as "CDF"
 plot_dir = "plots"
 plot_suffix = "SROM_pwlin_eol_CDF_m"
@@ -45,7 +46,7 @@ sroms = OrderedDict()
 
 for sromsize in sromsizes:
 
-    #Get EOL SROM Surrogate samples to make SampleRandomVector representation of CDF
+    #Get EOL SROM Surrogate samples to make SampleRV representation of CDF
     eolsamplefile = "srom_eol_samples_m" + str(sromsize) + ".txt"
     eolsamplefile = os.path.join(srom_dir, eolsamplefile)
     eolsamples = np.genfromtxt(eolsamplefile)

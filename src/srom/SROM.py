@@ -33,8 +33,8 @@ class SROM(object):
         if size <= 0:
             raise(ValueError("SROM size must be greater than zero."))
 
-        if dim <= 0 or dim > 2:
-            raise(ValueError("SROM dimensions must be one or two."))
+        if dim <= 0:
+            raise(ValueError("SROM dimension must be greater than zero."))
 
         self._size = int(size)
         self._dim = int(dim)

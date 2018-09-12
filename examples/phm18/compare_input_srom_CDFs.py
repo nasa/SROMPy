@@ -18,17 +18,18 @@ sromsizes = [5,10,20]
 srom_dir = "srom_data"
 
 #Plotting specs:
-varz = [r'log$C$', r'$y_{0}$', r'$n$']
+varz = [r'$y_{0}$', r'log$C$', r'$n$']
 cdfylabel = True        #Label y axis as "CDF"
 plot_dir = "plots"
 plot_suffix = "SROM_input_CDF_m"
 for m in sromsizes:
     plot_suffix += "_" + str(m)
 
-#Xtick labels for each variable (only modify y0):
-y0ticks = ['0.245', '', '0.255', '', '0.265', '', '0.275']
+#Xtick labels for each variable for clarity
 y0ticks = ['', '0.245', '', '0.255', '', '0.265', '', '0.275']
-xticks = [None, y0ticks, None]
+logCticks = ['', '-8.8', '', '-8.4', '', '-8.0', '', '-7.6']
+nticks = ['1.0', '', '1.5', '', '2.0', '', '2.5', '', '3.0']
+xticks = [y0ticks, logCticks, nticks]
 
 #Load / initialize target random variable from samples:
 samples = np.genfromtxt(targetsamples)
@@ -52,7 +53,11 @@ for sromsize in sromsizes:
     srom.load_params(sromfile)
     sroms[sromsize] = srom
  
+#Font size specs & plotting
+axisfontsize = 25
+legendfontsize = 20
 Postprocessor.compare_srom_CDFs(sroms, target, plotdir="plots",
                                 plotsuffix=plot_suffix, variablenames=varz,                                     xlimits=xlimits, xticks=xticks,
-                                cdfylabel=cdfylabel)
+                                cdfylabel=cdfylabel, axisfontsize=axisfontsize,
+                                legendfontsize=legendfontsize)
 
