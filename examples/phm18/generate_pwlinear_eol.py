@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.postprocess import Postprocessor
-from src.srom import SROM, SROMSurrogate, FiniteDifference as FD
-from src.target import SampleRandomVector
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM, SROMSurrogate, FiniteDifference as FD
+from SROMPy.target import SampleRandomVector
 
 '''
 Script to generate piecewise linear SROM approximation to EOL and compare it 

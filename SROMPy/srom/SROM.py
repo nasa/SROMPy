@@ -6,9 +6,9 @@ import copy
 import os
 import numpy as np
 
-from src.optimize import Optimizer
-from src.target import RandomVector
-from src.target import RandomVariable
+from SROMPy.optimize import Optimizer
+from SROMPy.target import RandomVector
+from SROMPy.target import RandomVariable
 
 class SROM(object):
     """

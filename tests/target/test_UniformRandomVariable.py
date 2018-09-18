@@ -1,6 +1,6 @@
 import pytest
 
-from src.target import UniformRandomVariable
+from SROMPy.target import UniformRandomVariable
 
 
 def test_raises_exception_for_invalid_variable_range():

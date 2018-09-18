@@ -5,7 +5,7 @@ Class for defining a uniform random variable
 import numpy as np
 from scipy.stats import uniform as scipyuniform
 
-from src.target.RandomVariable import RandomVariable
+from SROMPy.target.RandomVariable import RandomVariable
 
 
 class UniformRandomVariable(RandomVariable):

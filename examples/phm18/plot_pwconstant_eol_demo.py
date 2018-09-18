@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.postprocess import Postprocessor
-from src.srom import SROM
-from src.target import SampleRandomVector
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM
+from SROMPy.target import SampleRandomVector
 
 '''
 Ex3 - unimodal 3D

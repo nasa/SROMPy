@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from src.srom import SROM
-from src.optimize import Gradient
-from src.target import SampleRandomVector
+from SROMPy.srom import SROM
+from SROMPy.optimize import Gradient
+from SROMPy.target import SampleRandomVector
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.target import RandomVector
-from src.target import RandomVariable
+from SROMPy.target import RandomVector
+from SROMPy.target import RandomVariable
 
 
 class ObjectiveFunction:
@@ -47,7 +47,7 @@ class ObjectiveFunction:
             raise TypeError("target must inherit from RandomVector or RandomVariable.")
 
         # Test srom
-        from src.srom import SROM
+        from SROMPy.srom import SROM
         if not isinstance(srom, SROM):
             raise TypeError("srom must be of type SROM.")
 

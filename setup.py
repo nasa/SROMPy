@@ -17,7 +17,7 @@ setuptools.setup(
               "SROMPy.postprocess",
               "SROMPy.srom",
               "SROMPy.target"],
-    package_dir={'SROMPy': 'src'},
+    package_dir={'SROMPy': 'SROMPy'},
     install_requires=['numpy', 'scipy'],
     classifiers=[
         "Programming Language :: Python :: 2.7",

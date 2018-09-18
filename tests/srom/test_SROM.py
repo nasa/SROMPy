@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from src.srom import SROM
-from src.target import SampleRandomVector
-from src.target import RandomVector
+from SROMPy.srom import SROM
+from SROMPy.target import SampleRandomVector
+from SROMPy.target import RandomVector
 
 
 def test_invalid_init_parameter_values_rejected():
