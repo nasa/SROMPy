@@ -2,10 +2,10 @@
 import numpy as np
 
 from model import SpringMass_2D
-from src.postprocess import Postprocessor
-from src.srom import SROM
-from src.target import BetaRandomVariable as beta
-from src.target import SampleRandomVector
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM
+from SROMPy.target import BetaRandomVariable as beta
+from SROMPy.target import SampleRandomVector
 
 #Specify spring-mass system:
 state0 = [0., 0.]                   #initial conditions

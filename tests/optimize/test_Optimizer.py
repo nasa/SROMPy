@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from src.optimize import Optimizer
-from src.srom import SROM
-from src.target import SampleRandomVector
+from SROMPy.optimize import Optimizer
+from SROMPy.srom import SROM
+from SROMPy.target import SampleRandomVector
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
-from src.postprocess import Postprocessor
-from src.srom import SROM
-from src.target import NormalRandomVariable
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM
+from SROMPy.target import NormalRandomVariable
 
 #Initialize Normal random variable object to be modeled by SROM:
 normal = NormalRandomVariable(mean=3., std_dev=1.5)

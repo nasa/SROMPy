@@ -6,8 +6,8 @@ import numpy as np
 import scipy.optimize as opt
 import time
 
-from src.optimize import ObjectiveFunction
-from src.optimize import Gradient
+from SROMPy.optimize import ObjectiveFunction
+from SROMPy.optimize import Gradient
 
 
 #------------Helper funcs for scipy optimize-----------------------------

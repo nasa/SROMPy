@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.srom import SROM
+from SROMPy.srom import SROM
 
 from Model import CrackGrowthModel
 

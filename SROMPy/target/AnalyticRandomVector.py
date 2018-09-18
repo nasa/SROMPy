@@ -9,7 +9,7 @@ import numpy as np
 from scipy.stats import multivariate_normal, norm
 from scipy import integrate, interpolate
 
-from src.target import RandomVector
+from SROMPy.target import RandomVector
 
 #TODO - why do i need to do RV.RV??? Treating RV as the module not class
 class AnalyticRandomVector(RandomVector.RandomVector):

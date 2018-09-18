@@ -1,9 +1,9 @@
 import numpy as np
 
 #from model import Model (assume this exists)
-from src.postprocess import Postprocessor
-from src.srom import SROM, SROMSurrogate
-from src.target import SampleRandomVector
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM, SROMSurrogate
+from SROMPy.target import SampleRandomVector
 
 '''
 Generate SROM to model input distribution (samples)

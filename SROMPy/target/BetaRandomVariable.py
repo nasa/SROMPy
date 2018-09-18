@@ -5,7 +5,7 @@ Class for implementing a beta random variable
 import numpy as np
 from scipy.stats import beta as scipybeta
 
-from src.target.RandomVariable import RandomVariable
+from SROMPy.target.RandomVariable import RandomVariable
 
 
 class BetaRandomVariable(RandomVariable):
