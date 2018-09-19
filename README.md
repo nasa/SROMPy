@@ -41,7 +41,7 @@ UQ Center of Excellence <br />
 NASA Langley Research Center <br /> 
 james.e.warner@nasa.gov
 
-Luke Morrill
+Luke Morrill <br />
 Georgia Tech
 
 -------------------------------------------------------------------------------
