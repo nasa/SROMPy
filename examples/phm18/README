@@ -1,4 +1,6 @@
 This readme file provides an overview of the source code and data provided in this directory that reproduces the results and figures in the PHM18 Conference Paper, "Rapid Uncertainty Quantification for High-Fidelity Prognostics Using SROMPy and Python" by J. E. Warner, P. E. Leser, and J. D. Hochhalter.
+The slides presented at the PHM18 conference are available in the file PHM18_Jwarner.pptx. The conference paper can be downloaded at:
+https://www.phmpapers.org/index.php/phmconf/article/download/551/phmc_18_551
 
 Two data directories provided are mc_data and srom_data, containing the sample data files for the Monte Carlo solution and data files needed for SROM solutions, respectively.
 
