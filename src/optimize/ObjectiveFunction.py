@@ -225,8 +225,11 @@ class ObjectiveFunction:
         # Test obj_weights
         if obj_weights is not None:
 
+            if isinstance(obj_weights, list):
+                obj_weights = np.array(obj_weights)
+
             if not isinstance(obj_weights, np.ndarray):
-                raise TypeError("obj_weights must be of type ndarray.")
+                raise TypeError("obj_weights must be of type ndarray or list.")
 
             if len(obj_weights.shape) != 1:
                 raise ValueError("obj_weights must be a one dimensional array.")
@@ -236,6 +239,7 @@ class ObjectiveFunction:
 
             if np.min(obj_weights) < 0.:
                 raise ValueError("obj_weights cannot be less than zero.")
+            self._weights = obj_weights
         else:
             self._weights = np.ones((3,))
 
