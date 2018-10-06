@@ -30,18 +30,7 @@ class DiscreteRandomVector(RandomVector):
 
         self._validate_inputs(samples, probabilities)
 
-        (num_samples, dim) = samples.shape
-        self._samples = samples
-        self._probabilities = probabilities
-        self._max_moment = max_moment
-        self._num_samples = num_samples
-    
-        #min/max sample values needed for SROM optimization
-        self._mins = np.min(samples, axis=0)
-        self._maxs = np.max(samples, axis=0)
-
-        #Parent class (RandomVector) constructor, sets self._dim
-        super(DiscreteRandomVector, self).__init__(dim)
+        self._set_member_variables(samples, probabilities, max_moment)
 
         #Cache statistics so they can be returned quickly later
         self._precompute_moments()
@@ -98,16 +87,26 @@ class DiscreteRandomVector(RandomVector):
         if (dim == 1) and (self._dim > 1):
             x_grid = np.repeat(x_grid, self._dim, axis=1)
 
-        CDF_vals = np.zeros((num_pts, self._dim))
+        #Check if we've computed/stored cdf values for this x_grid:
+        cache_flag = self._is_cdf_cached(x_grid)
 
-        # Vectorized indicator implementation for CDF
-        # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
-        for i, grid in enumerate(x_grid.T):
-            for k, sample in enumerate(self._samples):
-                indz = grid >= sample[i]
-                CDF_vals[indz, i] += self._probabilities[k]
+        if cache_flag:
+            return self._cdf_cache
+        else:
 
-        return CDF_vals
+            CDF_vals = np.zeros((num_pts, self._dim))
+
+            # Vectorized indicator implementation for CDF
+            # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
+            for i, grid in enumerate(x_grid.T):
+                for k, sample in enumerate(self._samples):
+                    indz = grid >= sample[i]
+                    CDF_vals[indz, i] += self._probabilities[k]
+
+            #Cache these values to return next time:
+            self._cdf_x_grid_cache = x_grid
+            self._cdf_cache = CDF_vals
+            return CDF_vals
 
     def compute_corr_mat(self):
         '''
@@ -167,6 +166,41 @@ class DiscreteRandomVector(RandomVector):
             corr = corr + np.outer(sample, sample) * self._probabilities[k]
 
         self._corr_matrix = corr
+
+    def _is_cdf_cached(self, x_grid):
+        '''
+        Checks to see if we've already computed CDF values for this particular
+        x-grid, returns True if so
+        '''
+    
+        #Indicates we haven't calculated any cdfs yet
+        if self._cdf_x_grid_cache is None:
+            return False
+
+        return np.array_equal(self._cdf_x_grid_cache, x_grid)
+
+
+    def _set_member_variables(self, samples, probabilities, max_moment):
+        '''
+        Sets all member variables
+        '''
+
+        (num_samples, dim) = samples.shape
+        self._samples = samples
+        self._probabilities = probabilities
+        self._max_moment = max_moment
+        self._num_samples = num_samples
+
+        #initialize cached cdf/x values to optimize performance 
+        self._cdf_x_grid_cache = None
+        self._cdf_cache = None
+
+        #min/max sample values needed for SROM optimization
+        self._mins = np.min(samples, axis=0)
+        self._maxs = np.max(samples, axis=0)
+
+        #Parent class (RandomVector) constructor, sets self._dim
+        super(DiscreteRandomVector, self).__init__(dim)
 
 
     def _validate_inputs(self, samples, probabilities):
