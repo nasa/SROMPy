@@ -36,6 +36,10 @@ class DiscreteRandomVector(RandomVector):
         self._max_moment = max_moment
         self._num_samples = num_samples
     
+        #min/max sample values needed for SROM optimization
+        self._mins = np.min(samples, axis=0)
+        self._maxs = np.max(samples, axis=0)
+
         #Parent class (RandomVector) constructor, sets self._dim
         super(DiscreteRandomVector, self).__init__(dim)
 
@@ -111,6 +115,27 @@ class DiscreteRandomVector(RandomVector):
         '''
         return self._corr_matrix
 
+    def draw_random_sample(self, sample_size):
+        '''
+        Randomly draws a sample of this random vector.
+
+        :param sample_size: number of samples to return
+        :type sample_size: int
+
+        sample_size must be smaller than total # of samples. For discrete
+        random vector, we return a randomly selected # of samples
+        '''
+
+        if sample_size > self._num_samples:
+            raise ValueError("Sample size can't be more than total # samples")
+
+        #Generate random indices for samples array
+        all_inds = np.arange(self._num_samples)
+        random_inds = np.random.choice(all_inds, sample_size, replace=False)
+
+        sample = self._samples[random_inds, :]
+
+        return sample
     
     def _precompute_moments(self):
         '''
