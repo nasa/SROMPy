@@ -16,8 +16,8 @@ if 'PYTHONPATH' not in os.environ:
     sys.path.insert(0, base_path)
     sys.path.insert(0, os.path.join(base_path, 'src'))
 
-from src.srom import SROM
-from src.target import BetaRandomVariable
+from SROMPy.srom import SROM
+from SROMPy.target import BetaRandomVariable
 
 # Get number of test samples from command line, or use default.
 num_test_samples = 60  # LCM max # CPUs or a multiple of that is recommended.

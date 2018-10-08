@@ -6,7 +6,7 @@ probabilities that are not equal.
 
 import numpy as np
 
-from src.target.RandomVector import RandomVector
+from SROMPy.target.RandomVector import RandomVector
 
 class DiscreteRandomVector(RandomVector):
     '''

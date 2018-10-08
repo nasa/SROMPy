@@ -11,10 +11,10 @@ import sys
 if 'PYTHONPATH' not in os.environ:
     base_path = os.path.abspath('.')
     sys.path.insert(0, base_path)
-    sys.path.insert(0, os.path.join(base_path, 'src'))
+    sys.path.insert(0, os.path.join(base_path, 'SROMPy'))
 
-from src.srom import SROM
-from src.target import BetaRandomVariable
+from SROMPy.srom import SROM
+from SROMPy.target import BetaRandomVariable
 
 # Random variable to optimize to.
 random_variable = BetaRandomVariable(alpha=3., beta=2., shift=1., scale=2.5)

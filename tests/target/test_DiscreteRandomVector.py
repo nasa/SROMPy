@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from src.target import DiscreteRandomVector
+from SROMPy.target import DiscreteRandomVector
 
 
 

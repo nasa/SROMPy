@@ -22,8 +22,8 @@ import os
 import numpy as np
 
 from SROMPy.optimize import Optimizer
-from SROMPy.target import RandomVector
-from SROMPy.target import RandomVariable
+from SROMPy.target.RandomEntity import RandomEntity
+
 
 class SROM(object):
     """

@@ -24,7 +24,7 @@ import numpy as np
 from scipy.stats import multivariate_normal, norm
 from scipy import integrate, interpolate
 
-from SROMPy.target import RandomVector
+from SROMPy.target.RandomVector import RandomVector
 
 
 class AnalyticRandomVector(RandomVector):
