@@ -20,52 +20,48 @@ Class to solve SROM optimization problem.
 import numpy as np
 import scipy.optimize as opt
 import time
+import imp
 
 from SROMPy.optimize import ObjectiveFunction
 from SROMPy.optimize import Gradient
 
 
 #------------Helper funcs for scipy optimize-----------------------------
-def scipy_obj_fun(x,
-                  objfun,
-                  grad,
-                  samples):
+def scipy_obj_fun(x, objfun, grad, samples):
     '''
-    Function to pass to scipy minimize defining objective. Wraps the 
-    ObjectiveFunction.evaluate() function that defines SROM error. Need to 
+    Function to pass to scipy minimize defining objective. Wraps the
+    ObjectiveFunction.evaluate() function that defines SROM error. Need to
     unpack design variables x into samples & probabilities. Handle two cases:
 
     1) joint optimization over samples & probs (samples=None)
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = objfun._SROM._size
-    dim = objfun._SROM._dim
+    size = objfun._SROM.get_size()
+    dim = objfun._SROM.get_dim()
 
-    #Unpacking simple with samples are fixed:
+    # Unpacking simple with samples are fixed:
     probs = x
 
     error = objfun.evaluate(samples, probs)
 
     return error
 
-def scipy_grad(x,
-               objfun,
-               grad,
-               samples):
+
+def scipy_grad(x, objfun, grad, samples):
     '''
-    Function to pass to scipy minimize defining objective. Wraps the 
-    ObjectiveFunction.evaluate() function that defines SROM error. Need to 
+    Function to pass to scipy minimize defining objective. Wraps the
+    ObjectiveFunction.evaluate() function that defines SROM error. Need to
     unpack design variables x into samples & probabilities. Handle two cases:
 
     1) joint optimization over samples & probs (samples=None)
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = grad._SROM._size
-    dim = grad._SROM._dim
+    size = grad._SROM.get_size()
+    dim = grad._SROM.get_dim()
 
-    #Unpacking simple with samples are fixed:
+    # Unpacking simple with samples are fixed:
     probs = x
 
     grad = grad.evaluate(samples, probs)
@@ -76,28 +72,23 @@ def scipy_grad(x,
 
 class Optimizer:
     '''
-    Class that delegates the construction of an SROM through the optimization 
+    Class that delegates the construction of an SROM through the optimization
     of the SROM parameters (samples/probs) that minimize the error between
     SROM & target random vector
     '''
 
-    def __init__(self,
-                 target,
-                 srom,
-                 obj_weights=None,
-                 error='SSE',
-                 max_moment=5,
-                 cdf_grid_pts=100):
+    def __init__(self, target, srom, obj_weights=None,
+                 error='SSE', max_moment=5, cdf_grid_pts=100):
         '''
 
         inputs:
-            -target - initialized RandomVector object (either AnalyticRandomVector or
-                SampleRandomVector)
-            -obj_weights - array of floats defining the relative weight of the 
+            -target - initialized RandomVector object (either
+            AnalyticRandomVector or SampleRandomVector)
+            -obj_weights - array of floats defining the relative weight of the
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. Default will give
                 each term equal weight
-            -error - string 'mean' or 'max' defining how error is defined 
+            -error - string 'mean' or 'max' defining how error is defined
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
@@ -107,19 +98,11 @@ class Optimizer:
         self._target = target
 
         # Initialize objective function defining SROM vs target error.
-        self._srom_obj = ObjectiveFunction(srom,
-                                           target,
-                                           obj_weights,
-                                           error,
-                                           max_moment,
-                                           cdf_grid_pts)
+        self._srom_obj = ObjectiveFunction(srom, target, obj_weights,
+                                           error, max_moment, cdf_grid_pts)
 
-        self._srom_grad = Gradient(srom,
-                                   target,
-                                   obj_weights,
-                                   error,
-                                   max_moment,
-                                   cdf_grid_pts)
+        self._srom_grad = Gradient(srom, target, obj_weights, error,
+                                   max_moment, cdf_grid_pts)
 
         # Get srom size & dimension.
         self._srom_size = srom.get_size()
@@ -131,94 +114,279 @@ class Optimizer:
         else:
             self._grad = None
 
-    def get_optimal_params(self,
-                           num_test_samples=500,
-                           tol=None,
-                           options=None,
-                           method=None,
-                           joint_opt=False,
-                           output_interval=10,
-                           verbose=True):
+        self.__detect_parallelization()
+
+    def get_optimal_params(self, num_test_samples=500, tol=None,
+                           options=None, method=None, joint_opt=False,
+                           output_interval=10, verbose=True):
         '''
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
 
         inputs:
-            -joint_opt, bool, Flag for optimizing jointly for samples & probs 
-                rather than sequentially (draw samples then optimize probs in 
-                loop - default). 
+            -joint_opt, bool, Flag for optimizing jointly for samples & probs
+                rather than sequentially (draw samples then optimize probs in
+                loop - default).
             -num_test_samples, int, If optimizing sequentially (samples then
                 probs), this is number of random sample sets to test in opt
             -tol, float, tolerance of scipy optimization algorithm
             -options, dict, options for scipy optimization algorithm
             -method, str, method specifying scipy optimization algorithm
-            -output_interval, int, how often to print optimization progress    
+            -output_interval, int, how often to print optimization progress
+            -verbose: bool. Flag for whether to generate text output.
 
         returns optimal SROM samples & probabilities
 
         '''
 
         if not isinstance(num_test_samples, int):
-            raise TypeError("Number number of test samples must be a positive integer.")
+            raise TypeError("Number of test samples must be a positive int.")
 
         if num_test_samples <= 0:
             raise ValueError("Insufficient number of test samples specified.")
 
-        bounds = self.get_param_bounds(joint_opt, self._srom_size)
-        constraints = self.get_constraints(joint_opt, self._srom_size, self._dim)
-        initial_guess = self.get_initial_guess(joint_opt, self._srom_size)
-
-        # Track optimal func value with corresponding samples/probs.
-        opt_probs = None
-        opt_samples = None        
-        opt_fun = 1e6
-
+        # Report whether we're running in sequential or parallel mode.
         if verbose:
-            print "SROM Sequential Optimizer:"
+            self.show_parallelization_information(num_test_samples)
 
+        # Find optimal parameters.
         t0 = time.time()
-
-        for i in xrange(num_test_samples):
-    
-            # Randomly draw new.
-            srom_samples =  self._target.draw_random_sample(self._srom_size)
-
-            # Optimize using scipy.
-            opt_res = opt.minimize(scipy_obj_fun, initial_guess,
-                                   args=(self._srom_obj, self._srom_grad,
-                                            srom_samples),
-                                   jac=self._grad,
-                                   constraints=(constraints), 
-                                   method=method,
-                                   bounds=bounds)
-
-            # If error is lower than lowest so far, keep track of results.
-            if opt_res['fun'] < opt_fun:
-                opt_samples = srom_samples
-                opt_probs = opt_res['x']
-                opt_fun = opt_res['fun']
-            
-            if verbose and (i == 0 or (i + 1) % output_interval == 0):
-                print "\tIteration", i + 1, "Objective Function:", opt_res['fun'],
-                print "Optimal:", opt_fun
+        optimal_samples, optimal_probabilities = \
+            self.__perform_optimization(num_test_samples,
+                                        joint_opt,
+                                        method,
+                                        output_interval,
+                                        verbose)
 
         # Display final errors in statistics:
-        momenterror = self._srom_obj.get_moment_error(opt_samples, opt_probs)
-        cdferror = self._srom_obj.get_cdf_error(opt_samples, opt_probs)
-        correlationerror = self._srom_obj.get_corr_error(opt_samples, opt_probs)
+        moment_error, cdf_error, correlation_error, mean_error = \
+            self.get_errors(optimal_samples, optimal_probabilities)
 
-        if verbose:
-            print "\tOptimization time: ", time.time()-t0, "seconds"
+        if verbose and self.cpu_rank == 0:
+            print "\tOptimization time: ", time.time() - t0, "seconds"
             print "\tFinal SROM errors:"
-            print "\t\tCDF: ", cdferror
-            print "\t\tMoment: ", momenterror
-            print "\t\tCorrelation: ", correlationerror
+            print "\t\tCDF: ", cdf_error
+            print "\t\tMoment: ", moment_error
+            print "\t\tCorrelation: ", correlation_error
 
-        return opt_samples, opt_probs
+        return optimal_samples, optimal_probabilities
 
     #-----Helper funcs----
-    
-    def get_param_bounds(self, joint_opt, sromsize):
+
+    def __perform_optimization(self, num_test_samples, joint_opt, method,
+                               output_interval, verbose):
+        '''
+        Calls optimization loop function and, in the case of parallelization,
+        acquires the optimal results achieved across all CPUs before
+        returning them.
+        -num_test_samples: int, If optimizing sequentially (samples then
+                probs), this is number of random sample sets to test in opt
+        -joint_opt: bool, Flag for optimizing jointly for samples & probs
+                rather than sequentially (draw samples then optimize probs in
+                loop - default).
+        -method: str, method specifying scipy optimization algorithm
+        -output_interval: int, how often to print optimization progress
+        -verbose: bool. Flag for whether to generate text output.
+
+        returns optimal SROM samples & probabilities
+        '''
+
+        optimal_samples, optimal_probabilities = \
+            self.__run_optimization_loop(num_test_samples,
+                                         joint_opt,
+                                         method,
+                                         output_interval,
+                                         verbose)
+
+        # If we're running in parallel mode, we need to gather all of the data
+        # across CPUs and identify the best result.
+        if self.number_CPUs > 1:
+
+            optimal_samples, optimal_probabilities = \
+                self.__get_optimal_parallel_results(optimal_samples,
+                                                    optimal_probabilities)
+
+        return optimal_samples, optimal_probabilities
+
+    def __run_optimization_loop(self, num_test_samples, joint_opt,
+                                method, output_interval, verbose):
+        '''
+        Is run by __perform_optimization to perform sampling and acquire
+        optimal parameter values.
+
+        Calls optimization loop function and, in the case of parallelization,
+        acquires the optimal results achieved across all CPUs before
+        returning them.
+        -num_test_samples: int, If optimizing sequentially (samples then
+                probs), this is number of random sample sets to test in opt
+        -joint_opt: bool, Flag for optimizing jointly for samples & probs
+                rather than sequentially (draw samples then optimize probs in
+                loop - default).
+        -method: str, method specifying scipy optimization algorithm
+        -output_interval: int, how often to print optimization progress
+        -verbose: bool. Flag for whether to generate text output.
+
+        returns optimal SROM samples & probabilities
+        '''
+
+        # Track optimal func value with corresponding samples/probs.
+        bounds = self.get_param_bounds(joint_opt)
+
+        constraints = self.get_constraints(joint_opt)
+
+        initial_guess = self.get_initial_guess(joint_opt)
+
+        optimal_probabilities = None
+        optimal_samples = None
+        best_objective_function_result = 1e6
+
+        np.random.seed(self.cpu_rank)
+        num_test_samples_per_cpu = num_test_samples // self.number_CPUs
+
+        # Perform sampling, tracking the best results.
+        for i in xrange(num_test_samples_per_cpu):
+
+            # Randomly draw new.
+            srom_samples = self._target.draw_random_sample(self._srom_size)
+
+            # Optimize using scipy.
+            optimization_result = opt.minimize(scipy_obj_fun, initial_guess,
+                                               args=(self._srom_obj,
+                                                     self._srom_grad,
+                                                     srom_samples),
+                                               jac=self._grad,
+                                               constraints=constraints,
+                                               method=method,
+                                               bounds=bounds)
+
+            # If error is lower than lowest so far, keep track of results.
+            if optimization_result['fun'] < best_objective_function_result:
+                optimal_samples = srom_samples
+                optimal_probabilities = optimization_result['x']
+                best_objective_function_result = optimization_result['fun']
+
+            # Report ongoing results to user if in sequential mode.
+            if verbose and self.number_CPUs == 1 and \
+                    (i == 0 or (i + 1) % output_interval == 0):
+
+                print "\tIteration %d Objective Function: %s" % \
+                      (i + 1, optimization_result['fun'])
+
+                print "Optimal:", best_objective_function_result
+
+        return optimal_samples, optimal_probabilities
+
+    def __get_optimal_parallel_results(self, optimal_samples,
+                                       optimal_probabilities):
+        '''
+        Allows all CPUs to share results data to determine optimum. Optimal
+        results are then distributed to all CPUs and returned.
+        Note: should only be run when multiple CPUs are utilized to compute
+        optimization and mpi4py module is available.
+        -optimal_samples: samples computed in get_optimal_params
+        -optimal_probabilities: probabilities computed in
+               get_optimal_params
+
+        returns tuple containing optimal samples and probabilities
+        '''
+
+        # Create a package to transmit results in.
+        this_cpu_results = {'samples': optimal_samples,
+                            'probabilities': optimal_probabilities}
+
+        # Gather results.
+        import mpi4py
+        comm = mpi4py.MPI.COMM_WORLD
+        all_cpu_results = comm.gather(this_cpu_results, root=0)
+
+        # Let CPU 0 gather and compare results to determine optimum.
+        if self.cpu_rank == 0:
+
+            best_mean_error = 1e6
+
+            for result in all_cpu_results:
+
+                result_moment_error, result_cdf_error, \
+                    result_correlation_error, result_mean_error = \
+                    self.get_errors(optimal_samples, optimal_probabilities)
+
+                if result_mean_error < best_mean_error:
+                    best_mean_error = result_mean_error
+                    optimal_samples = result['samples']
+                    optimal_probabilities = result['probabilities']
+
+        # Now send optimal results from CPU 0 to all CPUs.
+        optimal_samples, optimal_probabilities = \
+            comm.broadcast([optimal_samples, optimal_probabilities], root=0)
+
+        return optimal_samples, optimal_probabilities
+
+    def show_parallelization_information(self, num_test_samples):
+        '''
+        Displays whether sequential or parallel optimization is running,
+        and shows a warning if the number samples cannot be equally
+        distributed among the available number of CPUs.
+        -num_test_samples: Total number of test samples to be run.
+        '''
+
+        if self.number_CPUs == 1:
+            print "SROM Sequential Optimizer:"
+
+        elif self.cpu_rank == 0:
+            print "SROM Parallel Optimizer (%s cpus):" % self.number_CPUs
+
+        if self.cpu_rank == 0 and \
+           num_test_samples % self.number_CPUs != 0:
+
+            print "Warning: # test samples not divisible by # CPUs!"
+            print "%s per core, %s total" % \
+                  (num_test_samples // self.number_CPUs, num_test_samples)
+
+    def __detect_parallelization(self):
+        '''
+        Detects whether multiple processors are available and sets
+        self.number_CPUs and self.cpu_rank accordingly.
+        '''
+        try:
+            imp.find_module('mpi4py')
+
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+
+            self.number_CPUs = comm.size
+            self.cpu_rank = comm.rank
+
+        except ImportError:
+
+            self.number_CPUs = 1
+            self.cpu_rank = 0
+
+    def get_errors(self, samples, probabilities):
+        '''
+        Compute moment, cdf, correlation, and mean error for computed samples
+        and probabilities.
+        -samples: samples computed in get_optimal_params
+        -probabilities: probabilities computed in get_optimal_params
+        returns tuple of moment error, cdf error, correlation error, and
+                 mean error.
+        '''
+        result_moment_error = \
+            self._srom_obj.get_moment_error(samples, probabilities)
+
+        result_cdf_error = \
+            self._srom_obj.get_cdf_error(samples, probabilities)
+
+        result_correlation_error = \
+            self._srom_obj.get_corr_error(samples, probabilities)
+
+        result_mean_error = np.mean([result_moment_error,
+                                     result_cdf_error,
+                                     result_correlation_error])
+
+        return (result_moment_error, result_cdf_error, result_correlation_error,
+                result_mean_error)
+
+    def get_param_bounds(self, joint_opt):
         '''
         Get the bounds on parameters for SROM optimization problem. If doing
         joint optimization, need bounds for both samples & probs. If not,
@@ -226,36 +394,36 @@ class Optimizer:
         '''
         
         if not joint_opt:
-            bounds = [(0.0,1.0)]*sromsize
+            bounds = [(0.0, 1.0)] * self._srom_size
         else:
             raise NotImplementedError("SROM joint optimization not implemented")
 
         return bounds
         
-    def get_constraints(self, joint_opt, sromsize, dim):
+    def get_constraints(self, joint_opt):
         '''
         Returns constraint dictionaries for scipy optimize that enforce 
         probabilities summing to 1 for joint or sequential optimize case
         '''
 
         # A little funky, need to return function as constraint.
-        #TODO - use lambda function instead?
+        # TODO - use lambda function instead?
 
         # Sequential case - unknown vector x is probabilities directly
         def seq_constraint(x):
             return 1.0 - np.sum(x)
 
         # Joint case - probabilities at end of unknown vector x
-        def joint_constraint(x, sromsize, dim):
-            return 1.0 - np.sum(x[sromsize*dim:])
+        def joint_constraint(x):
+            return 1.0 - np.sum(x[self._srom_size * self._dim:])
 
         if not joint_opt:
-            return {'type':'eq', 'fun':seq_constraint}
+            return {'type': 'eq', 'fun': seq_constraint}
         else:
-            return {'type':'eq', 'fun':joint_constraint, 'args':(sromsize, dim)}
-        
-        
-    def get_initial_guess(self, joint_opt, sromsize):
+            return {'type': 'eq', 'fun': joint_constraint,
+                    'args': (self._srom_size, self._dim)}
+
+    def get_initial_guess(self, joint_opt):
         '''
         Return initial guess for optimization. Randomly drawn samples w/ equal
         probability for joint optimization or just equal probabilities for 
@@ -265,10 +433,11 @@ class Optimizer:
         if joint_opt:
             # Randomly draw some samples & hstack them with probabilities
             # TODO - untested
-            samples = self._target.draw_random_sample(sromsize)
-            probs = (1./float(sromsize))*np.ones((sromsize))
+            samples = self._target.draw_random_sample(self._srom_size)
+            probs = (1. / float(self._srom_size)) * np.ones(self._srom_size)
             initial_guess = np.hstack((samples.flatten(), probs))
         else:
-            initial_guess = (1./float(sromsize))*np.ones((sromsize))
+            initial_guess = \
+                (1. / float(self._srom_size)) * np.ones(self._srom_size)
 
         return initial_guess

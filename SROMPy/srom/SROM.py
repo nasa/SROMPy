@@ -49,7 +49,7 @@ class SROM(object):
             raise(ValueError("SROM size must be greater than zero."))
 
         if dim <= 0:
-            raise(ValueError("SROM dimension must be greater than zero."))
+            raise(ValueError("SROM dimension must be greater than 0."))
 
         self._size = int(size)
         self._dim = int(dim)
@@ -88,11 +88,11 @@ class SROM(object):
 
         """
 
-        #Handle 1 dimension case, adjust shape:
+        # Handle 1 dimension case, adjust shape:
         if len(samples.shape) == 1:
             samples.shape = (len(samples), 1)
 
-        #Verify dimensions of samples/probs
+        # Verify dimensions of samples/probs
         (size, dim) = samples.shape
 
         if size != self._size and dim != self._dim:
@@ -138,7 +138,7 @@ class SROM(object):
         each dimension.
         '''
 
-        #Make sure SROM has been properly initialized
+        # Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before computing moments")
 
@@ -147,7 +147,7 @@ class SROM(object):
 
         for q in range(max_order):
 
-            #moment_q = sum_{k=1}^m p(k) * x(k)^q
+            # moment_q = sum_{k=1}^m p(k) * x(k)^q
             moment_q = np.zeros((1, self._dim))
             for k, sample in enumerate(self._samples):
                 moment_q = moment_q + self._probs[k]* pow(sample, q+1)
@@ -177,7 +177,7 @@ class SROM(object):
               of values for each dimension, but must use the same number of pts.
         '''
 
-        #Make sure SROM has been properly initialized
+        # Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before computing CDF")
 
@@ -185,14 +185,14 @@ class SROM(object):
             x_grid = x_grid.reshape((len(x_grid), 1))
         (num_pts, dim) = x_grid.shape
 
-        #If only one grid was provided for multiple dims, repeat to generalize
+        # If only one grid was provided for multiple dims, repeat to generalize
         if (dim == 1) and (self._dim > 1):
             x_grid = np.repeat(x_grid, self._dim, axis=1)
 
         CDF_vals = np.zeros((num_pts, self._dim))
 
-        #Vectorized indicator implementation for CDF
-        #CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
+        # Vectorized indicator implementation for CDF
+        # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
         for i, grid in enumerate(x_grid.T):
             for k, sample in enumerate(self._samples):
                 indz = grid >= sample[i]
@@ -207,7 +207,7 @@ class SROM(object):
         srom_corr = sum_{k=1}^m [ x^(k) * (x^(k))^T ] * p^(k)
         '''
 
-        #Make sure SROM has been properly initialized
+        # Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before computing moments")
 
@@ -281,10 +281,10 @@ class SROM(object):
         simultaenously.
         '''
 
-        if not (isinstance(target_random_variable, RandomVector) or isinstance(target_random_variable, RandomVariable)):
-            raise TypeError("target_random_variable must inherit from RandomVector or RandomVariable.")
+        if not isinstance(target_random_variable, RandomEntity):
+            raise TypeError("target_random_variable must inherit from RandomEntity.")
 
-        #Use optimizer to form SROM objective func & gradient and minimize:
+        # Use optimizer to form SROM objective func & gradient and minimize:
         opt = Optimizer(target_random_variable,
                         self,
                         weights,
@@ -324,7 +324,7 @@ class SROM(object):
 
         '''
 
-        #Make sure SROM has been properly initialized
+        # Make sure SROM has been properly initialized
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before saving to disk")
 
