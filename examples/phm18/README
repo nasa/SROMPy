@@ -2,20 +2,25 @@ This readme file provides an overview of the source code and data provided in th
 The slides presented at the PHM18 conference are available in the file PHM18_Jwarner.pptx. The conference paper can be downloaded at:
 https://www.phmpapers.org/index.php/phmconf/article/download/551/phmc_18_551
 
-Two data directories provided are mc_data and srom_data, containing the sample data files for the Monte Carlo solution and data files needed for SROM solutions, respectively.
+Two data directories provided: mc_data and srom_data, containing the sample data files for the Monte Carlo solution and data files needed for SROM solutions, respectively.
 
-The scripts that implement the procedure are as follows:
+#--------------------SROM Uncertainty Propagation Procedure--------------------
+
+The scripts that implement the SROM solution procedure are as follows:
     *Step 1 - generate_input_srom.py
     *Step 2 - run_model.py
     *Step 3 - generate_pwconstant_eol.py or generate_pwlinear_eol.py
 
+These three steps correspond to the three steps described in Section 2.1.3 of the conference paper. 
+
     Notes:
         *Step 1 solves the SROM optimization problem which has inherent randomness due to numerical sampling, so the SROMs and results produced will vary slightly from those in the paper.
-        *Step 2 is only a representative script and will not run. The true model used in this study depends on a commercial code and is therefore not included. However, the code reflects a common SROM workflow
-        
+        *Step 2 is only a representative script and will not run. The true model used in this study depends on a commercial code and is therefore not included. However, the code reflects a common SROM workflow and can be modified to solve a new problem of interest. Also, the input/output data from the crack growth model are included in the mc_data directory. 
+
+#--------------------Scripts for Reproducing PHM18 Results---------------------
 
 Scripts for producing Figures in paper:
-Figure 1 - test_normal_rv_srom.py
+Figure 1 - normal_rv_srom.py
     *Note - due to randomness of the SROM optimization algorithm, the resulting
     plot will vary from the one shown in the paper when re-run.
 Figure 3 - plot_input_pdfs.py
