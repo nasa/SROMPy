@@ -8,13 +8,14 @@ import sys
 import os
 import sys
 
-# PYTHONPATH is not found when running mpiexec, so inject it so that we can load SROMPy modules...
+# PYTHONPATH is not found when running mpiexec, so inject it so that we can
+# load SROMPy modules...
 if 'PYTHONPATH' not in os.environ:
 
-    base_path = os.path.abspath('../..')
+    base_path = os.path.abspath('.')
 
     sys.path.insert(0, base_path)
-    sys.path.insert(0, os.path.join(base_path, 'src'))
+    sys.path.insert(0, os.path.join(base_path, 'SROMPy'))
 
 from SROMPy.srom import SROM
 from SROMPy.target import BetaRandomVariable
