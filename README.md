@@ -6,9 +6,9 @@ Python module for generating Stochastic Reduced Order Models (SROMs) and applyin
 Example usage:
 
 ```python
-from postprocess import Postprocessor
-from srom import SROM
-from target import NormalRandomVariable
+from SROMPy.postprocess import Postprocessor
+from SROMPy.srom import SROM
+from SROMPy.target import NormalRandomVariable
 
 #Initialize Normal random variable object to be modeled by SROM:
 normal = NormalRandomVariable(mean=3., std_dev=1.5)
@@ -18,8 +18,8 @@ srom = SROM(size=10, dim=1)
 srom.optimize(normal)
 
 #Compare the CDF of the SROM & target normal variable:
-pp = Postprocessor(srom, normal)
-pp.compare_CDFs()
+post_processor = Postprocessor(srom, normal)
+post_processor.compare_CDFs()
 ```
   
 The above code snippet produces the following CDF comparison plot: 
