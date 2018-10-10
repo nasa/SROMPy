@@ -1,10 +1,25 @@
+# Copyright 2018 United States Government as represented by the Administrator of
+# the National Aeronautics and Space Administration. No copyright is claimed in
+# the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
+# The Stochastic Reduced Order Models with Python (SROMPy) platform is licensed
+# under the Apache License, Version 2.0 (the "License"); you may not use this
+# file except in compliance with the License. You may obtain a copy of the
+# License at http://www.apache.org/licenses/LICENSE-2.0.
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import os
 import numpy as np
 from collections import OrderedDict
 
-from target import SampleRandomVector
-from srom import SROM, SROMSurrogate
-from postprocess import Postprocessor
+from SROMPy.target import SampleRandomVector
+from SROMPy.srom import SROM, SROMSurrogate
+from SROMPy.postprocess import Postprocessor
 
 '''
 Compare piecewise linear SROM approximations to the EOL for m=5,10,20
@@ -28,9 +43,9 @@ xticks = [[ r'$1.0 \times 10^6$','',r'$1.4 \times 10^6$','',
            r'$1.8 \times 10^6$','']]
 
 xaxispadding = 5
-axisfontsize = 28
-labelfontsize = 24
-legendfontsize = 24
+axisfontsize = 24
+labelfontsize = 20
+legendfontsize = 20
 cdfylabel = True        #Label y axis as "CDF"
 plot_dir = "plots"
 plot_suffix = "SROM_pwlin_eol_CDF_m"
@@ -46,7 +61,7 @@ sroms = OrderedDict()
 
 for sromsize in sromsizes:
 
-    #Get EOL SROM Surrogate samples to make SampleRandomVector representation of CDF
+    #Get EOL SROM Surrogate samples to make SampleRV representation of CDF
     eolsamplefile = "srom_eol_samples_m" + str(sromsize) + ".txt"
     eolsamplefile = os.path.join(srom_dir, eolsamplefile)
     eolsamples = np.genfromtxt(eolsamplefile)
