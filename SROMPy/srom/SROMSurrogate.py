@@ -99,7 +99,7 @@ class SROMSurrogate:
         #Verify dimensions of samples/probs
         (size, dim) = outputsamples.shape
 
-        if size != self._inputsrom.get_size():
+        if size != self._inputsrom.size:
             raise ValueError("Number of output samples must match input " +
                              " srom size!")
 
@@ -110,9 +110,9 @@ class SROMSurrogate:
         #TODO - checks on outputgradients:
         if outputgradients is not None:
             (size__, dim__) = outputgradients.shape
-            if size__ != self._inputsrom.get_size():
+            if size__ != self._inputsrom.size:
                 raise ValueError("Incorrect # samples in gradient array!")
-            if dim__ != self._inputsrom.get_dim():
+            if dim__ != self._inputsrom.dim:
                 raise ValueError("Incorrect dimension in gradient array!")
 
         self._gradients = outputgradients
@@ -198,7 +198,7 @@ class SROMSurrogate:
         #Verify dimensions of samples/probs
         (numsamples, dim) = inputsamples.shape
 
-        if dim != self._inputsrom.get_dim():
+        if dim != self._inputsrom.dim:
             raise ValueError("Incorrect input sample dimension")
 
         #Evaluate piecewise constant or linear surrogate model to get samples:

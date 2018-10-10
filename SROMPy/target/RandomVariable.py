@@ -51,7 +51,3 @@ class RandomVariable(RandomEntity):
     @abc.abstractmethod
     def generate_moments(self):
         return
-
-    @abc.abstractmethod
-    def get_dim(self):
-        return

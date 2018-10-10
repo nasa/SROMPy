@@ -42,16 +42,13 @@ class NormalRandomVariable(RandomVariable):
         self._std = std_dev
 
         #set dimension (scalar), min/max to equal mean +/- 4stds
-        self._dim = 1
+        self.dim = 1
         self._mins = [mean - 4.*std_dev]
         self._maxs = [mean + 4.*std_dev]
 
         #cache moments
         self.generate_moments(max_moment)
         self._max_moment = max_moment
-
-    def get_dim(self):
-        return self._dim
 
     def get_variance(self):
         '''

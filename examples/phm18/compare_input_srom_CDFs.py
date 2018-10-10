@@ -52,7 +52,7 @@ target = SampleRandomVector(samples)
 
 #Set x limits for each variable based on target:
 xlimits = []
-for i in range(target._dim):
+for i in range(target.dim):
     lims = [np.min(samples[:,i]), np.max(samples[:,i])]
     xlimits.append(lims)
 
@@ -62,7 +62,7 @@ sroms = OrderedDict()
 for sromsize in sromsizes:
 
     #Generate SROM from file:
-    srom = SROM(sromsize, target._dim)
+    srom = SROM(sromsize, target.dim)
     sromfile = "srom_m" + str(sromsize) + ".txt"
     sromfile = os.path.join(srom_dir, sromfile)
     srom.load_params(sromfile)

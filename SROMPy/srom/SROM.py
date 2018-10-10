@@ -51,17 +51,11 @@ class SROM(object):
         if dim <= 0:
             raise(ValueError("SROM dimension must be greater than 0."))
 
-        self._size = int(size)
-        self._dim = int(dim)
+        self.size = int(size)
+        self.dim = int(dim)
 
         self._samples = None
         self._probs = None
-
-    def get_dim(self):
-        return self._dim
-
-    def get_size(self):
-        return self._size
 
     def set_params(self, samples, probs):
         """
@@ -95,15 +89,15 @@ class SROM(object):
         # Verify dimensions of samples/probs
         (size, dim) = samples.shape
 
-        if size != self._size and dim != self._dim:
+        if size != self.size and dim != self.dim:
             msg = "SROM samples have wrong dimension, must be (sromsize x dim)"
             raise ValueError(msg)
 
-        if len(probs) != self._size:
+        if len(probs) != self.size:
             raise ValueError("SROM probs must have dim. equal to srom size")
 
         self._samples = copy.deepcopy(samples)
-        self._probs = copy.deepcopy(probs.reshape((self._size, 1)))
+        self._probs = copy.deepcopy(probs.reshape((self.size, 1)))
 
     def get_params(self):
         '''
@@ -143,12 +137,12 @@ class SROM(object):
             raise ValueError("Must initalize SROM before computing moments")
 
         max_order = int(max_order)
-        moments = np.zeros((max_order, self._dim))
+        moments = np.zeros((max_order, self.dim))
 
         for q in range(max_order):
 
             # moment_q = sum_{k=1}^m p(k) * x(k)^q
-            moment_q = np.zeros((1, self._dim))
+            moment_q = np.zeros((1, self.dim))
             for k, sample in enumerate(self._samples):
                 moment_q = moment_q + self._probs[k]* pow(sample, q+1)
 
@@ -186,10 +180,10 @@ class SROM(object):
         (num_pts, dim) = x_grid.shape
 
         # If only one grid was provided for multiple dims, repeat to generalize
-        if (dim == 1) and (self._dim > 1):
-            x_grid = np.repeat(x_grid, self._dim, axis=1)
+        if (dim == 1) and (self.dim > 1):
+            x_grid = np.repeat(x_grid, self.dim, axis=1)
 
-        CDF_vals = np.zeros((num_pts, self._dim))
+        CDF_vals = np.zeros((num_pts, self.dim))
 
         # Vectorized indicator implementation for CDF
         # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
@@ -211,7 +205,7 @@ class SROM(object):
         if self._samples is None or self._probs is None:
             raise ValueError("Must initalize SROM before computing moments")
 
-        corr = np.zeros((self._dim, self._dim))
+        corr = np.zeros((self.dim, self.dim))
 
         for k, sample in enumerate(self._samples):
             corr = corr + np.outer(sample, sample) * self._probs[k]
@@ -363,7 +357,7 @@ class SROM(object):
         (size, dim) = srom_params.shape
         dim -= 1                        #Account for probabilities in last col
 
-        if size != self._size and dim != self._dim:
+        if size != self.size and dim != self.dim:
             msg = "Dimension mismatch when loading SROM params from file"
             raise ValueError(msg)
 

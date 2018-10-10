@@ -54,7 +54,7 @@ class SampleRandomVector(RandomVector):
             msg = "Dimension is greater than # samples! Check samples array"
             raise ValueError(msg)
 
-        #Parent class (RandomVector) constructor, sets self._dim
+        #Parent class (RandomVector) constructor, sets self.dim
         super(SampleRandomVector, self).__init__(dim)
 
         self._num_samples = num_samples
@@ -106,10 +106,10 @@ class SampleRandomVector(RandomVector):
         (num_pts, dim) = x_grid.shape
 
         #If only one grid was provided for multiple dims, repeat to generalize
-        if (dim == 1) and (self._dim > 1):
-            x_grid = np.repeat(x_grid, self._dim, axis=1)
+        if (dim == 1) and (self.dim > 1):
+            x_grid = np.repeat(x_grid, self.dim, axis=1)
 
-        CDF_vals = np.zeros((num_pts, self._dim))
+        CDF_vals = np.zeros((num_pts, self.dim))
 
         #Evaluate CDF interpolants on grid
         for d, grid in enumerate(x_grid.T):
@@ -160,8 +160,8 @@ class SampleRandomVector(RandomVector):
         tuple with xgrid & CDF values arrays
         '''
 
-        x_grid = np.zeros((self._num_samples, self._dim))
-        CDF_vals = np.zeros((self._num_samples, self._dim))
+        x_grid = np.zeros((self._num_samples, self.dim))
+        CDF_vals = np.zeros((self._num_samples, self.dim))
 
         for i, samples_i in enumerate(self._samples.T):
             #Generate empirical CDF:
@@ -188,12 +188,12 @@ class SampleRandomVector(RandomVector):
         on samples. Moments from 1,...,max_order
         '''
 
-        self._moments = np.zeros((max_moment, self._dim))
+        self._moments = np.zeros((max_moment, self.dim))
 
         factor = (1./float(self._num_samples))
         for q in range(0, max_moment):
 
-            moment_q = np.zeros((1, self._dim))
+            moment_q = np.zeros((1, self.dim))
             for sample in self._samples:
                 moment_q += factor*np.power(sample, q+1)
 
@@ -235,7 +235,7 @@ class SampleRandomVector(RandomVector):
         '''
 
         #TODO - find faster numpy/scipy function
-        self._corr = np.zeros((self._dim, self._dim))
+        self._corr = np.zeros((self.dim, self.dim))
 
         factor = (1./float(self._num_samples))
         for sample in self._samples:

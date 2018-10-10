@@ -42,16 +42,13 @@ class UniformRandomVariable(RandomVariable):
         self._range_size = max_val - min_val
 
         #set dimension (scalar), min/max to equal mean +/- 4stds
-        self._dim = 1
+        self.dim = 1
         self._mins = [min_val]
         self._maxs = [max_val]
 
         #cache moments
         self.generate_moments(max_moment)
         self._max_moment = max_moment
-
-    def get_dim(self):
-        return self._dim
 
     def get_variance(self):
         '''
@@ -71,7 +68,6 @@ class UniformRandomVariable(RandomVariable):
             raise NotImplementedError("Moment above max_moment not handled yet")
 
         return moments
-
 
     def compute_CDF(self, x_grid):
         '''

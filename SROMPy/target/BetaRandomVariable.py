@@ -55,16 +55,13 @@ class BetaRandomVariable(RandomVariable):
         self._shift = shift
         self._scale = scale
         #set dimension (scalar), min/max
-        self._dim = 1
+        self.dim = 1
         self._mins = [shift]
         self._maxs = [shift + scale]
 
         #cache moments
         self.generate_moments(max_moment)
         self._max_moment = max_moment
-
-    def get_dim(self):
-        return self._dim
 
     @staticmethod
     def get_beta_shape_params(min_val, max_val, mean, var):

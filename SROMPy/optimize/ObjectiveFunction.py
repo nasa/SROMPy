@@ -179,7 +179,7 @@ class ObjectiveFunction:
         ''' 
 
         # Neglect for 1D random variable:
-        if self._target.get_dim() == 1:
+        if self._target.dim == 1:
             return 0.0
 
         srom_corr = self._SROM.compute_corr_mat()
@@ -207,9 +207,9 @@ class ObjectiveFunction:
         cdf_grid_pts along each dimension of the random vector.
         '''
         
-        self._x_grid = np.zeros((cdf_grid_pts, self._target.get_dim()))
+        self._x_grid = np.zeros((cdf_grid_pts, self._target.dim))
 
-        for i in range(self._target.get_dim()):
+        for i in range(self._target.dim):
             grid = np.linspace(self._target._mins[i], 
                                self._target._maxs[i],
                                cdf_grid_pts)
@@ -234,7 +234,7 @@ class ObjectiveFunction:
         # Ensure srom and target have same dimensions if target is RandomVector.
         if isinstance(target, RandomVector):
 
-            if target.get_dim() != srom.get_dim():
+            if target.dim != srom.dim:
                 raise ValueError("target and srom must have same dimensions.")
 
         # Test obj_weights

@@ -27,7 +27,7 @@ class RandomVector(RandomEntity):
 
     def __init__(self, dim):
 
-        self._dim = int(dim)
+        self.dim = int(dim)
 
     @abc.abstractmethod
     def compute_moments(self, max_order):
@@ -44,7 +44,3 @@ class RandomVector(RandomEntity):
     @abc.abstractmethod
     def draw_random_sample(self, sample_size):
         return
-
-    @abc.abstractmethod
-    def get_dim(self):
-        return self._dim

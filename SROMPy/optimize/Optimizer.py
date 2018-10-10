@@ -37,8 +37,8 @@ def scipy_obj_fun(x, objfun, grad, samples):
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = objfun._SROM.get_size()
-    dim = objfun._SROM.get_dim()
+    size = objfun._SROM.size
+    dim = objfun._SROM.dim
 
     # Unpacking simple with samples are fixed:
     probs = x
@@ -58,8 +58,8 @@ def scipy_grad(x, objfun, grad, samples):
     2) sequential optimization -> optimize probs for fixed samples
     '''
 
-    size = grad._SROM.get_size()
-    dim = grad._SROM.get_dim()
+    size = grad._SROM.size
+    dim = grad._SROM.dim
 
     # Unpacking simple with samples are fixed:
     probs = x
@@ -105,8 +105,8 @@ class Optimizer:
                                    max_moment, cdf_grid_pts)
 
         # Get srom size & dimension.
-        self._srom_size = srom.get_size()
-        self._dim = srom.get_dim()
+        self._srom_size = srom.size
+        self._dim = srom.dim
 
         # Gradient only available for SSE error obj function.
         if error.upper() == "SSE":
