@@ -57,14 +57,14 @@ class SROM(object):
         self._samples = None
         self._probs = None
 
-    def set_params(self, samples, probs):
+    def set_params(self, samples, probabilities):
         """
         Set defining SROM parameters - samples & corresponding probabilities.
 
         :param samples: Array of SROM samples
         :type samples: 2d Numpy array, size - (SROM size) x (dim)
-        :param probs: Array of SROM probabilities
-        :type probs: 1d Numpy array, size - (SROM size) x 1
+        :param probabilities: Array of SROM probabilities
+        :type probabilities: 1d Numpy array, size - (SROM size) x 1
 
         The sample/probability arrays have the following convention (srom sample
         index as rows, components of sample as columns):
@@ -93,11 +93,11 @@ class SROM(object):
             msg = "SROM samples have wrong dimension, must be (sromsize x dim)"
             raise ValueError(msg)
 
-        if len(probs) != self.size:
+        if len(probabilities) != self.size:
             raise ValueError("SROM probs must have dim. equal to srom size")
 
         self._samples = copy.deepcopy(samples)
-        self._probs = copy.deepcopy(probs.reshape((self.size, 1)))
+        self._probs = copy.deepcopy(probabilities.reshape((self.size, 1)))
 
     def get_params(self):
         '''

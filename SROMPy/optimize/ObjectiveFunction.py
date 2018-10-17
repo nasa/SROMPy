@@ -20,17 +20,17 @@ from SROMPy.target.RandomEntity import RandomEntity
 
 
 class ObjectiveFunction:
-    '''
+    """
     Defines the objective function for optimizing SROM parameters. Calculates
     errors between the statistics of the SROM and the target random vector
     being model by it.
     Will create objective function for optimization library (e.g. scipy) that 
     essentially wraps this class's evaluate function
-    '''
+    """
 
     def __init__(self, srom, target, obj_weights=None, error='mean',
                  max_moment=5, cdf_grid_pts=100):
-        '''
+        """
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
         calculates the errors between the statistics of this SROM and the 
@@ -51,13 +51,14 @@ class ObjectiveFunction:
             -max_moment - int, max order to evaluate moment errors up to
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
 
-        '''
+        """
 
         self.__test_init_params(srom, target, obj_weights, error,
                                 max_moment, cdf_grid_pts)
 
         self._SROM = srom
         self._target = target
+        self._x_grid = None
 
         # Generate grids for evaluating CDFs based on target RV's range
         self.generate_cdf_grids(cdf_grid_pts)
@@ -66,41 +67,43 @@ class ObjectiveFunction:
 
         self._max_moment = max_moment
 
-    def get_moment_error(self, samples, probs):
-        '''
-        Returns moment error for given samples & probs
-        '''
-        self._SROM.set_params(samples, probs)
+    def get_moment_error(self, samples, probabilities):
+        """
+        Returns moment error for given samples & probabilities
+        """
+
+        self._SROM.set_params(samples, probabilities)
         return self.compute_moment_error()
 
-    def get_cdf_error(self, samples, probs):
-        '''
-        Returns CDF error for given samples & probs
-        '''
-        self._SROM.set_params(samples, probs)
-        return self.compute_CDF_error()
+    def get_cdf_error(self, samples, probabilities):
+        """
+        Returns CDF error for given samples & probabilities
+        """
 
-    def get_corr_error(self, samples, probs):
-        '''
-        Returns correlation error for given samples & probs
-        '''
-        self._SROM.set_params(samples, probs)
+        self._SROM.set_params(samples, probabilities)
+        return self.compute_cdf_error()
+
+    def get_corr_error(self, samples, probabilities):
+        """
+        Returns correlation error for given samples & probabilities
+        """
+
+        self._SROM.set_params(samples, probabilities)
         return self.compute_correlation_error()
 
-    def evaluate(self, samples, probs):
-        '''
+    def evaluate(self, samples, probabilities):
+        """
         Evaluates the objective function for the specified SROM samples & 
         probabilities. Calculates errrors in statistics between SROM/target
-
-        '''
+        """
 
         error = 0.0
  
-         # SROM is now defined by the current values of samples/probs for stats.
-        self._SROM.set_params(samples, probs)
+        # SROM is by the current values of samples/probabilities for stats.
+        self._SROM.set_params(samples, probabilities)
 
         if self._weights[0] > 0.0:
-            cdf_error = self.compute_CDF_error()
+            cdf_error = self.compute_cdf_error()
             error += cdf_error * self._weights[0]
 
         if self._weights[1] > 0.0:
@@ -114,9 +117,9 @@ class ObjectiveFunction:
         return error
 
     def compute_moment_error(self):
-        '''
+        """
         Calculate error in moments between SROM & target
-        '''
+        """
         
         srom_moments = self._SROM.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
@@ -126,13 +129,14 @@ class ObjectiveFunction:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
         # Prevent divide by zero.
-        zeroinds = np.where(np.abs(target_moments) <= 1e-12)[0]
-        target_moments[zeroinds] = 1.0
+        zero_indices = np.where(np.abs(target_moments) <= 1e-12)[0]
+        target_moments[zero_indices] = 1.0
 
         # Squared relative difference:
         if self._metric == "SSE":
             rel_diffs = ((srom_moments-target_moments)/target_moments)**2.0
             error = 0.5*np.sum(rel_diffs)
+
         # Max absolute value:
         elif self._metric == "MAX":
             diffs = np.abs(srom_moments - target_moments)
@@ -145,18 +149,18 @@ class ObjectiveFunction:
 
         return error
 
-    def compute_CDF_error(self):
-        '''
+    def compute_cdf_error(self):
+        """
         Calculate error in CDFs between SROM & target at pts in x_grid
-        '''
+        """
 
         srom_cdfs = self._SROM.compute_CDF(self._x_grid)
         target_cdfs = self._target.compute_CDF(self._x_grid)
 
-        # Check for 0 cdf vals to prevent divide by zero.
-        nonzeroind = np.where(target_cdfs[:, 0] > 0)[0]
-        srom_cdfs = srom_cdfs[nonzeroind, :]
-        target_cdfs = target_cdfs[nonzeroind, :]
+        # Check for 0 cdf values to prevent divide by zero.
+        nonzero_indices = np.where(target_cdfs[:, 0] > 0)[0]
+        srom_cdfs = srom_cdfs[nonzero_indices, :]
+        target_cdfs = target_cdfs[nonzero_indices, :]
 
         if self._metric == "SSE":
             squared_diffs = (srom_cdfs - target_cdfs)**2.0
@@ -174,9 +178,9 @@ class ObjectiveFunction:
         return error
 
     def compute_correlation_error(self):
-        '''
+        """
         Calculate error in correlation matrix between SROM & target
-        ''' 
+        """ 
 
         # Neglect for 1D random variable:
         if self._target.dim == 1:
@@ -201,11 +205,11 @@ class ObjectiveFunction:
         return error
 
     def generate_cdf_grids(self, cdf_grid_pts):
-        '''
+        """
         Generate numerical grids for evaluating the CDF errors based on the 
         range of the target random vector. Create x_grid member variable with
         cdf_grid_pts along each dimension of the random vector.
-        '''
+        """
         
         self._x_grid = np.zeros((cdf_grid_pts, self._target.dim))
 
@@ -217,16 +221,17 @@ class ObjectiveFunction:
 
     def __test_init_params(self, srom, target, obj_weights, error, max_moment,
                            cdf_grid_pts):
-        '''
+        """
         Due to the large numbers of parameters passed into __init__() that
         need to be tested, the testing is done in this utility function
         instead of __init__().
-        '''
-        # Test target
+        """
+
+        # Test target.
         if not (isinstance(target, RandomEntity)):
             raise TypeError("target must inherit from RandomEntity.")
 
-        # Test srom
+        # Test srom.
         from SROMPy.srom import SROM
         if not isinstance(srom, SROM):
             raise TypeError("srom must be of type SROM.")
@@ -237,7 +242,7 @@ class ObjectiveFunction:
             if target.dim != srom.dim:
                 raise ValueError("target and srom must have same dimensions.")
 
-        # Test obj_weights
+        # Test obj_weights.
         if obj_weights is not None:
 
             if isinstance(obj_weights, list):
