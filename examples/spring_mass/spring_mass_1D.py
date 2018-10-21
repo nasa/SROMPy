@@ -55,7 +55,7 @@ input_srom.optimize(stiffness_rv)
 
 #Compare SROM vs target stiffness distribution:
 pp_input = Postprocessor(input_srom, stiffness_rv)
-pp_input.compare_CDFs()
+pp_input.compare_cdfs()
 
 #Run model to get max disp for each SROM stiffness sample
 srom_disps = np.zeros(sromsize)
@@ -69,7 +69,7 @@ output_srom.set_params(srom_disps, probs)
 
 #Compare solutions
 pp_output = Postprocessor(output_srom, mc_solution)
-pp_output.compare_CDFs()
+pp_output.compare_cdfs()
 
 #--------Piecewise LINEAR surrogate with gradient info-------
 
@@ -77,7 +77,7 @@ pp_output.compare_CDFs()
 
 #Perturbation size for finite difference
 stepsize = 1e-12
-samples_fd = FD.get_perturbed_samples(samples, perturb_vals=[stepsize])
+samples_fd = FD.get_perturbed_samples(samples, perturbation_values=[stepsize])
 
 #Run model to get perturbed outputs for FD calc.
 perturbed_disps = np.zeros(sromsize)
@@ -91,6 +91,6 @@ output_samples = surrogate_PWL.sample(stiffness_samples)
 solution_PWL = SampleRandomVector(output_samples)
 
 pp_pwl = Postprocessor(solution_PWL, mc_solution)
-pp_pwl.compare_CDFs()
+pp_pwl.compare_cdfs()
 
 

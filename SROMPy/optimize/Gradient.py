@@ -110,8 +110,8 @@ class Gradient:
         (size, dim) = samples.shape
 
         # Compute relative diffs btwn srom/target CDFs.
-        srom_cdfs = self.srom.compute_CDF(self._x_grid)
-        target_cdfs = self._target.compute_CDF(self._x_grid)
+        srom_cdfs = self.srom.compute_cdf(self._x_grid)
+        target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
         nonzero_index = np.where(target_cdfs[:, 0] > 0)[0]

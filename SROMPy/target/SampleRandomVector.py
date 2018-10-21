@@ -84,7 +84,7 @@ class SampleRandomVector(RandomVector):
 
         return moments
 
-    def compute_CDF(self, x_grid):
+    def compute_cdf(self, x_grid):
         '''
         Evaluates the precomputed/stored CDFs at the specified x_grid values
         and returns. 

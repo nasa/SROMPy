@@ -39,7 +39,7 @@ def test_compute_moments_simple_1d(simple_discrete_rv_1d):
 def test_compute_cdfs_simple_1d(simple_discrete_rv_1d):
 
     x_grid = np.array([0.5, 1.5, 2.5, 3.5, 4.5])
-    cdf_vals = simple_discrete_rv_1d.compute_CDF(x_grid)
+    cdf_vals = simple_discrete_rv_1d.compute_cdf(x_grid)
 
     true_cdf_vals = [0., 0.25, 0.5, 0.75, 1.0]
 
@@ -61,7 +61,7 @@ def test_compute_cdfs_simple_2d(simple_discrete_rv_2d):
 
     #CDFs are evaluated on the same x-grid for each dimension
     x_grid = np.array([0.5, 2.5, 4.5, 6.5, 7.5])
-    cdf_vals = simple_discrete_rv_2d.compute_CDF(x_grid)
+    cdf_vals = simple_discrete_rv_2d.compute_cdf(x_grid)
 
     true_cdf_vals_dim1 = [0., 0.5, 1.0, 1.0, 1.0]
     for i, true_val in enumerate(true_cdf_vals_dim1):

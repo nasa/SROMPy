@@ -71,8 +71,8 @@ for sromsize in sromsizes:
 #Font size specs & plotting
 axisfontsize = 25
 legendfontsize = 20
-Postprocessor.compare_srom_CDFs(sroms, target, plotdir="plots",
-                                plotsuffix=plot_suffix, variablenames=varz,                                     xlimits=xlimits, xticks=xticks,
-                                cdfylabel=cdfylabel, axisfontsize=axisfontsize,
-                                legendfontsize=legendfontsize)
+Postprocessor.compare_srom_cdfs(sroms, target, plot_dir="plots",
+                                plot_suffix=plot_suffix, variable_names=varz, x_ticks=xticks,
+                                cdf_y_label=cdfylabel, axis_font_size=axisfontsize,
+                                legend_font_size=legendfontsize)
 

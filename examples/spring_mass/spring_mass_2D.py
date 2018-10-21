@@ -82,6 +82,6 @@ srom_solution.set_params(srom_disps, probs)
 
 #Compare solutions
 pp = Postprocessor(srom_solution, mc_solution)
-pp.compare_CDFs()
+pp.compare_cdfs()
 
 

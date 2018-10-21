@@ -75,10 +75,10 @@ for sromsize in sromsizes:
 
     sroms[sromsize] = SROMSurrogate(srom, eols)
  
-Postprocessor.compare_srom_CDFs(sroms, target, plotdir="plots",
-                                plotsuffix=plot_suffix, variablenames=varz,                                     xlimits=xlimits, ylimits=ylimits, xticks=xticks,
-                                cdfylabel=True, xaxispadding=xaxispadding,
-                                axisfontsize=axisfontsize, 
-                                labelfontsize=labelfontsize,
-                                legendfontsize=legendfontsize)
+Postprocessor.compare_srom_cdfs(sroms, target, plot_dir="plots",
+                                plot_suffix=plot_suffix, variable_names=varz, y_limits=ylimits, x_ticks=xticks,
+                                cdf_y_label=True, x_axis_padding=xaxispadding,
+                                axis_font_size=axisfontsize,
+                                label_font_size=labelfontsize,
+                                legend_font_size=legendfontsize)
 

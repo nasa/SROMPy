@@ -71,4 +71,4 @@ eol_mc = SampleRandomVector(MC_eols)
 
 #COmpare solutions
 pp = Postprocessor(solution_PWL, eol_mc)
-pp.compare_CDFs()
+pp.compare_cdfs()

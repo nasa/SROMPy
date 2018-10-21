@@ -34,7 +34,7 @@ class RandomVector(RandomEntity):
         return
     
     @abc.abstractmethod
-    def compute_CDF(self, x_grid):
+    def compute_cdf(self, x_grid):
         return
 
     @abc.abstractmethod

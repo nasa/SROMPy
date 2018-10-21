@@ -40,7 +40,7 @@ input_srom.optimize(target, weights=[1,1,1], error="SSE")
 
 #Compare the CDFs
 pp = Postprocessor(srom, target)
-pp.compare_CDFs(saveFig=False)
+pp.compare_cdfs(save_figure=False)
 
 #Run the model for each input SROM sample:
 srom_eols = np.zeros(srom_size)
@@ -57,5 +57,5 @@ eol_mc = SampleRandomVector(MC_eols)
 
 #Compare final EOL solutions SROM vs MC:
 pp = Postprocessor(eol_srom, eol_mc)
-pp.compare_CDFs()
+pp.compare_cdfs()
 

@@ -154,8 +154,8 @@ class ObjectiveFunction:
         Calculate error in CDFs between SROM & target at pts in x_grid
         """
 
-        srom_cdfs = self._SROM.compute_CDF(self._x_grid)
-        target_cdfs = self._target.compute_CDF(self._x_grid)
+        srom_cdfs = self._SROM.compute_cdf(self._x_grid)
+        target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
         nonzero_indices = np.where(target_cdfs[:, 0] > 0)[0]

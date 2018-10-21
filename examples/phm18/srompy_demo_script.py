@@ -31,7 +31,7 @@ input_srom.optimize(target_vector)
 
 #Compare the input CDFs (produces Figure 6)
 post_processor = Postprocessor(input_srom, target_vector)
-post_processor.compare_CDFs(variablenames=
+post_processor.compare_cdfs(variable_names=
                             [r'$y_{0}$', r'log$C$', r'$n$'])
 
 #Run the model for each input SROM sample:
@@ -58,4 +58,4 @@ target_vector = SampleRandomVector(monte_carlo_results_samples)
 #Compare final EOL solutions SROM vs MC:
 # (produces Figure 7)
 post_processor = Postprocessor(srom_surrogate_model, target_vector)
-post_processor.compare_CDFs(variablenames=["EOL"])
+post_processor.compare_cdfs(variable_names=["EOL"])

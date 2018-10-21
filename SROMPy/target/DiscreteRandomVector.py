@@ -57,7 +57,7 @@ class DiscreteRandomVector(RandomVector):
         return moments
 
 
-    def compute_CDF(self, x_grid):
+    def compute_cdf(self, x_grid):
         '''
         Computes the marginal CDF values in each dimension.
 

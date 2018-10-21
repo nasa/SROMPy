@@ -45,5 +45,5 @@ eol_srom.set_params(srom_eols, srom_probs)
 eol_mc = SampleRandomVector(MC_eols)
 
 pp = Postprocessor(eol_srom, eol_mc)
-pp.compare_CDFs(variablenames=["EOL"])
+pp.compare_cdfs(variable_names=["EOL"])
 
