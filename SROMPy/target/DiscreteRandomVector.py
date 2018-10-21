@@ -1,15 +1,16 @@
-'''
+"""
 Class for defining a discrete random vector as a target to be matched with a 
 SROM. Similar to the sample-based random vector, but in general will have
 probabilities that are not equal. 
-'''
+"""
 
 import numpy as np
 
 from SROMPy.target.RandomVector import RandomVector
 
+
 class DiscreteRandomVector(RandomVector):
-    '''
+    """
     Discrete random vector. Defines a target that can be matched with a SROM
     that is created from samples and corresponding probabilities. Implements
     basic discrete statistics (similar to those of an SROM). 
@@ -20,11 +21,11 @@ class DiscreteRandomVector(RandomVector):
     :type probabilities: np array, length = # samples
     :param max_moment: max. order moment to precompute and store
     :type max_moment: int
-    '''
+    """
 
     def __init__(self, samples, probabilities, max_moment=10):
 
-        #Check for 1D case (random variable)
+        # Check for 1D case (random variable).
         if len(samples.shape) == 1:
             samples = samples.reshape((len(samples), 1))
 
@@ -32,13 +33,15 @@ class DiscreteRandomVector(RandomVector):
 
         self._set_member_variables(samples, probabilities, max_moment)
 
-        #Cache statistics so they can be returned quickly later
+        # Cache statistics so they can be returned quickly later.
         self._precompute_moments()
         self._precompute_correlation_matrix()
 
+        self._cdf_x_grid_cache = None
+        self._cdf_cache = None
 
     def compute_moments(self, max_order):
-        '''
+        """
         Return precomputed moments up to specified order.
 
         :param max_order: Maximum order of moments to return
@@ -46,9 +49,10 @@ class DiscreteRandomVector(RandomVector):
 
         Returns (max_order x dim) size Numpy array with SROM moments for
         each dimension.
-        '''
+        """
 
-        #TODO - calculate moments above max_moment on the fly & append to stored
+        # TODO - calculate moments above max_moment on the fly &
+        # append to stored
         if max_order <= self._max_moment:
             moments = self._moments[:max_order, :]
         else:
@@ -56,9 +60,8 @@ class DiscreteRandomVector(RandomVector):
 
         return moments
 
-
     def compute_cdf(self, x_grid):
-        '''
+        """
         Computes the marginal CDF values in each dimension.
 
         :param x_grid: Grid of points to compute CDF values on. If 1d array is
@@ -76,9 +79,9 @@ class DiscreteRandomVector(RandomVector):
               down the SROM optimization problem.
             * Providing a 2d array for x_grid can specify a different range
               of values for each dimension, but must use the same number of pts.
-        '''
+        """
 
-        #Account for 1d random variable
+        # Account for 1d random variable.
         if len(x_grid.shape) == 1:
             x_grid = x_grid.reshape((len(x_grid), 1))
         (num_pts, dim) = x_grid.shape
@@ -87,35 +90,36 @@ class DiscreteRandomVector(RandomVector):
         if (dim == 1) and (self.dim > 1):
             x_grid = np.repeat(x_grid, self.dim, axis=1)
 
-        #Check if we've computed/stored cdf values for this x_grid:
+        # Check if we've computed/stored cdf values for this x_grid:
         cache_flag = self._is_cdf_cached(x_grid)
 
         if cache_flag:
             return self._cdf_cache
         else:
 
-            CDF_vals = np.zeros((num_pts, self.dim))
+            cdf_values = np.zeros((num_pts, self.dim))
 
             # Vectorized indicator implementation for CDF
             # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
             for i, grid in enumerate(x_grid.T):
                 for k, sample in enumerate(self._samples):
-                    indz = grid >= sample[i]
-                    CDF_vals[indz, i] += self._probabilities[k]
+                    indices = grid >= sample[i]
+                    cdf_values[indices, i] += self._probabilities[k]
 
-            #Cache these values to return next time:
+            # Cache these values to return next time:
             self._cdf_x_grid_cache = x_grid
-            self._cdf_cache = CDF_vals
-            return CDF_vals
+            self._cdf_cache = cdf_values
 
-    def compute_corr_mat(self):
-        '''
+            return cdf_values
+
+    def compute_correlation_matrix(self):
+        """
         Returns precomputed correlation matrix.
-        '''
+        """
         return self._corr_matrix
 
     def draw_random_sample(self, sample_size):
-        '''
+        """
         Randomly draws a sample of this random vector.
 
         :param sample_size: number of samples to return
@@ -123,24 +127,25 @@ class DiscreteRandomVector(RandomVector):
 
         sample_size must be smaller than total # of samples. For discrete
         random vector, we return a randomly selected # of samples
-        '''
+        """
 
         if sample_size > self._num_samples:
             raise ValueError("Sample size can't be more than total # samples")
 
-        #Generate random indices for samples array
-        all_inds = np.arange(self._num_samples)
-        random_inds = np.random.choice(all_inds, sample_size, replace=False)
+        # Generate random indices for samples array.
+        all_indices = np.arange(self._num_samples)
+        random_indices = np.random.choice(all_indices, sample_size,
+                                          replace=False)
 
-        sample = self._samples[random_inds, :]
+        sample = self._samples[random_indices, :]
 
         return sample
     
     def _precompute_moments(self):
-        '''
+        """
         Precomputes and stores moments and stores in moments member variable
-        array
-        '''
+        array.
+        """
     
         self._moments = np.zeros((self._max_moment, self.dim))
         
@@ -154,12 +159,11 @@ class DiscreteRandomVector(RandomVector):
 
             self._moments[order, :] = moment_q
 
-
     def _precompute_correlation_matrix(self):
-        '''
+        """
         Precomputes and stores correlation matrix and stores in 
         "_corr_matrix" member variable array.
-        '''
+        """
         corr = np.zeros((self.dim, self.dim))
 
         for k, sample in enumerate(self._samples):
@@ -168,22 +172,21 @@ class DiscreteRandomVector(RandomVector):
         self._corr_matrix = corr
 
     def _is_cdf_cached(self, x_grid):
-        '''
+        """
         Checks to see if we've already computed CDF values for this particular
         x-grid, returns True if so
-        '''
+        """
     
-        #Indicates we haven't calculated any cdfs yet
+        # Indicates we haven't calculated any cdfs yet.
         if self._cdf_x_grid_cache is None:
             return False
 
         return np.array_equal(self._cdf_x_grid_cache, x_grid)
 
-
     def _set_member_variables(self, samples, probabilities, max_moment):
-        '''
+        """
         Sets all member variables
-        '''
+        """
 
         (num_samples, dim) = samples.shape
         self._samples = samples
@@ -191,28 +194,28 @@ class DiscreteRandomVector(RandomVector):
         self._max_moment = max_moment
         self._num_samples = num_samples
 
-        #initialize cached cdf/x values to optimize performance 
+        # Initialize cached cdf/x values to optimize performance.
         self._cdf_x_grid_cache = None
         self._cdf_cache = None
 
-        #min/max sample values needed for SROM optimization
+        # min/max sample values needed for SROM optimization.
         self._mins = np.min(samples, axis=0)
         self._maxs = np.max(samples, axis=0)
 
-        #Parent class (RandomVector) constructor, sets self.dim
+        # Parent class (RandomVector) constructor, sets self.dim.
         super(DiscreteRandomVector, self).__init__(dim)
 
-
-    def _validate_inputs(self, samples, probabilities):
-        '''
-        Check shapes/sizes/types? of arrays for samples/probs and proper 
+    @staticmethod
+    def _validate_inputs(samples, probabilities):
+        """
+        Check shapes/sizes/types? of arrays for samples/probabilities and proper
         probabilities
-        '''
+        """
 
         (num_samples, dim) = samples.shape
-        num_probs = len(probabilities)
+        num_probabilities = len(probabilities)
     
-        if num_samples != num_probs:
+        if num_samples != num_probabilities:
             msg = "Length of probability array must match # of samples"
             raise ValueError(msg)
 
@@ -225,4 +228,3 @@ class DiscreteRandomVector(RandomVector):
 
         if not np.isclose(np.sum(probabilities), 1.0):
             raise ValueError("Probabilities must sum to one!")
-

@@ -327,7 +327,7 @@ class Postprocessor:
             srom_cdfs[m] = srom.compute_cdf(x_grids)
 
         # targetCDFs = target.compute_CDF(x_grids)
-        (target_grids, targetCDFs) = target.get_plot_CDFs()
+        (target_grids, targetCDFs) = target.get_plot_cdfs()
 
         # Start plot name string if it's being stored.
         if save_figure:

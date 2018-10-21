@@ -77,7 +77,7 @@ class SROMSurrogate:
                          |  ...    , ..., ...      |
                          |  y^(m)_1, ..., y^(m)_do |
 
-        output samples must match the order of input_srom samples/probs!
+        output samples must match the order of input_srom samples/probabilities!
 
         (m x d_i array)
         gradients = | dy(x^{(1)})/dx_1, ..., dy(x^{(1)})/dx_di |

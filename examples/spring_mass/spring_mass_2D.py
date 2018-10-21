@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from model import SpringMass_2D
+from model import SpringMass2D
 from SROMPy.postprocess import Postprocessor
 from SROMPy.srom import SROM
 from SROMPy.target import BetaRandomVariable as beta
@@ -30,7 +30,7 @@ stiffness_rv = beta(alpha=3., beta=2., shift=1., scale=2.5)
 mass_rv = beta(alpha=2./3., beta=1./3., shift=0.5, scale=1.5)
 
 #Initialize model
-model = SpringMass_2D(state0, t_grid)
+model = SpringMass2D(state0, t_grid)
 
 #Generate samples of random variables for sample based random vector
 k_samples = stiffness_rv.draw_random_sample(5000)

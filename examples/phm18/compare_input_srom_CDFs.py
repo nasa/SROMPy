@@ -25,54 +25,57 @@ from SROMPy.postprocess import Postprocessor
 Compare SROMs for inputs - produce figure 3 in the paper
 '''
 
-#Target Monte Carlo input samples for comparison
-targetsamples = "mc_data/input_samples_MC.txt"
+# Target Monte Carlo input samples for comparison.
+target_samples = "mc_data/input_samples_MC.txt"
 
-#SElect 3 SROM sizes
-sromsizes = [5,10,20]
+# SElect 3 SROM sizes.
+srom_sizes = [5, 10, 20]
 srom_dir = "srom_data"
 
-#Plotting specs:
-varz = [r'$y_{0}$', r'log$C$', r'$n$']
-cdfylabel = True        #Label y axis as "CDF"
+# Plotting specs:
+variables = [r'$y_{0}$', r'log$C$', r'$n$']
+cdf_y_label = True        # Label y axis as "CDF"
 plot_dir = "plots"
 plot_suffix = "SROM_input_CDF_m"
-for m in sromsizes:
+for m in srom_sizes:
     plot_suffix += "_" + str(m)
 
-#Xtick labels for each variable for clarity
-y0ticks = ['', '0.245', '', '0.255', '', '0.265', '', '0.275']
-logCticks = ['', '-8.8', '', '-8.4', '', '-8.0', '', '-7.6']
-nticks = ['1.0', '', '1.5', '', '2.0', '', '2.5', '', '3.0']
-xticks = [y0ticks, logCticks, nticks]
+# x_tick labels for each variable for clarity.
+y0_ticks = ['', '0.245', '', '0.255', '', '0.265', '', '0.275']
+log_c_ticks = ['', '-8.8', '', '-8.4', '', '-8.0', '', '-7.6']
+n_ticks = ['1.0', '', '1.5', '', '2.0', '', '2.5', '', '3.0']
+x_ticks = [y0_ticks, log_c_ticks, n_ticks]
 
-#Load / initialize target random variable from samples:
-samples = np.genfromtxt(targetsamples)
+# Load / initialize target random variable from samples:
+samples = np.genfromtxt(target_samples)
 target = SampleRandomVector(samples)
 
-#Set x limits for each variable based on target:
-xlimits = []
+# Set x limits for each variable based on target:
+x_limits = []
 for i in range(target.dim):
-    lims = [np.min(samples[:,i]), np.max(samples[:,i])]
-    xlimits.append(lims)
+    limits = [np.min(samples[:, i]), np.max(samples[:, i])]
+    x_limits.append(limits)
 
-#Build up sromsize-to-SROM object map for plotting routine
+# Build up srom_size-to-SROM object map for plotting routine.
 sroms = OrderedDict()
 
-for sromsize in sromsizes:
+for srom_size in srom_sizes:
 
-    #Generate SROM from file:
-    srom = SROM(sromsize, target.dim)
-    sromfile = "srom_m" + str(sromsize) + ".txt"
-    sromfile = os.path.join(srom_dir, sromfile)
-    srom.load_params(sromfile)
-    sroms[sromsize] = srom
+    # Generate SROM from file:
+    srom = SROM(srom_size, target.dim)
+    srom_filename = "srom_m" + str(srom_size) + ".txt"
+    srom_filename = os.path.join(srom_dir, srom_filename)
+    srom.load_params(srom_filename)
+    sroms[srom_size] = srom
  
-#Font size specs & plotting
-axisfontsize = 25
-legendfontsize = 20
+# Font size specs & plotting.
+axis_font_size = 25
+legend_font_size = 20
 Postprocessor.compare_srom_cdfs(sroms, target, plot_dir="plots",
-                                plot_suffix=plot_suffix, variable_names=varz, x_ticks=xticks,
-                                cdf_y_label=cdfylabel, axis_font_size=axisfontsize,
-                                legend_font_size=legendfontsize)
+                                plot_suffix=plot_suffix,
+                                variable_names=variables,
+                                x_ticks=x_ticks,
+                                cdf_y_label=cdf_y_label,
+                                axis_font_size=axis_font_size,
+                                legend_font_size=legend_font_size)
 

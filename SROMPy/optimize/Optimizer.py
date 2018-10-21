@@ -51,8 +51,8 @@ def scipy_gradient(x, objective_function, gradient, samples):
     ObjectiveFunction.evaluate() function that defines SROM error. Need to
     unpack design variables x into samples & probabilities. Handle two cases:
 
-    1) joint optimization over samples & probs (samples=None)
-    2) sequential optimization -> optimize probs for fixed samples
+    1) joint optimization over samples & probabilities (samples=None)
+    2) sequential optimization -> optimize probabilities for fixed samples
     """
 
     # Unpacking simple with samples are fixed:
@@ -67,7 +67,7 @@ def scipy_gradient(x, objective_function, gradient, samples):
 class Optimizer:
     """
     Class that delegates the construction of an SROM through the optimization
-    of the SROM parameters (samples/probs) that minimize the error between
+    of the SROM parameters (samples/probabilities) that minimize the error between
     SROM & target random vector
     """
 
@@ -118,11 +118,11 @@ class Optimizer:
         that minimize the error between SROM/Target RV statistics.
 
         inputs:
-            -joint_opt, bool, Flag for optimizing jointly for samples & probs
-                rather than sequentially (draw samples then optimize probs in
+            -joint_opt, bool, Flag for optimizing jointly for samples & probabilities
+                rather than sequentially (draw samples then optimize probabilities in
                 loop - default).
             -num_test_samples, int, If optimizing sequentially (samples then
-                probs), this is number of random sample sets to test in opt
+                probabilities), this is number of random sample sets to test in opt
             -tol, float, tolerance of scipy optimization algorithm
             -options, dict, options for scipy optimization algorithm
             -method, str, method specifying scipy optimization algorithm
@@ -174,9 +174,9 @@ class Optimizer:
         acquires the optimal results achieved across all CPUs before
         returning them.
         -num_test_samples: int, If optimizing sequentially (samples then
-                probs), this is number of random sample sets to test in opt
-        -joint_opt: bool, Flag for optimizing jointly for samples & probs
-                rather than sequentially (draw samples then optimize probs in
+                probabilities), this is number of random sample sets to test in opt
+        -joint_opt: bool, Flag for optimizing jointly for samples & probabilities
+                rather than sequentially (draw samples then optimize probabilities in
                 loop - default).
         -method: str, method specifying scipy optimization algorithm
         -output_interval: int, how often to print optimization progress
@@ -385,7 +385,7 @@ class Optimizer:
     def get_param_bounds(self, joint_opt):
         """
         Get the bounds on parameters for SROM optimization problem. If doing
-        joint optimization, need bounds for both samples & probs. If not,
+        joint optimization, need bounds for both samples & probabilities. If not,
         just need trivial bounds on probabilities
         """
         

@@ -167,7 +167,7 @@ class AnalyticRandomVector(RandomVector):
 
         return cdf_values
 
-    def compute_corr_mat(self):
+    def compute_correlation_matrix(self):
         """
         Returns the correlation matrix
         """
@@ -199,7 +199,7 @@ class AnalyticRandomVector(RandomVector):
             # Transform by inverse CDF of random vector's components.
             for j in range(self.dim):
                 samples[i][j] = \
-                    self._components[j].compute_inv_CDF(norm_cdf[j])[0]
+                    self._components[j].compute_inv_cdf(norm_cdf[j])[0]
 
         return samples
 
@@ -217,8 +217,8 @@ class AnalyticRandomVector(RandomVector):
                                                 cov=[[1, rho_kj], [rho_kj, 1]])
 
         # f_k(x) = InvCDF_k ( Gaussian_CDF( x ) ).
-        f_k = self._components[k].compute_inv_CDF(norm.cdf(u))
-        f_j = self._components[j].compute_inv_CDF(norm.cdf(v))
+        f_k = self._components[k].compute_inv_cdf(norm.cdf(u))
+        f_j = self._components[j].compute_inv_cdf(norm.cdf(v))
 
         integrand = f_k*f_j*normal_pdf_kj
 
@@ -260,7 +260,7 @@ class AnalyticRandomVector(RandomVector):
         covariance matrix specified for this random vector when using a
         translation random vector sampling approach. See J.M. Emery 2015 paper
         pages 922,923 on this procedure.
-        Helper function - no inputs, operates on self._corr correlation matrix
+        Helper function - no inputs, operates on self._correlation correlation matrix
         and generates self._gaussian_corr
         """
 
@@ -293,7 +293,7 @@ class AnalyticRandomVector(RandomVector):
         """
         Generates the unscaled correlation matrix that is matched by the SROM
         during optimization. No inputs / outputs. INternally produces
-        self._unscaled_correlation from self._corr.
+        self._unscaled_correlation from self._correlation.
 
         >> C_ij = E[ X_i X_j]
 

@@ -181,8 +181,8 @@ class Gradient:
             return np.zeros(size)
         
         # Compute relative diffs between SROM/target correlation matrices.
-        srom_corr = self.srom.compute_corr_mat()
-        target_corr = self._target.compute_corr_mat()
+        srom_corr = self.srom.compute_correlation_matrix()
+        target_corr = self._target.compute_correlation_matrix()
         diffs = (srom_corr - target_corr) / target_corr**2.0
 
         grad = np.zeros(size)

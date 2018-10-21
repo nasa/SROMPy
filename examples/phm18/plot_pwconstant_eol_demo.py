@@ -27,23 +27,25 @@ monte carlo solution (w/ surrogate model)
 
 mc_eol_file = "mc_data/eol_samples_MC.txt"
 
-sromsize = 20
+srom_size = 20
 
-srom_eol_file = "srom_data/srom_eol_m" + str(sromsize) + ".txt"
-srom_input_file = "srom_data/srom_m" + str(sromsize) + ".txt"
+srom_eol_file = "srom_data/srom_eol_m" + str(srom_size) + ".txt"
+srom_input_file = "srom_data/srom_m" + str(srom_size) + ".txt"
 
-#Get MC EOL samples
+# Get MC EOL samples.
 MC_eols = np.genfromtxt(mc_eol_file)
 
-#Get SROM EOL samples & probabilities from input srom
-srom_eols = np.genfromtxt(srom_eol_file)
-srom_probs = np.genfromtxt(srom_input_file)[:,-1]  #probs in last column
+# Get SROM EOL samples & probabilities from input srom.
+srom_end_of_life_data = np.genfromtxt(srom_eol_file)
 
-#Make MC random variable & SROM to compare
-eol_srom = SROM(sromsize, dim=1)
-eol_srom.set_params(srom_eols, srom_probs)
-eol_mc = SampleRandomVector(MC_eols)
+# Probabilities in last column.
+srom_probabilities = np.genfromtxt(srom_input_file)[:, -1]
 
-pp = Postprocessor(eol_srom, eol_mc)
+# Make MC random variable & SROM to compare.
+end_of_life_srom = SROM(srom_size, dim=1)
+end_of_life_srom.set_params(srom_end_of_life_data, srom_probabilities)
+end_of_life_monte_carlo = SampleRandomVector(MC_eols)
+
+pp = Postprocessor(end_of_life_srom, end_of_life_monte_carlo)
 pp.compare_cdfs(variable_names=["EOL"])
 
