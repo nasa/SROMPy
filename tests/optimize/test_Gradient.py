@@ -34,6 +34,14 @@ def valid_srom():
     return SROM(10, 1)
 
 
+@pytest.fixture
+def gradient(sample_random_vector, valid_srom):
+
+    return Gradient(srom=valid_srom,
+                    target_random_variable=sample_random_vector,
+                    error='mean')
+
+
 def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom):
 
     # Ensure no exception using default parameters.
@@ -48,3 +56,15 @@ def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom
     with pytest.raises(ValueError):
         Gradient(srom=valid_srom, target_random_variable=sample_random_vector,
                  error='test')
+
+
+def test_evaluate_returns_expected_result(valid_srom, gradient):
+
+    samples = np.ones((valid_srom.size, valid_srom.dim))
+    probabilities = np.ones(valid_srom.size)
+
+    results = gradient.evaluate(samples, probabilities)
+
+    assert isinstance(results, np.ndarray)
+    assert results.size == valid_srom.size
+

@@ -50,7 +50,7 @@ class Gradient:
         self._x_grid = None
 
         # Generate grids for evaluating CDFs based on target RV's range
-        self.generate_cdf_grids(cdf_grid_pts)
+        self._generate_cdf_grids(cdf_grid_pts)
 
         self._metric = error.upper()
 
@@ -65,9 +65,9 @@ class Gradient:
         # SROM defined by the current values of samples/probabilities for stats
         self.srom.set_params(samples, probabilities)
 
-        return self.gradient_wrt_probabilities(samples)
+        return self._gradient_wrt_probabilities(samples)
 
-    def gradient_wrt_probabilities(self, samples):
+    def _gradient_wrt_probabilities(self, samples):
         """
         Returns gradient vector w/ derivative of obj function w.r.t. SROM
         probabilities (m x 1 array)
@@ -77,19 +77,19 @@ class Gradient:
 
         # d_e1/d_p:
         if self._weights[0] > 0:
-            cdf_grad = self.cdf_wrt_prob(samples)
+            cdf_grad = self._cdf_wrt_prob(samples)
         else:
             cdf_grad = np.zeros(srom_size)
 
         # d_e2/d_p
         if self._weights[1] > 0:
-            moment_grad = self.moment_wrt_prob(samples)
+            moment_grad = self._moment_wrt_prob(samples)
         else:
             moment_grad = np.zeros(srom_size)
 
         # d_e3/d_p
         if self._weights[2] > 0:
-            corr_grad = self.corr_wrt_prob(samples)
+            corr_grad = self._corr_wrt_prob(samples)
         else:
             corr_grad = np.zeros(srom_size)
 
@@ -99,7 +99,7 @@ class Gradient:
        
         return grad
     
-    def cdf_wrt_prob(self, samples):
+    def _cdf_wrt_prob(self, samples):
         """
         Gradient of CDF error term with respect to probability (for srom_ind)
         
@@ -137,7 +137,7 @@ class Gradient:
 
         return grad
 
-    def moment_wrt_prob(self, samples):
+    def _moment_wrt_prob(self, samples):
         """
         Gradient of moment error term with respect to probability (for srom_ind)
         """
@@ -169,7 +169,7 @@ class Gradient:
         
         return grad
 
-    def corr_wrt_prob(self, samples):
+    def _corr_wrt_prob(self, samples):
         """
         Gradient of corr. error term with respect to probability (for srom_ind)
         """
@@ -199,7 +199,7 @@ class Gradient:
 
         return grad
 
-    def generate_cdf_grids(self, cdf_grid_pts):
+    def _generate_cdf_grids(self, cdf_grid_pts):
         """
         Generate numerical grids for evaluating the CDF errors based on the 
         range of the target random vector. Create x_grid member variable with
