@@ -29,7 +29,7 @@ class ObjectiveFunction:
     """
 
     def __init__(self, srom, target, obj_weights=None, error='mean',
-                 max_moment=5, cdf_grid_pts=100):
+                 max_moment=5, num_cdf_grid_points=100):
         """
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
@@ -49,19 +49,19 @@ class ObjectiveFunction:
             -error - string 'mean','max', or 'sse' defining how error is defined
                 between the statistics of the SROM & target
             -max_moment - int, max order to evaluate moment errors up to
-            -cdf_grid_pts - int, # pts to evaluate CDF errors on
+            -num_cdf_grid_points - int, # pts to evaluate CDF errors on
 
         """
 
         self.__test_init_params(srom, target, obj_weights, error,
-                                max_moment, cdf_grid_pts)
+                                max_moment, num_cdf_grid_points)
 
         self._SROM = srom
         self._target = target
         self._x_grid = None
 
         # Generate grids for evaluating CDFs based on target RV's range
-        self.generate_cdf_grids(cdf_grid_pts)
+        self.generate_cdf_grids(num_cdf_grid_points)
 
         self._metric = error.upper()
 
@@ -204,23 +204,23 @@ class ObjectiveFunction:
 
         return error
 
-    def generate_cdf_grids(self, cdf_grid_pts):
+    def generate_cdf_grids(self, num_cdf_grid_points):
         """
         Generate numerical grids for evaluating the CDF errors based on the 
         range of the target random vector. Create x_grid member variable with
-        cdf_grid_pts along each dimension of the random vector.
+        num_cdf_grid_points along each dimension of the random vector.
         """
         
-        self._x_grid = np.zeros((cdf_grid_pts, self._target.dim))
+        self._x_grid = np.zeros((num_cdf_grid_points, self._target.dim))
 
         for i in range(self._target.dim):
             grid = np.linspace(self._target._mins[i], 
                                self._target._maxs[i],
-                               cdf_grid_pts)
+                               num_cdf_grid_points)
             self._x_grid[:, i] = grid
 
     def __test_init_params(self, srom, target, obj_weights, error, max_moment,
-                           cdf_grid_pts):
+                           num_cdf_grid_points):
         """
         Due to the large numbers of parameters passed into __init__() that
         need to be tested, the testing is done in this utility function
@@ -277,9 +277,9 @@ class ObjectiveFunction:
         if max_moment < 1:
             raise ValueError("max_moment must be a positive integer.")
 
-        # Test cdf_grid_pts.
-        if not isinstance(cdf_grid_pts, int):
+        # Test num_cdf_grid_points.
+        if not isinstance(num_cdf_grid_points, int):
             raise TypeError("cf_grid_pts must be a positive integer.")
 
-        if cdf_grid_pts < 1:
-            raise ValueError("cdf_grid_pts must be a positive integer.")
+        if num_cdf_grid_points < 1:
+            raise ValueError("num_cdf_grid_points must be a positive integer.")
