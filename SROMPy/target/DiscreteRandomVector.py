@@ -199,8 +199,8 @@ class DiscreteRandomVector(RandomVector):
         self._cdf_cache = None
 
         # min/max sample values needed for SROM optimization.
-        self._mins = np.min(samples, axis=0)
-        self._maxs = np.max(samples, axis=0)
+        self.mins = np.min(samples, axis=0)
+        self.maxs = np.max(samples, axis=0)
 
         # Parent class (RandomVector) constructor, sets self.dim.
         super(DiscreteRandomVector, self).__init__(dim)

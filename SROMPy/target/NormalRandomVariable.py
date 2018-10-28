@@ -44,8 +44,8 @@ class NormalRandomVariable(RandomVariable):
 
         # Set dimension (scalar), min/max to equal mean +/- 4stds.
         self.dim = 1
-        self._mins = [mean - 4.*std_dev]
-        self._maxs = [mean + 4.*std_dev]
+        self.mins = [mean - 4. * std_dev]
+        self.maxs = [mean + 4. * std_dev]
 
         # Cache moments
         self.generate_moments(max_moment)

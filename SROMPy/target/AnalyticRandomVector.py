@@ -81,12 +81,12 @@ class AnalyticRandomVector(RandomVector):
         # Get min/max values for each component.
         self._components = copy.deepcopy(random_variables)
 
-        self._mins = np.zeros(self.dim)
-        self._maxs = np.zeros(self.dim)
+        self.mins = np.zeros(self.dim)
+        self.maxs = np.zeros(self.dim)
 
         for i in range(self.dim):
-            self._mins[i] = self._components[i]._mins[0]
-            self._maxs[i] = self._components[i]._maxs[0]
+            self.mins[i] = self._components[i].mins[0]
+            self.maxs[i] = self._components[i].maxs[0]
 
         # Generate Gaussian correlation matrix for sampling translation RV:
         self.generate_gaussian_correlation()
@@ -160,8 +160,8 @@ class AnalyticRandomVector(RandomVector):
         for d, grid in enumerate(x_grid.T):
 
             # Make sure grid values lie within max/min along each dimension.
-            grid[np.where(grid < self._mins[d])] = self._mins[d]
-            grid[np.where(grid > self._maxs[d])] = self._maxs[d]
+            grid[np.where(grid < self.mins[d])] = self.mins[d]
+            grid[np.where(grid > self.maxs[d])] = self.maxs[d]
 
             cdf_values[:, d] = self._components[d].compute_cdf(grid)
 

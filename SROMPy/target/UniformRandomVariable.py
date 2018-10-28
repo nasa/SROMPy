@@ -44,8 +44,8 @@ class UniformRandomVariable(RandomVariable):
 
         # Set dimension (scalar), min/max to equal mean +/- 4stds.
         self.dim = 1
-        self._mins = [min_val]
-        self._maxs = [max_val]
+        self.mins = [min_val]
+        self.maxs = [max_val]
 
         # Cache moments.
         self.generate_moments(max_moment)

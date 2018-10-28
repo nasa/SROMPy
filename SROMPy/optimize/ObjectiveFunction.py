@@ -214,8 +214,8 @@ class ObjectiveFunction:
         self._x_grid = np.zeros((num_cdf_grid_points, self._target.dim))
 
         for i in range(self._target.dim):
-            grid = np.linspace(self._target._mins[i], 
-                               self._target._maxs[i],
+            grid = np.linspace(self._target.mins[i],
+                               self._target.maxs[i],
                                num_cdf_grid_points)
             self._x_grid[:, i] = grid
 

@@ -55,8 +55,8 @@ class SampleRandomVector(RandomVector):
             raise ValueError(msg)
 
         self._CDFs = []
-        self._mins = []
-        self._maxs = []
+        self.mins = []
+        self.maxs = []
 
         # Parent class (RandomVector) constructor, sets self.dim.
         super(SampleRandomVector, self).__init__(dim)
@@ -122,8 +122,8 @@ class SampleRandomVector(RandomVector):
         for d, grid in enumerate(x_grid.T):
 
             # Make sure grid values lie within max/min along each dimension.
-            grid[np.where(grid < self._mins[d])] = self._mins[d]
-            grid[np.where(grid > self._maxs[d])] = self._maxs[d]
+            grid[np.where(grid < self.mins[d])] = self.mins[d]
+            grid[np.where(grid > self.maxs[d])] = self.maxs[d]
 
             cdf_values[:, d] = self._CDFs[d](grid)
 
@@ -219,8 +219,8 @@ class SampleRandomVector(RandomVector):
 
         # Need to store max/min samples in each dimension to prevent out of
         # bounds values in the interpolators later.
-        self._mins = []
-        self._maxs = []
+        self.mins = []
+        self.maxs = []
 
         # Get all samples of the i^th dimension at a time to generate CDF
         # NOTE - does iterating over / sorting happen in place? Need deep copy?
@@ -232,8 +232,8 @@ class SampleRandomVector(RandomVector):
             cdf_func = interpolate.interp1d(sorted_i, cdf_values)
             self._CDFs.append(cdf_func)
 
-            self._mins.append(sorted_i[0])
-            self._maxs.append(sorted_i[-1])
+            self.mins.append(sorted_i[0])
+            self.maxs.append(sorted_i[-1])
 
     def generate_correlation(self):
         """

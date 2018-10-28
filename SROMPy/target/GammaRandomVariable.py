@@ -51,10 +51,10 @@ class GammaRandomVariable(RandomVariable):
 
         # Set dimension (scalar), min/max.
         self.dim = 1
-        self._mins = [shift]
+        self.mins = [shift]
 
         # NOTE Gamma max is technically infinite, do this on variance (3 STDs)?
-        self._maxs = [shift + 2*self.get_variance()**0.5]
+        self.maxs = [shift + 2 * self.get_variance() ** 0.5]
 
         # Cache moments.
         self.generate_moments(max_moment)
