@@ -26,59 +26,58 @@ Compare piecewise constant SROM approximations to the EOL for m=5,10,20
 Produces Figure 5(a) in the paper
 '''
 
-#Target Monte Carlo input samples for comparison
-targetsamples = "mc_data/eol_samples_MC.txt"
+# Target Monte Carlo input samples for comparison.
+target_samples = "mc_data/eol_samples_MC.txt"
 
-#SElect 3 SROM sizes
-sromsizes = [5,10,20]
+# SElect 3 SROM sizes.
+srom_sizes = [5, 10, 20]
 srom_dir = "srom_data"
 
-#Plotting specs:
-varz = [r'EOL (Cycles)']
-xlimits = [[1.0e6, 2.0e6]]
-ylimits = [[-0.01, 1.1]]
-xticks = [[r'$1.0 \times 10^6$','',r'$1.4 \times 10^6$','',
+# Plotting specs:
+variables = [r'EOL (Cycles)']
+x_limits = [[1.0e6, 2.0e6]]
+y_limits = [[-0.01, 1.1]]
+x_ticks = [[r'$1.0 \times 10^6$', '', r'$1.4 \times 10^6$', '',
            r'$1.8 \times 10^6$','']]
-xaxispadding = 5
-axisfontsize = 24
-labelfontsize = 20
-legendfontsize = 20
-showplot = False
-cdfylabel = True        #Label y axis as "CDF"
+x_axis_padding = 5
+axis_font_size = 24
+label_font_size = 20
+legend_font_size = 20
+show_plot = False
+cdf_y_label = True        # Label y axis as "CDF".
 plot_dir = "plots"
 plot_suffix = "SROM_pwconst_eol_CDF_m"
-for m in sromsizes:
+for m in srom_sizes:
     plot_suffix += "_" + str(m)
 
-#Load / initialize target random variable from samples:
-samples = np.genfromtxt(targetsamples)
+# Load / initialize target random variable from samples:
+samples = np.genfromtxt(target_samples)
 target = SampleRandomVector(samples)
 
-#Set x limits for each variable based on target:
-#xlimits = [[np.min(samples), np.max(samples)]]
-
-#Build up sromsize-to-SROM object map for plotting routine
+# Build up srom_size-to-SROM object map for plotting routine
 sroms = OrderedDict()
 
-for sromsize in sromsizes:
+for srom_size in srom_sizes:
 
-    #Generate input SROM from file:
-    srom = SROM(sromsize, target._dim)
-    sromfile = "srom_m" + str(sromsize) + ".txt"
-    sromfile = os.path.join(srom_dir, sromfile)
-    srom.load_params(sromfile)
+    # Generate input SROM from file:
+    srom = SROM(srom_size, target.dim)
+    srom_filename = "srom_m" + str(srom_size) + ".txt"
+    srom_filename = os.path.join(srom_dir, srom_filename)
+    srom.load_params(srom_filename)
         
-    #Generate SROM surrogate for output from EOLs & input srom:
-    eolfile = "srom_eol_m" + str(sromsize) + ".txt"
-    eolfile = os.path.join(srom_dir, eolfile)
-    eols = np.genfromtxt(eolfile)
+    # Generate SROM surrogate for output from EOLs & input srom:
+    end_of_life_filename = "srom_eol_m" + str(srom_size) + ".txt"
+    end_of_life_filename = os.path.join(srom_dir, end_of_life_filename)
+    end_of_life_data = np.genfromtxt(end_of_life_filename)
 
-    sroms[sromsize] = SROMSurrogate(srom, eols)
+    sroms[srom_size] = SROMSurrogate(srom, end_of_life_data)
  
-Postprocessor.compare_srom_CDFs(sroms, target, plotdir="plots",
-                                plotsuffix=plot_suffix, variablenames=varz,                                     xlimits=xlimits, ylimits=ylimits, xticks=xticks,
-                                cdfylabel=True, xaxispadding=xaxispadding,
-                                axisfontsize=axisfontsize, 
-                                labelfontsize=labelfontsize,
-                                legendfontsize=legendfontsize)
+Postprocessor.compare_srom_cdfs(sroms, target, plot_dir="plots",
+                                plot_suffix=plot_suffix,
+                                variable_names=variables, y_limits=y_limits,
+                                x_ticks=x_ticks, cdf_y_label=True,
+                                x_axis_padding=x_axis_padding,
+                                axis_font_size=axis_font_size,
+                                label_font_size=label_font_size,
+                                legend_font_size=legend_font_size)
 
