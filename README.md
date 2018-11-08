@@ -44,6 +44,7 @@ james.e.warner@nasa.gov
 Luke Morrill <br />
 Georgia Tech
 
+This software was funded by and developed under the High Performance Computing Incubator (HPCI) at NASA Langley Research Center.
 -------------------------------------------------------------------------------
 
 Copyright 2018 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
