@@ -15,6 +15,15 @@
 
 import pytest
 import numpy as np
+import os
+import sys
+
+if 'PYTHONPATH' not in os.environ:
+
+    base_path = os.path.abspath('.')
+
+    sys.path.insert(0, base_path)
+
 
 from SROMPy.optimize import Optimizer
 from SROMPy.srom import SROM
