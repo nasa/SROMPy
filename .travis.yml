@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.7"
+
+install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)/SROMPy
+  - pip install scipy
+  - pip install matplotlib
+  - pip install pytest pytest-cov
+  - pip install coveralls
+
+script:
+  - pytest tests --cov=SROMPy
+
+after_script:
+  - coveralls

@@ -7,7 +7,8 @@ from mpi4py import MPI
 import os
 import sys
 
-# PYTHONPATH is not found when running mpiexec, so inject it so that we can load SROMPy modules...
+# PYTHONPATH is not found when running mpiexec,
+# so inject it so that we can load SROMPy modules...
 if 'PYTHONPATH' not in os.environ:
     base_path = os.path.abspath('.')
     sys.path.insert(0, base_path)
@@ -64,13 +65,14 @@ for num_test_samples in xrange(min_samples, max_samples, samples_step):
     if comm.rank == 0:
         print 'Optimizing with %s test samples...' % num_test_samples
 
+    # Repeat performance data collection in order to smooth the chart lines.
     iteration_performance = []
-    for i in xrange(10):  # Repeat performance data collection in order to smooth the chart lines.
+    for i in xrange(10):
 
         input_srom = SROM(20, 1)
 
         t0 = time.time()
-        input_srom.optimize(random_variable, num_test_samples=num_test_samples, verbose=False)
+        input_srom.optimize(random_variable, num_test_samples=num_test_samples)
         iteration_performance.append(time.time() - t0)
 
     # We only need to save performance data from one process because

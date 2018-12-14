@@ -65,18 +65,20 @@ random_variable = BetaRandomVariable(alpha=3., beta=2., shift=1., scale=2.5)
 #
 # ex: { 60: { 2: 5.2, 3: 1.8 } }
 #
-# In above example have two tests both with 60 samples; one with 2 cpus and one with 3 cpus.
+# In above example have two tests both with 60 samples;
+# one with 2 cpus and one with 3 cpus.
 
 if num_test_samples not in performance_data:
     performance_data[num_test_samples] = {}
 
+# Repeat performance data collection in order to smooth the chart lines.
 iteration_performance = []
-for i in xrange(10):  # Repeat performance data collection in order to smooth the chart lines.
+for i in xrange(10):
 
     input_srom = SROM(20, 1)
 
     t0 = time.time()
-    input_srom.optimize(random_variable, num_test_samples=num_test_samples, verbose=False)
+    input_srom.optimize(random_variable, num_test_samples=num_test_samples)
     iteration_performance.append(time.time() - t0)
 
 mean_performance = np.mean(iteration_performance)

@@ -13,27 +13,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-'''
+"""
 Define SROM-based output surrogate class
-'''
+"""
 
 import numpy as np
 
 from SROM import SROM
+
 
 class SROMSurrogate:
     """
     SROMPy class that provides a closed-form surrogate model for a model output
     that can be sampled as a means of efficiently propagating uncertainty.
     Enables both a piecewise-constant model and a piecewise-linear model, if
-    gradient information is provided. 
-
-    :param inputsrom: The input SROM that was used to generate the outputs.
-    :type inputsrom: SROMPy SROM object.
-    :param outputsamples: Output samples corresponding to each input SROM sample
-    :type outputsamples: 2d Numpy Array
-    :param outputgradients: Gradient of output with respect to input samples
-    :type outputgradients: 2d Numpy Array
+    gradient information is provided.
     
     Conventions:
 
@@ -62,8 +56,8 @@ class SROMSurrogate:
 
     """
 
-    def __init__(self, inputsrom, outputsamples, outputgradients=None):
-        '''
+    def __init__(self, input_srom, output_samples, output_gradients=None):
+        """
         Initialize SROM surrogate using the input SROM used to generate the
         output samples. Output gradients are also supplied for the case of
         the piecewise linear surrogate.
@@ -72,11 +66,11 @@ class SROMSurrogate:
 
         m = SROM size (superscript), do = dimension (subscript);
 
-        outputsamples =  |  y^(1)_1, ..., y^(1)_do |
+        output_samples =  |  y^(1)_1, ..., y^(1)_do |
                          |  ...    , ..., ...      |
                          |  y^(m)_1, ..., y^(m)_do |
 
-        output samples must match the order of inputsrom samples/probs!
+        output samples must match the order of input_srom samples/probabilities!
 
         (m x d_i array)
         gradients = | dy(x^{(1)})/dx_1, ..., dy(x^{(1)})/dx_di |
@@ -85,44 +79,52 @@ class SROMSurrogate:
 
         do - dimension of output samples (doesn't need to equal di of input)
 
-        '''
+        :param input_srom: The input SROM that was used to generate the outputs.
+        :type input_srom: SROMPy SROM object.
+        :param output_samples: Output samples corresponding to each input SROM
+            sample
+        :type output_samples: 2d Numpy Array
+        :param output_gradients: Gradient of output with respect to input
+            samples
+        :type output_gradients: 2d Numpy Array
+        """
 
-        if inputsrom._samples is None or inputsrom._probs is None:
+        if input_srom.samples is None or input_srom.probabilities is None:
             raise ValueError("Input SROM must be properly initialized")
 
-        self._inputsrom = inputsrom
+        self._input_srom = input_srom
 
-        #Handle 1 dimension case, adjust shape:
-        if len(outputsamples.shape) == 1:
-            outputsamples.shape = (len(outputsamples), 1)
+        # Handle 1 dimension case, adjust shape:
+        if len(output_samples.shape) == 1:
+            output_samples.shape = (len(output_samples), 1)
 
-        #Verify dimensions of samples/probs
-        (size, dim) = outputsamples.shape
+        # Verify dimensions of samples/probabilities.
+        (size, dim) = output_samples.shape
 
-        if size != self._inputsrom.get_size():
+        if size != self._input_srom.size:
             raise ValueError("Number of output samples must match input " +
                              " srom size!")
 
-        self._outsamples = outputsamples
+        self._out_samples = output_samples
         self._dim = dim
         self._size = size
 
-        #TODO - checks on outputgradients:
-        if outputgradients is not None:
-            (size__, dim__) = outputgradients.shape
-            if size__ != self._inputsrom.get_size():
+        # TODO - checks on output_gradients:
+        if output_gradients is not None:
+
+            (size__, dim__) = output_gradients.shape
+            if size__ != self._input_srom.size:
                 raise ValueError("Incorrect # samples in gradient array!")
-            if dim__ != self._inputsrom.get_dim():
+            if dim__ != self._input_srom.dim:
                 raise ValueError("Incorrect dimension in gradient array!")
 
-        self._gradients = outputgradients
+        self._gradients = output_gradients
 
-        #Make SROM for output?
-        self._outputsrom = SROM(size, dim)
-        self._outputsrom.set_params(outputsamples, inputsrom._probs)
+        # Make SROM for output?
+        self._output_srom = SROM(size, dim)
+        self._output_srom.set_params(output_samples, input_srom.probabilities)
 
-
-    #Do these change for linear surrogate?
+    # Do these change for linear surrogate?
     def compute_moments(self, max_order):
         """
         Calculates and returns SROM moments.
@@ -134,9 +136,9 @@ class SROMSurrogate:
         each dimension.
         """
 
-        return self._outputsrom.compute_moments(max_order)
+        return self._output_srom.compute_moments(max_order)
 
-    def compute_CDF(self, x_grid):
+    def compute_cdf(self, x_grid):
         """
         Computes the SROM marginal CDF values in each dimension.
 
@@ -157,15 +159,15 @@ class SROMSurrogate:
               of values for each dimension, but must use the same number of pts.
         """
 
-        return self._outputsrom.compute_CDF(x_grid)
+        return self._output_srom.compute_cdf(x_grid)
 
-    def sample(self, inputsamples):
-        '''
+    def sample(self, input_samples):
+        """
         Generates output samples from the SROM surrogate corresponding to
         the provided input samples.
 
-        :param inputsamples: samples of inputs to draw output samples for
-        :type inputsamples: 2d Numpy array.
+        :param input_samples: samples of inputs to draw output samples for
+        :type input_samples: 2d Numpy array.
 
         Returns: 2d Numpy array of output samples corresponding to input samples
 
@@ -189,54 +191,57 @@ class SROMSurrogate:
         surrogate when gradients are provided to the constructor of this class,
         and drawn from a piecewise-constant SROM surrogate if not.
 
-        '''
+        """
 
-        #Handle 1 dimension case, adjust shape:
-        if len(inputsamples.shape) == 1:
-            inputsamples.shape = (len(inputsamples), 1)
+        # Handle 1 dimension case, adjust shape:
+        if len(input_samples.shape) == 1:
+            input_samples.shape = (len(input_samples), 1)
 
-        #Verify dimensions of samples/probs
-        (numsamples, dim) = inputsamples.shape
+        # Verify dimensions of samples/probabilities.
+        (num_samples, dim) = input_samples.shape
 
-        if dim != self._inputsrom.get_dim():
+        if dim != self._input_srom.dim:
             raise ValueError("Incorrect input sample dimension")
 
-        #Evaluate piecewise constant or linear surrogate model to get samples:
+        # Evaluate piecewise constant or linear surrogate model to get samples:
         if self._gradients is None:
-            surr_samples = self._sample_pwconstant_surrogate(inputsamples)
+            surrogate_samples = \
+                self._sample_piecewise_constant_surrogate(input_samples)
         else:
-            surr_samples = self._sample_pwlinear_surrogate(inputsamples)
+            surrogate_samples = \
+                self._sample_piecewise_linear_surrogate(input_samples)
 
-        return surr_samples
+        return surrogate_samples
 
-    def _sample_pwconstant_surrogate(self, inputsamples):
-        '''
+    def _sample_piecewise_constant_surrogate(self, input_samples):
+        """
         Evaluate standard piecewise constant output surrogate model
-        '''
+        """
 
-        inputsamples_srom = self._inputsrom._samples
+        input_samples_srom = self._input_srom.samples
 
-        #Generate surrogate samples:
-        (numsamples, _) = inputsamples.shape
+        # Generate surrogate samples:
+        (num_samples, _) = input_samples.shape
 
-        #Generate surrogate samples:
-        surr_samples = np.zeros((numsamples, self._dim))
-        for i in range(numsamples):
-            #Find which input SROM sample is closest to current sample
-            sample_i = inputsamples[i, :]
-            diff_norms = np.linalg.norm(sample_i - inputsamples_srom, axis=1)
-            sromindex = np.argmin(diff_norms)
-            surr_samples[i, :] = self._outsamples[sromindex, :]
+        # Generate surrogate samples:
+        surrogate_samples = np.zeros((num_samples, self._dim))
+        for i in range(num_samples):
 
-        return surr_samples
+            # Find which input SROM sample is closest to current sample.
+            sample_i = input_samples[i, :]
+            diff_norms = np.linalg.norm(sample_i - input_samples_srom, axis=1)
+            srom_index = np.argmin(diff_norms)
+            surrogate_samples[i, :] = self._out_samples[srom_index, :]
 
-    def _sample_pwlinear_surrogate(self, inputsamples): 
-        '''
+        return surrogate_samples
+
+    def _sample_piecewise_linear_surrogate(self, input_samples):
+        """
         Evaluate the linear output surrogate model using input SROM samples
         and gradients
 
         input:
-        inputsamples =  |  x^(1)_1, ..., x^(1)_di |
+        input_samples =  |  x^(1)_1, ..., x^(1)_di |
                         |  ...    , ..., ...      |
                         |  x^(N)_1, ..., x^(N)_di |
 
@@ -245,29 +250,29 @@ class SROMSurrogate:
                     | ...             , ...,    ...           |
                     | dy(x^{(m)})/dx_1, ..., dy(x^{(m)})/dx_d |
 
-        '''
+        """
 
-        inputsamples_srom = self._inputsrom._samples
+        input_samples_srom = self._input_srom.samples
 
-        #Generate surrogate samples:
-        (numsamples, _) = inputsamples.shape
+        # Generate surrogate samples:
+        (num_samples, _) = input_samples.shape
 
-        #Generate surrogate samples:
-        surr_samples = np.zeros((numsamples, self._dim))
-        for i in range(numsamples):
-            #Find which input SROM sample is closest to current sample
-            sample_i = inputsamples[i, :]
-            diffs = sample_i - inputsamples_srom
+        # Generate surrogate samples:
+        surrogate_samples = np.zeros((num_samples, self._dim))
+        for i in range(num_samples):
+
+            # Find which input SROM sample is closest to current sample.
+            sample_i = input_samples[i, :]
+            diffs = sample_i - input_samples_srom
             diff_norms = np.linalg.norm(diffs, axis=1)
-            sromindex = np.argmin(diff_norms)
+            srom_index = np.argmin(diff_norms)
 
-            #Calculate ouput sample value (eq 11b from emery paper)
-            output_k = self._outsamples[sromindex, :]
-            diffs_k = diffs[sromindex, :]
-            grad_k = self._gradients[sromindex, :]
+            # Calculate output sample value (eq 11b from emery paper).
+            output_k = self._out_samples[srom_index, :]
+            diffs_k = diffs[srom_index, :]
+            grad_k = self._gradients[srom_index, :]
 
             out = output_k + np.dot(grad_k, diffs_k)
-            surr_samples[i, :] = out
+            surrogate_samples[i, :] = out
 
-        return surr_samples
-
+        return surrogate_samples

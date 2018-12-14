@@ -13,10 +13,71 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import numpy as np
 import pytest
+import os
+import sys
+
+if 'PYTHONPATH' not in os.environ:
+
+    base_path = os.path.abspath('.')
+
+    sys.path.insert(0, base_path)
 
 
-def test_1():
-    pass
+from SROMPy.srom import SROM
+from SROMPy.postprocess import Postprocessor
+from SROMPy.target import SampleRandomVector
 
 
+@pytest.fixture
+def sample_random_vector():
+
+    np.random.seed(1)
+    random_vector = np.random.rand(10)
+    return SampleRandomVector(random_vector)
+
+
+@pytest.fixture
+def valid_srom():
+    return SROM(10, 1)
+
+
+@pytest.fixture
+def initialized_srom(valid_srom):
+    valid_srom.set_params(np.random.rand(10), np.random.rand(10))
+    return valid_srom
+
+
+def test_invalid_init_parameter_values_rejected(valid_srom,
+                                                initialized_srom,
+                                                sample_random_vector):
+
+    with pytest.raises(TypeError):
+        Postprocessor('srom', sample_random_vector)
+
+    with pytest.raises(TypeError):
+        Postprocessor(valid_srom, 'rv')
+
+
+def test_error_on_uninitialized_srom(valid_srom, sample_random_vector):
+
+    # Should raise ValueError due to srom not being initialized.
+    with pytest.raises(ValueError):
+        Postprocessor(valid_srom, sample_random_vector)
+
+
+# TODO: Find a way to test that Postprocessor checks for required functions
+#       on the random entity.
+# @pytest.mark.parametrize('required_function', ['compute_cdf',
+#                                                'compute_moments'])
+# def test_checks_for_random_entity_required_functions(initialized_srom,
+#                                                      sample_random_vector,
+#                                                      required_function):
+#
+#     # delatter did not seem to work on a function, so this is a workaround.
+#     setattr(sample_random_vector, required_function, "str")
+#     delattr(sample_random_vector, required_function)
+#
+#     with pytest.raises(TypeError):
+#         Postprocessor(initialized_srom, sample_random_vector)

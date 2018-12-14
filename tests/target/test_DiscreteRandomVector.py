@@ -1,5 +1,29 @@
+# Copyright 2018 United States Government as represented by the Administrator of
+# the National Aeronautics and Space Administration. No copyright is claimed in
+# the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
+# The Stochastic Reduced Order Models with Python (SROMPy) platform is licensed
+# under the Apache License, Version 2.0 (the "License"); you may not use this
+# file except in compliance with the License. You may obtain a copy of the
+# License at http://www.apache.org/licenses/LICENSE-2.0.
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import pytest
 import numpy as np
+import os
+import sys
+
+if 'PYTHONPATH' not in os.environ:
+
+    base_path = os.path.abspath('.')
+
+    sys.path.insert(0, base_path)
+
 
 from SROMPy.target.DiscreteRandomVector import DiscreteRandomVector
 
@@ -39,7 +63,7 @@ def test_compute_moments_simple_1d(simple_discrete_rv_1d):
 def test_compute_cdfs_simple_1d(simple_discrete_rv_1d):
 
     x_grid = np.array([0.5, 1.5, 2.5, 3.5, 4.5])
-    cdf_vals = simple_discrete_rv_1d.compute_CDF(x_grid)
+    cdf_vals = simple_discrete_rv_1d.compute_cdf(x_grid)
 
     true_cdf_vals = [0., 0.25, 0.5, 0.75, 1.0]
 
@@ -61,7 +85,7 @@ def test_compute_cdfs_simple_2d(simple_discrete_rv_2d):
 
     #CDFs are evaluated on the same x-grid for each dimension
     x_grid = np.array([0.5, 2.5, 4.5, 6.5, 7.5])
-    cdf_vals = simple_discrete_rv_2d.compute_CDF(x_grid)
+    cdf_vals = simple_discrete_rv_2d.compute_cdf(x_grid)
 
     true_cdf_vals_dim1 = [0., 0.5, 1.0, 1.0, 1.0]
     for i, true_val in enumerate(true_cdf_vals_dim1):

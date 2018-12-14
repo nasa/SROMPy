@@ -16,10 +16,11 @@
 import abc
 from SROMPy.target.RandomEntity import RandomEntity
 
-'''
+"""
 Abstract class defining the target random variable being matched by an SROM.
-Inherited by BetaRandomVariable and GammaRandomVariable, and NormalRandomVariable.
-'''
+Inherited by BetaRandomVariable and GammaRandomVariable, 
+and NormalRandomVariable.
+"""
 
 
 class RandomVariable(RandomEntity):
@@ -33,11 +34,11 @@ class RandomVariable(RandomEntity):
         return
 
     @abc.abstractmethod
-    def compute_CDF(self):
+    def compute_cdf(self):
         return
 
     @abc.abstractmethod
-    def compute_inv_CDF(self, sample_size):
+    def compute_inv_cdf(self, sample_size):
         return
 
     @abc.abstractmethod
@@ -50,8 +51,4 @@ class RandomVariable(RandomEntity):
 
     @abc.abstractmethod
     def generate_moments(self):
-        return
-
-    @abc.abstractmethod
-    def get_dim(self):
         return

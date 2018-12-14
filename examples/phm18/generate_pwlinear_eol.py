@@ -28,47 +28,54 @@ perturbed values of the inputs and the resulting EOLs were stored in the files
 named "srom_fd_eol_m<>.txt". 
 '''
 
-#Monte Carlo sample data:
-mc_eol_file = "mc_data/eol_samples_MC.txt"
-mc_input_file = "mc_data/input_samples_MC.txt"
+# Monte Carlo sample data:
+monte_carlo_end_of_life_sample_filename = "mc_data/eol_samples_MC.txt"
+monte_carlo_end_of_life_input_filename = "mc_data/input_samples_MC.txt"
 
 dim = 3
-sromsize = 20
+srom_size = 20
 
-#Data files for EOL samples, EOL finite difference samples, and SROM inputs
-srom_eol_file = "srom_data/srom_eol_m" + str(sromsize) + ".txt"
-srom_fd_eol_file = "srom_data/srom_fd_eol_m" + str(sromsize) + ".txt"
-srom_input_file = "srom_data/srom_m" + str(sromsize) + ".txt"
+# Data files for EOL samples, EOL finite difference samples, and SROM inputs.
+srom_end_of_life_filename = "srom_data/srom_eol_m" + \
+                            str(srom_size) + ".txt"
 
-#Get MC input/EOL samples
-MC_inputs = np.genfromtxt(mc_input_file)
-MC_eols = np.genfromtxt(mc_eol_file)
+srom_fd_end_of_life_filename = "srom_data/srom_fd_eol_m" + \
+                               str(srom_size) + ".txt"
 
-#Get SROM EOL samples, FD samples and input SROM from file
-srom_eols = np.genfromtxt(srom_eol_file)
-srom_fd_eols = np.genfromtxt(srom_fd_eol_file)
-input_srom  = SROM(sromsize, dim)
+srom_input_file = "srom_data/srom_m" + str(srom_size) + ".txt"
+
+# Get MC input/EOL samples.
+monte_carlo_inputs = np.genfromtxt(monte_carlo_end_of_life_input_filename)
+monte_carlo_end_of_life_data = \
+    np.genfromtxt(monte_carlo_end_of_life_sample_filename)
+
+# Get SROM EOL samples, FD samples and input SROM from file.
+srom_end_of_life_data = np.genfromtxt(srom_end_of_life_filename)
+srom_fd_end_of_life_data = np.genfromtxt(srom_fd_end_of_life_filename)
+input_srom = SROM(srom_size, dim)
 input_srom.load_params(srom_input_file)
 
-#Get FD step sizes from file (the same for all samples, just pull the first)
-#Step sizes chosen as approximately 2% of the median sample value of inputs
-stepsizes = [0.0065, 0.083, 0.025]
+# Get FD step sizes from file (the same for all samples, just pull the first)
+# Step sizes chosen as approximately 2% of the median sample value of inputs
+step_sizes = [0.0065, 0.083, 0.025]
 
-#Calculate gradient from FiniteDifference class:
-gradient = FD.compute_gradient(srom_eols, srom_fd_eols, stepsizes)
+# Calculate gradient from FiniteDifference class:
+gradient = FD.compute_gradient(srom_end_of_life_data, srom_fd_end_of_life_data,
+                               step_sizes)
 
-#Create SROM surrogate, sample, and create random variable solution
-surrogate_PWL = SROMSurrogate(input_srom, srom_eols, gradient)
-srom_eol_samples = surrogate_PWL.sample(MC_inputs)
-solution_PWL = SampleRandomVector(srom_eol_samples)
+# Create SROM surrogate, sample, and create random variable solution.
+surrogate_PWL = SROMSurrogate(input_srom, srom_end_of_life_data, gradient)
+srom_end_of_life_samples = surrogate_PWL.sample(monte_carlo_inputs)
+solution_PWL = SampleRandomVector(srom_end_of_life_samples)
 
-#Store EOL samples for plotting later:
-eolfile = "srom_data/srom_eol_samples_m" + str(sromsize) + ".txt"
-#np.savetxt(eolfile, srom_eol_samples)  #NOTE - avoid overwriting paper data
+# Store EOL samples for plotting later:
+end_of_life_filename = "srom_data/srom_eol_samples_m" + str(srom_size) + ".txt"
+# np.savetxt(end_of_life_filename, srom_eol_samples)
+# NOTE - avoid overwriting paper data
 
-#Make MC random variable solution
-eol_mc = SampleRandomVector(MC_eols)
+# Make MC random variable solution.
+end_of_life_monte_carlo = SampleRandomVector(monte_carlo_end_of_life_data)
 
-#COmpare solutions
-pp = Postprocessor(solution_PWL, eol_mc)
-pp.compare_CDFs()
+# Compare solutions.
+pp = Postprocessor(solution_PWL, end_of_life_monte_carlo)
+pp.compare_cdfs()

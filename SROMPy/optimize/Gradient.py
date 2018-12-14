@@ -17,86 +17,81 @@ import numpy as np
 
 
 class Gradient:
-    '''
+    """
     Defines gradients of objective function w/ respect to srom parameters 
     for optimizing SROM parameters. Will be used to pass derivative info
     to scipy optimization library for faster minimization.
-    '''
+    """
 
-    def __init__(self, SROM, targetRV, obj_weights=None, error='mean',
-                 max_moment=5, cdf_grid_pts=100):
-        '''
+    def __init__(self, srom, target_random_variable, obj_weights=None,
+                 error='mean', max_moment=5, cdf_grid_pts=100):
+        """
         Initialize SROM obj fun gradient. Pass in SROM & target random vector
         objects that have been previously initialized. 
 
         inputs:
             -SROM - initialized SROM object
-            -targetRV - initialized RandomVector object (either AnalyticRandomVector or
-                SampleRandomVector) with same dimension as SROM
+            -targetRV - initialized RandomVector object (either
+            AnalyticRandomVector or SampleRandomVector) with same dimension as
+            SROM
             -obj_weights - array of floats defining the relative weight of the 
                 terms in the objective function. Terms are error in moments,
                 CDFs, and correlation matrix in that order. 
             -max_moment - int, max order to evaluate moment errors up to
             -cdf_grid_pts - int, # pts to evaluate CDF errors on
-        '''
+        """
 
-        #NOTE - gradients won't make sense for MAX error metric
+        # NOTE - gradients won't make sense for MAX error metric
 
-        #Error checking/handling should have already been done by obj fun prior
-        self._SROM = SROM
-        self._target = targetRV
+        self.__check_init_parameters(obj_weights, error)
+        # Error checking/handling should have already been done by obj fun prior
+        self.srom = srom
+        self._target = target_random_variable
+        self._x_grid = None
 
-        #Generate grids for evaluating CDFs based on target RV's range
-        self.generate_cdf_grids(cdf_grid_pts)
+        # Generate grids for evaluating CDFs based on target RV's range
+        self._generate_cdf_grids(cdf_grid_pts)
 
-        if obj_weights is not None:
-            if len(obj_weights) != 3:
-                raise ValueError("obj_weights must have length 3!")
-            self._weights = obj_weights
-        else:
-            self._weights = np.ones((3,))
-
-        if error.upper() not in ["MEAN", "MAX", "SSE"]:
-            raise ValueError("error must be either 'mean','max', or 'sse'")
         self._metric = error.upper()
 
         self._max_moment = max_moment
 
-    def evaluate(self, samples, probs):
-        '''
+    def evaluate(self, samples, probabilities):
+        """
         Evaluates gradient (for probability only)
-        Just calls gradient_wrt_probs() for now
-        '''
-        #SROM is now defined by the current values of samples/probs for stats
-        self._SROM.set_params(samples, probs)
+        Just calls gradient_wrt_probabilities() for now
+        """
+        
+        # SROM defined by the current values of samples/probabilities for stats
+        self.srom.set_params(samples, probabilities)
 
-        return self.gradient_wrt_probs(samples, probs)
+        return self._gradient_wrt_probabilities(samples)
 
-
-    def gradient_wrt_probs(self, samples, probs):
-        '''
+    def _gradient_wrt_probabilities(self, samples):
+        """
         Returns gradient vector w/ derivative of obj function w.r.t. SROM
         probabilities (m x 1 array)
-        '''
+        """
     
-        sromsize = self._SROM.get_size()
-        grad = np.zeros(sromsize)
+        srom_size = self.srom.size
 
-        #d_e1/d_p: 
+        # d_e1/d_p:
         if self._weights[0] > 0:
-            cdf_grad = self.CDF_wrt_prob(samples, probs)
+            cdf_grad = self._cdf_wrt_prob(samples)
         else:
-            cdf_grad = np.zeros(sromsize)
-        #d_e2/d_p
+            cdf_grad = np.zeros(srom_size)
+
+        # d_e2/d_p
         if self._weights[1] > 0:
-            moment_grad = self.moment_wrt_prob(samples, probs)
+            moment_grad = self._moment_wrt_prob(samples)
         else:
-            moment_grad = np.zeros(sromsize)
-        #d_e3/d_p
+            moment_grad = np.zeros(srom_size)
+
+        # d_e3/d_p
         if self._weights[2] > 0:
-            corr_grad = self.corr_wrt_prob(samples, probs)
+            corr_grad = self._corr_wrt_prob(samples)
         else:
-            corr_grad = np.zeros(sromsize)
+            corr_grad = np.zeros(srom_size)
 
         grad = (self._weights[0]*cdf_grad +
                 self._weights[1]*moment_grad + 
@@ -104,92 +99,90 @@ class Gradient:
        
         return grad
     
-    def CDF_wrt_prob(self, samples, probs):
-        '''
+    def _cdf_wrt_prob(self, samples):
+        """
         Gradient of CDF error term with respect to probability (for srom_ind)
         
         -Expression - the "erf" term of the gradient from the SROM paper 
         becomes an indicator function when smooth CDF is not used
-        '''
+        """
         
         (size, dim) = samples.shape
 
-        #Compute relative diffs btwn srom/target CDFs
-        srom_cdfs = self._SROM.compute_CDF(self._x_grid)
-        target_cdfs = self._target.compute_CDF(self._x_grid)
+        # Compute relative diffs btwn srom/target CDFs.
+        srom_cdfs = self.srom.compute_cdf(self._x_grid)
+        target_cdfs = self._target.compute_cdf(self._x_grid)
 
-        #Check for 0 cdf vals to prevent divide by zero
-        nonzeroind = np.where(target_cdfs[:,0]>0)[0]
-        srom_cdfs = srom_cdfs[nonzeroind, :]
-        target_cdfs = target_cdfs[nonzeroind, :]
+        # Check for 0 cdf values to prevent divide by zero.
+        nonzero_index = np.where(target_cdfs[:, 0] > 0)[0]
+        srom_cdfs = srom_cdfs[nonzero_index, :]
+        target_cdfs = target_cdfs[nonzero_index, :]
         diffs = (srom_cdfs - target_cdfs)/target_cdfs**2.0
 
         grad = np.zeros(size)
                
         for srom_ind in range(size):
 
-            samples_k = samples[srom_ind,:]
+            samples_k = samples[srom_ind, :]
             grad_i = 0
 
             for i in range(dim):
-                grid_i = self._x_grid[nonzeroind, i]
+                grid_i = self._x_grid[nonzero_index, i]
 
-                #Implement indictator function in vectorized way:
-                indz = grid_i >= samples_k[i]
-                grad_i += np.sum(diffs[indz,i])
+                # Implement indicator function in vectorized way:
+                indices = grid_i >= samples_k[i]
+                grad_i += np.sum(diffs[indices, i])
 
             grad[srom_ind] = grad_i
 
         return grad
 
-
-    def moment_wrt_prob(self, samples, probs):
-        '''
+    def _moment_wrt_prob(self, samples):
+        """
         Gradient of moment error term with respect to probability (for srom_ind)
-        '''
+        """
         
         (size, dim) = samples.shape
         
-        #Compute relative diffs btwn srom/target moments
-        srom_moments = self._SROM.compute_moments(self._max_moment)
+        # Compute relative diffs between srom/target moments.
+        srom_moments = self.srom.compute_moments(self._max_moment)
 
-        #Reshape target moments to 2D if returned as 1D for scalar RV:
+        # Reshape target moments to 2D if returned as 1D for scalar RV:
         target_moments = self._target.compute_moments(self._max_moment)
-        if len(target_moments.shape)==1:
+        if len(target_moments.shape) == 1:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
-        #Prevent divide by zero
-        zeroinds = np.where(np.abs(target_moments) < 1e-12)[0]
-        target_moments[zeroinds] = 1.0
+        # Prevent divide by zero
+        zero_indices = np.where(np.abs(target_moments) < 1e-12)[0]
+        target_moments[zero_indices] = 1.0
 
         diffs = (srom_moments - target_moments)/target_moments**2.0
 
-        #compute gradient in relatively obscure-looking but fast/vectorized way
+        # Compute gradient in obscure-looking but fast/vectorized way.
         samples_flat = samples.flatten()
         grad = np.zeros(size)
         for q in range(self._max_moment):
             samples_q = samples_flat**(q+1)
-            diffs_tiled = np.tile(diffs[q,:], size)
+            diffs_tiled = np.tile(diffs[q, :], size)
             diffs_samples_q = np.multiply(samples_q, diffs_tiled)
             grad += np.sum(diffs_samples_q.reshape(size, dim), axis=1)
         
         return grad
 
-
-    def corr_wrt_prob(self, samples, probs):
-        '''
+    def _corr_wrt_prob(self, samples):
+        """
         Gradient of corr. error term with respect to probability (for srom_ind)
-        '''
+        """
 
         (size, dim) = samples.shape
     
-        #Correlation irrelevant for 1D
+        # Correlation irrelevant for 1D.
         if dim == 1:
             return np.zeros(size)
         
-        #Compute relative diffs between SROM/target correlation matrices
-        srom_corr = self._SROM.compute_corr_mat()
-        target_corr = self._target.compute_corr_mat()
+        # Compute relative diffs between SROM/target correlation matrices.
+        srom_corr = self.srom.compute_correlation_matrix()
+        target_corr = self._target.compute_correlation_matrix()
         diffs = (srom_corr - target_corr) / target_corr**2.0
 
         grad = np.zeros(size)
@@ -200,23 +193,35 @@ class Gradient:
 
             for i in range(dim):
                 for j in range(dim):
-                    grad_sum += diffs[i,j] * sample_k[i] * sample_k[j]
+                    grad_sum += diffs[i, j] * sample_k[i] * sample_k[j]
 
             grad[srom_ind] = grad_sum        
 
         return grad
 
-    def generate_cdf_grids(self, cdf_grid_pts):
-        '''
+    def _generate_cdf_grids(self, cdf_grid_pts):
+        """
         Generate numerical grids for evaluating the CDF errors based on the 
         range of the target random vector. Create x_grid member variable with
         cdf_grid_pts along each dimension of the random vector.
-        '''
+        """
 
-        self._x_grid = np.zeros((cdf_grid_pts, self._target._dim))
+        self._x_grid = np.zeros((cdf_grid_pts, self._target.dim))
 
-        for i in range(self._target._dim):
-            grid = np.linspace(self._target._mins[i],
-                               self._target._maxs[i],
+        for i in range(self._target.dim):
+            grid = np.linspace(self._target.mins[i],
+                               self._target.maxs[i],
                                cdf_grid_pts)
-            self._x_grid[:,i] = grid
+            self._x_grid[:, i] = grid
+
+    def __check_init_parameters(self, obj_weights, error):
+
+        if obj_weights is not None:
+            if len(obj_weights) != 3:
+                raise ValueError("obj_weights must have length 3!")
+            self._weights = obj_weights
+        else:
+            self._weights = np.ones((3,))
+
+        if error.upper() not in ["MEAN", "MAX", "SSE"]:
+            raise ValueError("error must be either 'mean','max', or 'sse'")

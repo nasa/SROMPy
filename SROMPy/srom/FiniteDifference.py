@@ -13,39 +13,41 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-'''
+"""
 Finite Difference static class for calculating gradients
-'''
+"""
 
 import copy
 import numpy as np
 
 
 class FiniteDifference(object):
-    '''
+    """
     Class that contains static methods for assisting in computing gradients 
     needed to implement the piecewise-linear SROM surrogate using the finite
     difference method.
-    '''
+    """
 
     def __init__(self):
         pass
 
     @staticmethod
-    def get_perturbed_samples(samples, perturb_fact=None, perturb_vals=None):
-        '''
+    def get_perturbed_samples(samples, perturbation_factor=None,
+                              perturbation_values=None):
+        """
         Returns the perturbed SROM samples that must be run through model
         to estimate gradients with finite difference.
 
         input:
             samples: np array (m x d) - original input srom samples
-            perturb_fact: float - if specified, computes the perturbation size
-                            in each dimension as (max_i - min_i)*perturb_fact.
-                            max/min_i are the max/min sample values in dim. i.
-            perturb_vals: list of float - if specified uses the values in the
-                            array for perturbations in each dimension.
+            perturbation_factor: float - if specified, computes the
+                perturbation size in each dimension as
+                (max_i - min_i)*perturbation_factor.
+                max/min_i are the max/min sample values in dim. i.
+            perturbation_values: list of float - if specified uses the values
+                in the array for perturbations in each dimension.
 
-        -Must specify either perturb_fact or perturb_vals
+        -Must specify either perturbation_factor or perturbation_values
 
         output:
             returns perturbed_samples: np array (m*d x d)
@@ -57,39 +59,41 @@ class FiniteDifference(object):
                        |  ...    , ...,      ...         |
                        |  x^(m)_1, ..., x^(m)_d + delta_d|
 
-        '''
+        """
 
-        if perturb_fact is None and perturb_vals is None:
-            raise IOError("Must specify either perturb_fact or perturb_vals")
+        if perturbation_factor is None and perturbation_values is None:
+            raise IOError("Must specify either perturbation_factor or "
+                          "perturbation_values")
 
-        #Initialize FD samples array
-        #Handle 1 dimension case, adjust shape:
+        # Initialize FD samples array.
+        # Handle 1 dimension case, adjust shape:
         if len(samples.shape) == 1:
             samples.shape = (len(samples), 1)
-        (sromsize, dim) = samples.shape
-        fd_samples = np.zeros((sromsize*dim, dim))
+        (srom_size, dim) = samples.shape
+        fd_samples = np.zeros((srom_size*dim, dim))
 
-        #Calculate perturb_vals from perturb_fact if vals werent specified:
-        if perturb_vals is None:
-            perturb_vals = np.array((dim, 1))
+        # Calculate perturbation_values from perturbation_factor if values
+        # weren't specified:
+        if perturbation_values is None:
+            perturbation_values = np.array((dim, 1))
             for i in range(dim):
                 ran = np.max(samples[:, i]) - np.min(samples[:, i])
-                perturb_vals[i] = ran*perturb_fact
+                perturbation_values[i] = ran * perturbation_factor
         else:
-            if len(perturb_vals) != dim:
-                raise ValueError("Length of perturb_vals must equal dimension!")
+            if len(perturbation_values) != dim:
+                raise ValueError("Length of perturbation_values must equal "
+                                 "dimension!")
 
         for i in range(dim):
             samples_i = copy.deepcopy(samples)
-            samples_i[:, i] += perturb_vals[i]
-            fd_samples[i*sromsize:(i+1)*sromsize, :] = samples_i
+            samples_i[:, i] += perturbation_values[i]
+            fd_samples[i*srom_size:(i+1)*srom_size, :] = samples_i
 
         return fd_samples
 
-
     @staticmethod
-    def compute_gradient(outputs, perturbed_outputs, perturb_vals):
-        '''
+    def compute_gradient(outputs, perturbed_outputs, perturbation_values):
+        """
         Calculates gradients based on original sample outputs,  perturbed
         sample outputs, and the size or perturbations.
 
@@ -108,30 +112,31 @@ class FiniteDifference(object):
                               |  y(x^(m) + delta_1), ..., y(x^(m)+delta_d)|
 
         (dx1 array)
-        perturbed_vals = [delta_1, ..., delta_d]
+        perturbed_values = [delta_1, ..., delta_d]
 
         outputs:
         (mxd array)
         gradients = | dy(x^{(1)})/dx_1, ..., dy(x^{(1)})/dx_d |
                     | ...             , ...,    ...           |
                     | dy(x^{(m)})/dx_1, ..., dy(x^{(m)})/dx_d |
-        '''
+        """
 
         if len(perturbed_outputs.shape) == 1:
             perturbed_outputs.shape = (len(perturbed_outputs), 1)
-        (sromsize, dim) = perturbed_outputs.shape
+        (srom_size, dim) = perturbed_outputs.shape
 
-        if len(outputs) != sromsize:
+        if len(outputs) != srom_size:
             raise ValueError("# output samples must match perturbed outputs")
 
-        if len(perturb_vals) != dim:
-            raise ValueError("length of perturb_vals must match dimension")
+        if len(perturbation_values) != dim:
+            raise ValueError("length of perturbation_values must match "
+                             "dimension")
 
-        gradients = np.zeros((sromsize, dim))
+        gradients = np.zeros((srom_size, dim))
 
         for i in range(dim):
             grad = ((perturbed_outputs[:, i] - outputs.flatten())
-                    /perturb_vals[i])
+                    / perturbation_values[i])
             gradients[:, i] = grad
 
         return gradients

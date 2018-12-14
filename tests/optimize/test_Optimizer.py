@@ -15,6 +15,15 @@
 
 import pytest
 import numpy as np
+import os
+import sys
+
+if 'PYTHONPATH' not in os.environ:
+
+    base_path = os.path.abspath('.')
+
+    sys.path.insert(0, base_path)
+
 
 from SROMPy.optimize import Optimizer
 from SROMPy.srom import SROM
@@ -109,7 +118,7 @@ def test_get_optimal_params_expected_output(sample_random_vector, valid_srom):
     # with a preset random seed remains consistent.
     optimizer = Optimizer(sample_random_vector, valid_srom)
 
-    samples, probs = optimizer.get_optimal_params(num_test_samples=10,
-                                                  verbose=False)
+    samples, probabilities = optimizer.get_optimal_params(num_test_samples=10,
+                                                          verbose=False)
 
-    assert np.allclose([np.sum(probs)], [1.])
+    assert np.allclose([np.sum(probabilities)], [1.])
