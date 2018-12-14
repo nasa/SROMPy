@@ -4,7 +4,7 @@ python:
 
 install:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)/SROMPy
-  - python setup.py install
+  - pip install scipy
   - pip install pytest pytest-cov
   - pip install coveralls
 
