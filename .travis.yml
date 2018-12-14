@@ -10,7 +10,7 @@ install:
   - pip install coveralls
 
 script:
-  - pytest tests --cov=MLMCPy
+  - pytest tests --cov=SROMPy
 
 after_script:
   - coveralls
