@@ -13,26 +13,39 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+'''
+This is a simple example meant to demonstrate SROMPy functionality. Estimates
+the maximum displacement of a spring-mass system with a random stiffness using
+SROMs and compares the solution to Monte Carlo simulation. This example is
+explained in more detail in the report:
+
+Warner, J. E. (2018). Stochastic reduced order models with Python (SROMPy). NASA/TM-2018-219824.
+
+Note there are minor differences here due to updates in the SROMPy module
+'''
+
 import numpy as np
 
-from model import SpringMass1D
+from spring_mass_model import SpringMassModel
 from SROMPy.postprocess import Postprocessor
 from SROMPy.srom import SROM, FiniteDifference as FD, SROMSurrogate
 from SROMPy.target import SampleRandomVector, BetaRandomVariable
 
-# Random variable for spring stiffness.
+# Random variable for spring stiffness
 stiffness_random_variable = \
     BetaRandomVariable(alpha=3., beta=2., shift=1., scale=2.5)
 
 # Specify spring-mass system:
 m = 1.5                             # Deterministic mass.
 state0 = [0., 0.]                   # Initial conditions.
-t_grid = np.arange(0., 10., 0.1)    # Time.
+time_step = 0.01
 
 # Initialize model,
-model = SpringMass1D(m, state0, t_grid)
+model = SpringMassModel(m, state0=state0, time_step=time_step)
 
 # ----------Monte Carlo------------------
+
+print "Generating Monte Carlo reference solution..."
 
 # Generate stiffness input samples for Monte Carlo.
 num_samples = 5000
@@ -41,28 +54,32 @@ stiffness_samples = stiffness_random_variable.draw_random_sample(num_samples)
 # Calculate maximum displacement samples using MC simulation.
 displacement_samples = np.zeros(num_samples)
 for i, stiff in enumerate(stiffness_samples):
-    displacement_samples[i] = model.get_max_disp(stiff)
+    displacement_samples[i] = model.evaluate([stiff])
 
 # Get Monte carlo solution as a sample-based random variable:
 monte_carlo_solution = SampleRandomVector(displacement_samples)
 
 # -------------SROM-----------------------
 
+print "Generating SROM for input (stiffness)..."
+
 # Generate SROM for random stiffness.
 srom_size = 10
 dim = 1
 input_srom = SROM(srom_size, dim)
-input_srom.optimize(displacement_samples)
+input_srom.optimize(stiffness_random_variable)
 
 # Compare SROM vs target stiffness distribution:
-pp_input = Postprocessor(input_srom, displacement_samples)
+pp_input = Postprocessor(input_srom, stiffness_random_variable)
 pp_input.compare_cdfs()
+
+print "Computing piecewise constant SROM approximation for output (max disp)..."
 
 # Run model to get max displacement for each SROM stiffness sample.
 srom_displacements = np.zeros(srom_size)
 (samples, probabilities) = input_srom.get_params()
 for i, stiff in enumerate(samples):
-    srom_displacements[i] = model.get_max_disp(stiff)
+    srom_displacements[i] = model.evaluate([stiff])
  
 # Form new SROM for the max disp. solution using samples from the model.
 output_srom = SROM(srom_size, dim)
@@ -72,6 +89,10 @@ output_srom.set_params(srom_displacements, probabilities)
 pp_output = Postprocessor(output_srom, monte_carlo_solution)
 pp_output.compare_cdfs()
 
+#Compare mean estimates for output:
+print "Monte Carlo mean estimate: ", np.mean(displacement_samples)
+print "SROM mean estimate: ", output_srom.compute_moments(1)[0][0]
+
 # --------Piecewise LINEAR surrogate with gradient info-------
 
 # Need to calculate gradient of output wrt input samples first.
@@ -80,10 +101,12 @@ pp_output.compare_cdfs()
 step_size = 1e-12
 samples_fd = FD.get_perturbed_samples(samples, perturbation_values=[step_size])
 
+print "Computing piecewise linear SROM approximation for output (max disp)..."
+
 # Run model to get perturbed outputs for FD calc.
 perturbed_displacements = np.zeros(srom_size)
 for i, stiff in enumerate(samples_fd):
-    perturbed_displacements[i] = model.get_max_disp(stiff)
+    perturbed_displacements[i] = model.evaluate([stiff])
 gradient = FD.compute_gradient(srom_displacements, perturbed_displacements,
                                [step_size])
 
