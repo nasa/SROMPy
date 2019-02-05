@@ -10,7 +10,7 @@ Documentation for the primary SROMPy classes.
 SROM Module Documentation
 -------------------------
 
-.. automodule:: srom
+.. automodule:: SROMPy.srom
 .. autoclass:: SROM
     :members:
 
@@ -23,22 +23,26 @@ SROM Module Documentation
 Target Random Quantity Documentation
 --------------------------------------------
 
-.. automodule:: target
+.. automodule:: SROMPy.target
 .. autoclass:: NormalRandomVariable
     :members:
 .. autoclass:: BetaRandomVariable
     :members:
+.. autoclass:: DiscreteRandomVector
+    :members:
 .. autoclass:: GammaRandomVariable
     :members:
-.. autoclass:: AnalyticRV
+.. autoclass:: UniformRandomVariable
     :members:
-.. autoclass:: SampleRV
+.. autoclass:: AnalyticRandomVector
+    :members:
+.. autoclass:: SampleRandomVector
     :members:
 
 Postprocessor Documentation
 ----------------------------
 
-.. automodule:: postprocess
+.. automodule:: SROMPy.postprocess
 .. autoclass:: Postprocessor
     :members:
 
