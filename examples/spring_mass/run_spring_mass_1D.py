@@ -111,7 +111,6 @@ gradient = FD.compute_gradient(srom_displacements, perturbed_displacements,
                                [step_size])
 
 surrogate_PWL = SROMSurrogate(input_srom, srom_displacements, gradient)
-stiffness_samples = stiffness_random_variable.draw_random_sample(num_samples)
 output_samples = surrogate_PWL.sample(stiffness_samples)
 solution_PWL = SampleRandomVector(output_samples)
 
