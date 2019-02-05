@@ -531,15 +531,9 @@ class Postprocessor:
     @staticmethod
     def __check_init_params(srom, target_random_vector):
 
-        if not isinstance(srom, SROM):
-            raise TypeError("srom must be an instance of SROM.")
-
         if not isinstance(target_random_vector, RandomEntity):
             raise TypeError("target_random_vector must descend from " +
                             "RandomEntity")
-
-        if not np.all(srom.get_params()):
-            raise ValueError("SROM has not been initialized.")
 
         if not hasattr(target_random_vector, 'compute_cdf'):
             raise TypeError("Target must define compute_cdf()")
