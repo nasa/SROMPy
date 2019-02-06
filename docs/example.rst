@@ -52,7 +52,7 @@ With uncertainty in an input parameter, the resulting displacement, :math:`Z`, i
 
 Step 1: Define target random variable, initialize model, generate reference solution
 -------------------------------------------------------------------------------------
-Begin by importing the needed SROMPy classes as well as the SpringMass1D class that defines the spring mass model:
+Begin by importing the needed SROMPy classes as well as the SpringMassModel class that defines the spring mass model:
 
 .. code-block:: python
 
@@ -80,6 +80,8 @@ Next, the computational model of the spring-mass system is initialized:
   state0 = [0., 0.]              
   time_step = 0.01
   model = SpringMassModel(m, state0=state0, time_step=time_step)
+
+The source code for the spring mass model can be found in the SROMPy repository as well: ``SROMPy/examples/spring_mass/spring_mass_model.py``
 
 A reference solution using Monte Carlo simulation is now generated for comparison later on. This is done by sampling the random spring stiffness, evaluating the model for each sample, and then using the SROMPy ``SampleRandomVector`` class to represent the Monte Carlo solution for maximum displacement:
 
