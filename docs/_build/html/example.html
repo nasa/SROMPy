@@ -1,0 +1,298 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Example - Spring Mass System &#8212; SROMPy 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Source Code Documentation" href="source_code.html" />
+    <link rel="prev" title="Introduction" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="example-spring-mass-system">
+<h1>Example - Spring Mass System<a class="headerlink" href="#example-spring-mass-system" title="Permalink to this headline">¶</a></h1>
+<p>This example provides a simple demonstration of SROMPy functionality. The goal
+is to estimate the maximum displacement of a spring-mass
+system with random stiffness using the SROM approach and compare the solution
+to Monte Carlo simulation. The example covers all steps for computing a
+solution using SROMs using SROMPy, including defining a random input parameter
+(spring stiffness) using a SROMPy target random variable, modeling the random
+input using a SROM, and propagating the uncertainty through a computational
+model (spring mass numerical integrator) to a quantity of interest (max.
+displacement). The full source code for this example can be found in the
+SROMPy repository: <code class="docutils literal notranslate"><span class="pre">/SROMPy/examples/spring_mass/run_spring_mass_1D.py</span></code></p>
+<div class="figure align-center" id="id1">
+<span id="spring-mass"></span><a class="reference internal image-reference" href="_images/spring_mass_diagram.png"><img alt="_images/spring_mass_diagram.png" src="_images/spring_mass_diagram.png" style="width: 2in;" /></a>
+<p class="caption"><span class="caption-text">Spring-mass system</span></p>
+</div>
+<div class="section" id="problem-specification">
+<h2>Problem Specification<a class="headerlink" href="#problem-specification" title="Permalink to this headline">¶</a></h2>
+<p>The governing equation of motion for the system is given by</p>
+<div class="math" id="equation-springmass">
+<p><span class="eqno">(1)<a class="headerlink" href="#equation-springmass" title="Permalink to this equation">¶</a></span><img src="_images/math/b9228c12487f73d548763c61745e3cf8e492cfd2.png" alt="m_s \ddot{z}  = -k_s z + m_s g"/></p>
+</div><p>where <img class="math" src="_images/math/678113eb2ebf18c078cf3e4cff8e8aac2f347485.png" alt="m_s"/> is the mass, <img class="math" src="_images/math/a4f983455bdb6ec51b3fdaa4d3ddc93e712f4c75.png" alt="k_s"/> is the spring stiffness, <img class="math" src="_images/math/307b3725cbb03398131f9ca542d79aff4933195f.png" alt="g"/>
+is the acceleration due to gravity, <img class="math" src="_images/math/683f2dd9129a91d21aaf1c04afa6f78b39d4cb0a.png" alt="z"/> is the vertical displacement
+of the mass, and <img class="math" src="_images/math/ad7538581b1f02e87be67296fedce555dc704479.png" alt="\ddot{z}"/> is the acceleration of the mass. The
+source of uncertainty in the system will be the spring stiffness, which is
+modeled as a random variable of the following form:</p>
+<div class="math" id="equation-random-stiffness">
+<p><span class="eqno">(2)<a class="headerlink" href="#equation-random-stiffness" title="Permalink to this equation">¶</a></span><img src="_images/math/1d281d91e34a74f064c179fd70612c7bfe765eaa.png" alt="K_s = \gamma + \eta B"/></p>
+</div><p>where <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/> and <img class="math" src="_images/math/5635a7c34414599c2452d72430811e816b460335.png" alt="\eta"/> are shift and scale parameters,
+respectively, and <img class="math" src="_images/math/d748cfdac5dabbf89592b7f10bc320c27d98ebc3.png" alt="B = \text{Beta}(\alpha, \beta)"/> is a standard Beta
+random variable with shape parameters <img class="math" src="_images/math/877d234f4cec6974ce218fc2e975a486a7972dfd.png" alt="\alpha"/> and <img class="math" src="_images/math/410a9d0df9c135dd73b269cba7ef04dcfd932b1f.png" alt="\beta"/>. Let
+these parameters take the following values: <img class="math" src="_images/math/666f10b1d5338fe962e81b37cefb54d6633fd29f.png" alt="\gamma=1.0N/m"/>,
+<img class="math" src="_images/math/8b25e6d1d67015300bc0d13c686a6410a47a7d3a.png" alt="\eta = 2.5N/m"/>, <img class="math" src="_images/math/02e99335fa7566885ffc47f9d1d14dd30bff14cb.png" alt="\alpha=3.0"/>, and <img class="math" src="_images/math/58feb749986ef5862e812ca6c32b924a2f7aca6c.png" alt="\beta=2.0"/>. The mass
+is assumed to be deterministic, <img class="math" src="_images/math/032ffd36302c5d12a2f2e5b029c92c5015455208.png" alt="m_s = 1.5kg"/>, and the acceleration due
+to gravity is <img class="math" src="_images/math/fdd92017f5b9e8043b027461d74ddd99c720079c.png" alt="g = 9.8 m^2/s"/>.</p>
+<p>With uncertainty in an input parameter, the resulting displacement, <img class="math" src="_images/math/bcb2457ac9d8995a4f34d57cadac7ecbbe58f3bd.png" alt="Z"/>, is a random variable as well. The quantity of interest in this example with be the maximum displacement over a specified time window, <img class="math" src="_images/math/88342b20a6b5fba2b278a773e8ef013b315593af.png" alt="Z_{max}=max_t(Z)"/>. It is assumed we have access to a computational model that numerically integrates the governing equation over this time window for a given sample of the random stiffness and returns the maximum displacement. The goal of this example will be to approximate the mean, <img class="math" src="_images/math/b125a026740c3cb29d8f1b0bef027d3e0be86939.png" alt="E[Z_{max}]"/>, and  CDF, <img class="math" src="_images/math/89c0eb02cd0320e298c606fba3c33cdcee62c413.png" alt="F(z_{max})"/>, using the SROM approach with SROMPy and compare it to a Monte Carlo simulation solution.</p>
+</div>
+<div class="section" id="step-1-define-target-random-variable-initialize-model-generate-reference-solution">
+<h2>Step 1: Define target random variable, initialize model, generate reference solution<a class="headerlink" href="#step-1-define-target-random-variable-initialize-model-generate-reference-solution" title="Permalink to this headline">¶</a></h2>
+<p>Begin by importing the needed SROMPy classes as well as the SpringMassModel class that defines the spring mass model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">spring_mass_model</span> <span class="kn">import</span> <span class="n">SpringMassModel</span>
+
+<span class="c1">#import SROMPy modules</span>
+<span class="kn">from</span> <span class="nn">SROMPy.postprocess</span> <span class="kn">import</span> <span class="n">Postprocessor</span>
+<span class="kn">from</span> <span class="nn">SROMPy.srom</span> <span class="kn">import</span> <span class="n">SROM</span><span class="p">,</span> <span class="n">FiniteDifference</span> <span class="k">as</span> <span class="n">FD</span><span class="p">,</span> <span class="n">SROMSurrogate</span>
+<span class="kn">from</span> <span class="nn">SROMPy.target</span> <span class="kn">import</span> <span class="n">SampleRandomVector</span><span class="p">,</span> <span class="n">BetaRandomVariable</span>
+</pre></div>
+</div>
+<p>The first step in the analysis is to define the target random variable to represent the spring stiffness <img class="math" src="_images/math/af115195c8b6c13c7f47455427b364a26eef1356.png" alt="K_s"/> using the <code class="docutils literal notranslate"><span class="pre">BetaRandomVariable</span></code> class in SROMPy:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Random variable for spring stiffness</span>
+<span class="n">stiffness_random_variable</span> <span class="o">=</span> <span class="n">BetaRandomVariable</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span><span class="n">beta</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span><span class="n">shift</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">scale</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, the computational model of the spring-mass system is initialized:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Specify spring-mass system and initialize model:</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mf">1.5</span>
+<span class="n">state0</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]</span>
+<span class="n">time_step</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SpringMassModel</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">state0</span><span class="o">=</span><span class="n">state0</span><span class="p">,</span> <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The source code for the spring mass model can be found in the SROMPy repository as well: <code class="docutils literal notranslate"><span class="pre">SROMPy/examples/spring_mass/spring_mass_model.py</span></code></p>
+<p>A reference solution using Monte Carlo simulation is now generated for comparison later on. This is done by sampling the random spring stiffness, evaluating the model for each sample, and then using the SROMPy <code class="docutils literal notranslate"><span class="pre">SampleRandomVector</span></code> class to represent the Monte Carlo solution for maximum displacement:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#----------Monte Carlo------------------</span>
+<span class="c1">#Generate stiffness input samples for Monte Carlo</span>
+<span class="n">num_samples</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">stiffness_samples</span> <span class="o">=</span> <span class="n">stiffness_random_variable</span><span class="o">.</span><span class="n">draw_random_sample</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span>
+
+<span class="c1"># Calculate maximum displacement samples using MC simulation.</span>
+<span class="n">displacement_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stiff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stiffness_samples</span><span class="p">):</span>
+    <span class="n">displacement_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">stiff</span><span class="p">])</span>
+
+<span class="c1"># Get Monte carlo solution as a sample-based random variable:</span>
+<span class="n">monte_carlo_solution</span> <span class="o">=</span> <span class="n">SampleRandomVector</span><span class="p">(</span><span class="n">displacement_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-2-construct-srom-for-the-input">
+<h2>Step 2: Construct SROM for the input<a class="headerlink" href="#step-2-construct-srom-for-the-input" title="Permalink to this headline">¶</a></h2>
+<p>A SROM, <img class="math" src="_images/math/fed776613749e7ff592fc8648bbd65278d6a7dae.png" alt="\tilde{K}_s"/> is now formed to model the random stiffness input, <img class="math" src="_images/math/af115195c8b6c13c7f47455427b364a26eef1356.png" alt="K_s"/>, with SROMPy. The following code initializes the SROM class for a model size of 10 and uses the optimize function to set the optimal SROM parameters to represent the random spring stiffness:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Generate SROM for random stiffness</span>
+<span class="n">sromsize</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">input_srom</span> <span class="o">=</span> <span class="n">SROM</span><span class="p">(</span><span class="n">sromsize</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+<span class="n">input_srom</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">stiffness_random_variable</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The CDF of the resulting SROM can be compared to the original Beta random variable for spring stiffness using the SROMPy <code class="docutils literal notranslate"><span class="pre">Postprocessor</span></code> class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Compare SROM vs target stiffness distribution:</span>
+<span class="n">pp_input</span> <span class="o">=</span> <span class="n">Postprocessor</span><span class="p">(</span><span class="n">input_srom</span><span class="p">,</span> <span class="n">stiffness_random_variable</span><span class="p">)</span>
+<span class="n">pp_input</span><span class="o">.</span><span class="n">compare_CDFs</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This produces the following plot:</p>
+<div class="figure align-center" id="input-srom">
+<a class="reference internal image-reference" href="_images/stiffness_CDFs.png"><img alt="_images/stiffness_CDFs.png" src="_images/stiffness_CDFs.png" style="width: 4in;" /></a>
+</div>
+</div>
+<div class="section" id="step-3-evaluate-model-for-each-srom-sample">
+<h2>Step 3: Evaluate model for each SROM sample:<a class="headerlink" href="#step-3-evaluate-model-for-each-srom-sample" title="Permalink to this headline">¶</a></h2>
+<p>Now output samples of maximum displacement must be generated by running the spring-mass model for each stiffness sample from the input SROM, i.e.,</p>
+<p><img class="math" src="_images/math/40708f3d3ce870020c1bd88b8b4d8aec109c5f6e.png" alt="\tilde{z}^{(k)}_{max} = \mathcal{M}(\tilde{k}_s^{(k)}) \; \text{for } \; k=1,...,m"/></p>
+<p>Note that this is essentially a Monte Carlo simulation step, but with far fewer model evaluations using the SROM method (10 versus 5000)</p>
+<p>This is done with the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#run model to get max disp for each SROM stiffness sample</span>
+<span class="n">srom_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">srom_size</span><span class="p">)</span>
+<span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span> <span class="o">=</span> <span class="n">input_srom</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stiff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="n">srom_displacements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">stiff</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Here, the spring-mass model is executed for each of the 10 optimal stiffness samples found in Step 2, and the corresponding maximum displacements are stored for the next step.</p>
+</div>
+<div class="section" id="step-4-form-srom-surrogate-model-for-output">
+<h2>Step 4: Form SROM surrogate model for output<a class="headerlink" href="#step-4-form-srom-surrogate-model-for-output" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="approach-a-piecewise-constant-approximation">
+<h3>Approach a) Piecewise-constant approximation<a class="headerlink" href="#approach-a-piecewise-constant-approximation" title="Permalink to this headline">¶</a></h3>
+<p>The simplest way to propagate uncertainty using SROMs is to form a piecewise-constant approximation that directly uses the model outputs obtained in Step 3 and the input SROM probabilities found in Step 2. This is done by constructing a new SROM for the model output (max. displacement) as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Form new SROM for the max disp. solution using samples from the model.</span>
+<span class="n">output_srom</span> <span class="o">=</span> <span class="n">SROM</span><span class="p">(</span><span class="n">srom_size</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+<span class="n">output_srom</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">srom_displacements</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The mean of the output can now be estimated using the SROM and the SROMPy <code class="docutils literal notranslate"><span class="pre">compute_moments</span></code> function and compared to Monte Carlo as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Compare mean estimates for output:</span>
+<span class="k">print</span> <span class="s2">&quot;Monte Carlo mean estimate: &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">displacement_samples</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;SROM mean estimate: &quot;</span><span class="p">,</span> <span class="n">output_srom</span><span class="o">.</span><span class="n">compute_moments</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The max. displacement CDF estimate using SROMs can be compared to the Monte Carlo solution using the SROMPy <code class="docutils literal notranslate"><span class="pre">Postprocessor</span></code> as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Compare solutions</span>
+<span class="n">pp_output</span> <span class="o">=</span> <span class="n">Postprocessor</span><span class="p">(</span><span class="n">output_srom</span><span class="p">,</span> <span class="n">monte_carlo_solution</span><span class="p">)</span>
+<span class="n">pp_output</span><span class="o">.</span><span class="n">compare_CDFs</span><span class="p">(</span><span class="n">variablenames</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$Z_{max}$&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This produces the following comparison plot:</p>
+<div class="figure align-center" id="output-pwc-srom">
+<a class="reference internal image-reference" href="_images/disp_CDFs_pw_constant.png"><img alt="_images/disp_CDFs_pw_constant.png" src="_images/disp_CDFs_pw_constant.png" style="width: 4in;" /></a>
+</div>
+</div>
+<div class="section" id="approach-b-piecewise-linear-approximation">
+<h3>Approach b) Piecewise-linear approximation<a class="headerlink" href="#approach-b-piecewise-linear-approximation" title="Permalink to this headline">¶</a></h3>
+<p>Now a more accurate piecewise-linear SROM surrogate model is formed to estimate the CDF of the maximum displacement. To do so, gradients must be calculated using finite difference and provided to the SROMSurrogate class upon initialization.</p>
+<p>The finite different gradients are calculated with the help of the FiniteDifference class (FD), requiring extra model evaluations for perturbed inputs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Perturbation size for finite difference</span>
+<span class="n">stepsize</span> <span class="o">=</span> <span class="mf">1e-12</span>
+<span class="n">samples_fd</span> <span class="o">=</span> <span class="n">FD</span><span class="o">.</span><span class="n">get_perturbed_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">perturb_vals</span><span class="o">=</span><span class="p">[</span><span class="n">stepsize</span><span class="p">])</span>
+
+<span class="c1"># Run model to get perturbed outputs for FD calc.</span>
+<span class="n">perturbed_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">srom_size</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stiff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">samples_fd</span><span class="p">):</span>
+    <span class="n">perturbed_displacements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">([</span><span class="n">stiff</span><span class="p">])</span>
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">FD</span><span class="o">.</span><span class="n">compute_gradient</span><span class="p">(</span><span class="n">srom_displacements</span><span class="p">,</span> <span class="n">perturbed_displacements</span><span class="p">,</span>
+                               <span class="p">[</span><span class="n">step_size</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>A piecewise-linear surrogate model can now be constructed and then sampled to approximate the CDF of the maximum displacement:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Initialize piecewise-linear SROM surrogate w/ gradients:</span>
+<span class="n">surrogate_PWL</span> <span class="o">=</span> <span class="n">SROMSurrogate</span><span class="p">(</span><span class="n">input_srom</span><span class="p">,</span> <span class="n">srom_displacements</span><span class="p">,</span> <span class="n">gradient</span><span class="p">)</span>
+
+<span class="c1">#Use the surrogate to produce max disp samples from the input stiffness samples:</span>
+<span class="n">output_samples</span> <span class="o">=</span> <span class="n">surrogate_PWL</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">stiffness_samples</span><span class="p">)</span>
+
+<span class="c1">#Represent the SROM solution as a sample-based random variable:</span>
+<span class="n">solution_PWL</span> <span class="o">=</span> <span class="n">SampleRandomVector</span><span class="p">(</span><span class="n">output_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, the new piece-wise linear CDF approximation is compared to the Monte Carlo solution:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Compare SROM piecewise linear solution to Monte Carlo</span>
+<span class="n">pp_pwl</span> <span class="o">=</span> <span class="n">Postprocessor</span><span class="p">(</span><span class="n">solution_PWL</span><span class="p">,</span> <span class="n">monte_carlo_solution</span><span class="p">)</span>
+<span class="n">pp_pwl</span><span class="o">.</span><span class="n">compare_CDFs</span><span class="p">(</span><span class="n">variablenames</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$Z_{max}$&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="output-pwl-srom">
+<a class="reference internal image-reference" href="_images/disp_CDFs_pw_linear.png"><img alt="_images/disp_CDFs_pw_linear.png" src="_images/disp_CDFs_pw_linear.png" style="width: 4in;" /></a>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SROMPy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example - Spring Mass System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#problem-specification">Problem Specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-define-target-random-variable-initialize-model-generate-reference-solution">Step 1: Define target random variable, initialize model, generate reference solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-construct-srom-for-the-input">Step 2: Construct SROM for the input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-evaluate-model-for-each-srom-sample">Step 3: Evaluate model for each SROM sample:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-form-srom-surrogate-model-for-output">Step 4: Form SROM surrogate model for output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="source_code.html">Source Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="source_code.html" title="next chapter">Source Code Documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, NASA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/example.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
