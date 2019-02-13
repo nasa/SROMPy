@@ -111,8 +111,9 @@ class Optimizer:
 
         self.__detect_parallelization()
 
-    def get_optimal_params(self, num_test_samples=500,  method=None,
-                           joint_opt=False, output_interval=10, verbose=True):
+    def get_optimal_params(self, num_test_samples=500, tolerance=None, 
+                           options=None, method=None, joint_opt=False,
+                           output_interval=10, verbose=True):
         """
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
