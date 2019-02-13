@@ -186,7 +186,7 @@ class Optimizer:
         -method: str, method specifying scipy optimization algorithm
         -output_interval: int, how often to print optimization progress
         -verbose: bool. Flag for whether to generate text output.
-        -tolerance: int, tolerance for scipy optimization algorithm
+        -tolerance: float, tolerance for scipy optimization algorithm
         -options: dict, options for scipy optimization algorithm.
 
         returns optimal SROM samples & probabilities
@@ -229,7 +229,7 @@ class Optimizer:
         -method: str, method specifying scipy optimization algorithm.
         -output_interval: int, how often to print optimization progress
         -verbose: bool. Flag for whether to generate text output.
-        -tolerance: int, tolerance for scipy optimization algorithm.
+        -tolerance: float, tolerance for scipy optimization algorithm.
         -options: dict, options for scipy optimization algorithm.
 
         returns optimal SROM samples & probabilities
@@ -262,7 +262,7 @@ class Optimizer:
                              constraints=self.get_constraints(joint_opt),
                              method=method,
                              bounds=self.get_param_bounds(joint_opt),
-                             tolerance=tolerance
+                             tol=tolerance,
                              options=options)
 
             # If error is lower than lowest so far, keep track of results.
