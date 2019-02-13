@@ -127,6 +127,7 @@ class Optimizer:
                 opt
             -tolerance, float, tolerance of scipy optimization algorithm
             -options, dict, options for scipy optimization algorithm
+                {"maxiter": int, "disp": bool}
             -method, str, method specifying scipy optimization algorithm
             -output_interval, int, how often to print optimization progress
             -verbose: bool. Flag for whether to generate text output.
@@ -190,6 +191,7 @@ class Optimizer:
         -verbose: bool. Flag for whether to generate text output.
         -tolerance: float, tolerance for scipy optimization algorithm
         -options: dict, options for scipy optimization algorithm.
+                {"maxiter": int, "disp": bool}
 
         returns optimal SROM samples & probabilities
         """
