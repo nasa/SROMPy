@@ -142,16 +142,6 @@ class Optimizer:
             raise ValueError("Insufficient number of test samples specified.")
 
         #Make test for options(both cases maxiter, disp) and tolerance (TODO)
-        if not isinstance(options.itervalues().next(), int):
-            raise TypeError("Maximum iterations must be an integer")
-
-        if options.itervalues().next() <= 0:
-            raise ValueError("Insufficient number of maximum iterations.")
-
-        #Think of a better error message for disp (TODO)
-        #Find a more clean way to access second key of dictionary (TODO)
-        if not isinstance(options.itervalues().next().next(), bool):
-            raise TypeError("Display must be a bool")
 
         # Report whether we're running in sequential or parallel mode.
         if verbose:
