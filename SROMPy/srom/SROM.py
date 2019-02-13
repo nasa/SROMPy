@@ -252,7 +252,8 @@ class SROM(object):
         :type cdf_grid_pts: int
         :param tolerance: tolerance for scipy optimization algorithm (TODO)
         :type tolerance: float
-        :param options: scipy optimization algorithm options (TODO)
+        :param options: scipy optimization algorithm options 
+            {"maxiter": int, "disp": bool} (TODO)
         :type options: dict
         :param method: method used for scipy optimization  (TODO)
         :type method: string

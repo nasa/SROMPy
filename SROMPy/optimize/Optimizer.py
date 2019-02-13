@@ -140,7 +140,7 @@ class Optimizer:
 
         if num_test_samples <= 0:
             raise ValueError("Insufficient number of test samples specified.")
-            
+
         #Make test for options(both cases maxiter, disp) and tolerance (TODO)
         if not isinstance(options.itervalues().next(), int):
             raise TypeError("Maximum iterations must be an integer")
@@ -242,7 +242,8 @@ class Optimizer:
         -output_interval: int, how often to print optimization progress
         -verbose: bool. Flag for whether to generate text output.
         -tolerance: float, tolerance for scipy optimization algorithm.
-        -options: dict, options for scipy optimization algorithm.
+        -options: dict, options for scipy optimization algorithm. 
+                {"maxiter": int, "disp": bool}
 
         returns optimal SROM samples & probabilities
         """
