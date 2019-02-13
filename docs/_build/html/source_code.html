@@ -1,0 +1,1227 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Source Code Documentation &#8212; SROMPy 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Example - Spring Mass System" href="example.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="source-code-documentation">
+<span id="sourcecode-section"></span><h1>Source Code Documentation<a class="headerlink" href="#source-code-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Documentation for the primary SROMPy classes.</p>
+<div class="section" id="module-SROMPy.srom">
+<span id="srom-module-documentation"></span><h2>SROM Module Documentation<a class="headerlink" href="#module-SROMPy.srom" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="SROMPy.srom.SROM">
+<em class="property">class </em><code class="descclassname">SROMPy.srom.</code><code class="descname">SROM</code><span class="sig-paren">(</span><em>size</em>, <em>dim</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the primary SROMPy class for defining and utilizing a
+stochastic reduced order model (SROM). Main capability is optimizing
+for the defining SROM parameters to model a given target random quantity.
+Other functions provided to calculate SROM statistics, set/get defining
+parameters directly, and store/load SROM to/from file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>size</strong> (<em>int</em>) – SROM size</li>
+<li><strong>dim</strong> (<em>int</em>) – dimension of random quantity being modeled</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="SROMPy.srom.SROM.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the SROM marginal CDF values in each dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>Numpy array.</em>) – Grid of points to compute CDF values on. If 1d array is
+provided, the same points are used to evaluate CDF in each
+dimension. If 2d array is provided, calculates CDF values on
+different points, but must have same # points for each dimension.
+Size is (# grid pts) x (dim) or (# grid pts) x (1).</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: Numpy array of CDF values at x_grid points. Size is (# grid
+pts) x (dim).</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd><ul class="first last simple">
+<li>Increasing the number of grid points can significantly slow
+down the SROM optimization problem.</li>
+<li>Providing a 2d array for x_grid can specify a different range
+of values for each dimension, but must use the same number of pts.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.compute_corr_mat">
+<code class="descname">compute_corr_mat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.compute_corr_mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the SROM correlation matrix as (dim x dim) numpy array</p>
+<p>srom_corr = sum_{k=1}^m [ x^(k) * (x^(k))^T ] * p^(k)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns SROM moments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>max_order</strong> (<em>int</em>) – Maximum order of moments to return</td>
+</tr>
+</tbody>
+</table>
+<p>Returns (max_order x dim) size Numpy array with SROM moments for
+each dimension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: tuple of SROM sample &amp; probability arrays. Samples array
+has size (SROM size x dim) and probability array has length (SROM size)</p>
+<p>The sample/probability arrays have the following convention (srom sample
+index as rows, components of sample as columns):</p>
+<p>Samples:</p>
+<div class="line-block">
+<div class="line">[[ x_1^(1),   x_2^(1), …, x_d^(1)],</div>
+<div class="line">[x_1^(2), x_2^(2), …, x_d^(2)],</div>
+<div class="line">…     …   …    ….</div>
+<div class="line">[x_1^(m), x_2^(m),  …  x_d^(m)]]</div>
+</div>
+<p>Probabilities:</p>
+<div class="line-block">
+<div class="line">[p^(1), p^(2), …, p^(m)]^T</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.load_params">
+<code class="descname">load_params</code><span class="sig-paren">(</span><em>infile='srom_params.txt'</em>, <em>delimiter=' '</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.load_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load SROM parameters from file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>infile</strong> (<em>string</em>) – input file name containing SROM parameters</li>
+<li><strong>delimiter</strong> (<em>string</em>) – delimiter used in input file (default - whitespace)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: None. Sets sample/probability member variables.</p>
+<p>Assumes input file has the following format (samples in each row with
+prob after):</p>
+<div class="line-block">
+<div class="line">x_1^(1),   x_2^(1), …, x_d^(1),  p^(1)</div>
+<div class="line">x_1^(2), x_2^(2), …, x_d^(2),  p^(2)</div>
+<div class="line">…     …   …    ….   …</div>
+<div class="line">x_1^(m), x_2^(m),  …     x_d^(m),  p^(m)</div>
+</div>
+<p>The dimension of the samples and probabilities arrays must be
+compatible with the SROM size and dimension that was used to initialize
+the SROM class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>target_random_variable</em>, <em>weights=None</em>, <em>num_test_samples=50</em>, <em>error='SSE'</em>, <em>max_moment=5</em>, <em>cdf_grid_pts=100</em>, <em>tolerance=None</em>, <em>options=None</em>, <em>method=None</em>, <em>joint_opt=False</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize for the SROM samples &amp; probabilities to best match the
+target random vector statistics. The main functionality provided
+by the SROM class. Solves SROM the optimization problem and sets
+the samples and probabilities for the SROM object to the optimized
+values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>target_random_variable</strong> (<em>SROMPy target object</em><em>
+(</em><a class="reference internal" href="#SROMPy.target.AnalyticRandomVector" title="SROMPy.target.AnalyticRandomVector"><em>AnalyticRandomVector</em></a><em>, </em><a class="reference internal" href="#SROMPy.target.SampleRandomVector" title="SROMPy.target.SampleRandomVector"><em>SampleRandomVector</em></a><em>, or </em><em>random variable class</em><em>)</em>) – the target random quantity
+(variable/vector) being modeled by the SROM.</li>
+<li><strong>weights</strong> (<em>1d Numpy array</em><em> (</em><em>length = 3</em><em>)</em>) – relative weights specifying importance of matching
+CDFs, moments, and correlation of the target during optimization.
+Default is equal weights [1,1,1].</li>
+<li><strong>num_test_samples</strong> (<em>int</em>) – Number of sample sets (iterations) to run
+optimization.</li>
+<li><strong>error</strong> (<em>string</em>) – Type of error metric to use in objective (“SSE”, “MAX”,
+“MEAN”).</li>
+<li><strong>max_moment</strong> (<em>int</em>) – Max. number of target moments to consider matching</li>
+<li><strong>cdf_grid_pts</strong> (<em>int</em>) – Number of points to evaluate CDF error on</li>
+<li><strong>tolerance</strong> (<em>float</em>) – tolerance for scipy optimization algorithm (TODO)</li>
+<li><strong>options</strong> (<em>dict</em>) – scipy optimization algorithm options (TODO)</li>
+<li><strong>method</strong> (<em>string</em>) – method used for scipy optimization  (TODO)</li>
+<li><strong>joint_opt</strong> (<em>bool</em>) – Flag to optimize jointly for samples &amp; probabilities.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: None. Sets samples/probabilities member variables.</p>
+<p>Assumes the targetRV object has been properly initialized beforehand.
+The optimization for SROM samples &amp; probabilities is currently
+performed sequentially - a random set of samples are first drawn and the
+probabilities are then optimization for those samples. The input
+“num_test_samples” is the number of random sample sets this is
+performed for before terminating. The random sample set and optimal
+probabilities found that produce the lowest objective function value
+are used as the optimal parameters. The joint_opt input flag can 
+specify to do the optimization over samples and probabilities 
+simultaneously.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.save_params">
+<code class="descname">save_params</code><span class="sig-paren">(</span><em>outfile='srom_params.txt'</em>, <em>delimiter=' '</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.save_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the SROM parameters to file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>outfile</strong> (<em>string</em>) – output file name</li>
+<li><strong>delimiter</strong> (<em>string</em>) – delimiter used in output file (default - whitespace)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: None. Produces output file.</p>
+<p>Writes output file with the following format (samples in each row with
+prob after):</p>
+<div class="line-block">
+<div class="line">x_1^(1),   x_2^(1), …, x_d^(1),  p^(1)</div>
+<div class="line">x_1^(2), x_2^(2), …, x_d^(2),  p^(2)</div>
+<div class="line">…     …   …    ….   …</div>
+<div class="line">x_1^(m), x_2^(m),  …     x_d^(m),  p^(m)</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROM.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>samples</em>, <em>probabilities</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROM.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set defining SROM parameters - samples &amp; corresponding probabilities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>samples</strong> (<em>2d Numpy array</em><em>, </em><em>size -</em><em> (</em><em>SROM size</em><em>) </em><em>x</em><em> (</em><em>dim</em><em>)</em>) – Array of SROM samples</li>
+<li><strong>probabilities</strong> (<em>1d Numpy array</em><em>, </em><em>size -</em><em> (</em><em>SROM size</em><em>) </em><em>x 1</em>) – Array of SROM probabilities</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The sample/probability arrays have the following convention (srom sample
+index as rows, components of sample as columns):</p>
+<p>Samples:</p>
+<div class="line-block">
+<div class="line">[[ x_1^(1),   x_2^(1), …, x_d^(1)],</div>
+<div class="line">[x_1^(2), x_2^(2), …, x_d^(2)],</div>
+<div class="line">…     …   …    ….</div>
+<div class="line">[x_1^(m), x_2^(m),  …  x_d^(m)]]</div>
+</div>
+<p>Probabilities:</p>
+<div class="line-block">
+<div class="line">[p^(1), p^(2), …, p^(m)]^T</div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.srom.SROMSurrogate">
+<em class="property">class </em><code class="descclassname">SROMPy.srom.</code><code class="descname">SROMSurrogate</code><span class="sig-paren">(</span><em>input_srom</em>, <em>output_samples</em>, <em>output_gradients=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROMSurrogate" title="Permalink to this definition">¶</a></dt>
+<dd><p>SROMPy class that provides a closed-form surrogate model for a model output
+that can be sampled as a means of efficiently propagating uncertainty.
+Enables both a piecewise-constant model and a piecewise-linear model, if
+gradient information is provided.</p>
+<p>Conventions:</p>
+<ul>
+<li><p class="first">m denotes the SROM size (superscripts). di denotes the dimension of the 
+SROM input (subscripts). do denotes dimension of SROM output (subscripts).</p>
+</li>
+<li><p class="first">The output samples array has the following layout (m x d0):</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">[[ y^(1)_1,   y_2^(1), …, y_do^(1)],</div>
+<div class="line">[y_1^(2), y_2^(2), …, y_d0^(2)],</div>
+<div class="line">…     …   …    ….  </div>
+<div class="line">[y_1^(m), y_2^(m),  …  y_d0^(m)]]    </div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">The gradients array has the following layout (m x di):</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">[[dy(x^{(1)})/dx_1, …, dy(x^{(1)})/dx_di ],</div>
+<div class="line">…             , …,    …           </div>
+<div class="line">[dy(x^{(m)})/dx_1, …, dy(x^{(m)})/dx_di ]]</div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>Note</p>
+<ul class="simple">
+<li>the order of the output samples array must match the order of the
+samples array from the input SROM!</li>
+<li>If gradients array is provided, the piecewise-linear surrogate 
+model is implemented. Otherwise, the piecewise-constant surrogate is
+used.</li>
+</ul>
+<dl class="method">
+<dt id="SROMPy.srom.SROMSurrogate.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROMSurrogate.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the SROM marginal CDF values in each dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>Numpy array.</em>) – Grid of points to compute CDF values on. If 1d array is
+provided, the same points are used to evaluate CDF in each 
+dimension. If 2d array is provided, calculates CDF values on
+different points, but must have same # points for each dimension. 
+Size is (# grid pts) x (dim) or (# grid pts) x (1).</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: Numpy array of CDF values at x_grid points. Size is (# grid 
+pts) x (dim).</p>
+<dl class="docutils">
+<dt>Note: </dt>
+<dd><ul class="first last simple">
+<li>Increasing the number of grid points can significantly slow 
+down the SROM optimization problem.</li>
+<li>Providing a 2d array for x_grid can specify a different range
+of values for each dimension, but must use the same number of pts.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROMSurrogate.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROMSurrogate.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns SROM moments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>max_order</strong> (<em>int</em>) – Maximum order of moments to return</td>
+</tr>
+</tbody>
+</table>
+<p>Returns (max_order x dim) size Numpy array with SROM moments for 
+each dimension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.srom.SROMSurrogate.sample">
+<code class="descname">sample</code><span class="sig-paren">(</span><em>input_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.SROMSurrogate.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates output samples from the SROM surrogate corresponding to
+the provided input samples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_samples</strong> (<em>2d Numpy array.</em>) – samples of inputs to draw output samples for</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: 2d Numpy array of output samples corresponding to input samples</p>
+<dl class="docutils">
+<dt>Convention:</dt>
+<dd><ul class="first last">
+<li><p class="first">N - number of samples. di - dimension of the input. do - dimension
+of the output.</p>
+</li>
+<li><p class="first">input samples array has following layout (N x di):</p>
+<div class="line-block">
+<div class="line">[[x^(1)_1, …, x^(1)_di ],    </div>
+<div class="line-block">
+<div class="line">…    , …, …   </div>
+</div>
+<div class="line">[x^(N)_1, …, x^(N)_di ]]   </div>
+</div>
+</li>
+<li><p class="first">surrogate output samples has following layout (N x do):</p>
+<div class="line-block">
+<div class="line">[[y^(1)_1, …, y^(1)_do ],    </div>
+<div class="line-block">
+<div class="line">…    , …, …      </div>
+</div>
+<div class="line">[y^(N)_1, …, y^(N)_do ]]   </div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Note that the samples are drawn from a piecewise-linear SROM 
+surrogate when gradients are provided to the constructor of this class,
+and drawn from a piecewise-constant SROM surrogate if not.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.srom.FiniteDifference">
+<em class="property">class </em><code class="descclassname">SROMPy.srom.</code><code class="descname">FiniteDifference</code><a class="headerlink" href="#SROMPy.srom.FiniteDifference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that contains static methods for assisting in computing gradients 
+needed to implement the piecewise-linear SROM surrogate using the finite
+difference method.</p>
+<dl class="staticmethod">
+<dt id="SROMPy.srom.FiniteDifference.compute_gradient">
+<em class="property">static </em><code class="descname">compute_gradient</code><span class="sig-paren">(</span><em>outputs</em>, <em>perturbed_outputs</em>, <em>perturbation_values</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.FiniteDifference.compute_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates gradients based on original sample outputs,  perturbed
+sample outputs, and the size or perturbations.</p>
+<p>NOTE - it is being assumed here and other places that the output is
+scalar</p>
+<dl class="docutils">
+<dt>inputs:</dt>
+<dd><p class="first">(mx1 array)
+outputs =            |  y(x^(1))|</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">…     |</div>
+<div class="line">y(x^(m))|</div>
+</div>
+</div></blockquote>
+<p>(mxd array)
+perturbed_outputs =  |  y(x^(1) + delta_1), …, y(x^(1)+ delta_d)|</p>
+<blockquote class="last">
+<div><div class="line-block">
+<div class="line">…    , …,      …     |</div>
+<div class="line">y(x^(m) + delta_1), …, y(x^(m)+delta_d)|</div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+<p>(dx1 array)
+perturbed_values = [delta_1, …, delta_d]</p>
+<p>outputs:
+(mxd array)
+gradients = | dy(x^{(1)})/dx_1, …, dy(x^{(1)})/dx_d |</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">…             , …,    …           |</div>
+<div class="line">dy(x^{(m)})/dx_1, …, dy(x^{(m)})/dx_d |</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.srom.FiniteDifference.get_perturbed_samples">
+<em class="property">static </em><code class="descname">get_perturbed_samples</code><span class="sig-paren">(</span><em>samples</em>, <em>perturbation_factor=None</em>, <em>perturbation_values=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.srom.FiniteDifference.get_perturbed_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the perturbed SROM samples that must be run through model
+to estimate gradients with finite difference.</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><p class="first">samples: np array (m x d) - original input srom samples
+perturbation_factor: float - if specified, computes the</p>
+<blockquote>
+<div>perturbation size in each dimension as
+(max_i - min_i)*perturbation_factor.
+max/min_i are the max/min sample values in dim. i.</div></blockquote>
+<dl class="last docutils">
+<dt>perturbation_values: list of float - if specified uses the values</dt>
+<dd>in the array for perturbations in each dimension.</dd>
+</dl>
+</dd>
+</dl>
+<p>-Must specify either perturbation_factor or perturbation_values</p>
+<dl class="docutils">
+<dt>output:</dt>
+<dd><p class="first">returns perturbed_samples: np array (m*d x d)
+samples =  |  x^(1)_1 + delta_1, …, x^(1)_d |</p>
+<blockquote class="last">
+<div><div class="line-block">
+<div class="line">…    , …,      …          |</div>
+<div class="line">x^(m)_1 + delta_1, …, x^(m)_d |
+….</div>
+<div class="line">x^(1)_1, …, x^(1)_d + delta_d|</div>
+<div class="line">…    , …,      …         |</div>
+<div class="line">x^(m)_1, …, x^(m)_d + delta_d|</div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-SROMPy.target">
+<span id="target-random-quantity-documentation"></span><h2>Target Random Quantity Documentation<a class="headerlink" href="#module-SROMPy.target" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="SROMPy.target.NormalRandomVariable">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">NormalRandomVariable</code><span class="sig-paren">(</span><em>mean=0.0</em>, <em>std_dev=1.0</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for defining a normal random variable</p>
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of normal CDF values at the points contained
+in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.compute_inv_cdf">
+<code class="descname">compute_inv_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.compute_inv_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns np array of inverse normal CDF values at pts in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns moments up to order ‘max_order’ in numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.compute_pdf">
+<code class="descname">compute_pdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.compute_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of normal pdf values at the points contained
+in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws random samples from the normal random variable. Returns numpy
+array of length ‘sample_size’ containing these samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.generate_moments">
+<code class="descname">generate_moments</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.generate_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store moments to retrieve more efficiently later</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.NormalRandomVariable.get_variance">
+<code class="descname">get_variance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.NormalRandomVariable.get_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns variance of normal random variable</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.BetaRandomVariable">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">BetaRandomVariable</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em>, <em>shift=0</em>, <em>scale=1</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for implementing a beta random variable</p>
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of beta CDF values at the points contained in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.compute_inv_cdf">
+<code class="descname">compute_inv_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.compute_inv_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns np array of inverse beta CDF values at pts in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns moments up to order ‘max_order’ in numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.compute_pdf">
+<code class="descname">compute_pdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.compute_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of beta pdf values at the points contained in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws random samples from the beta random variable. Returns numpy
+array of length ‘sample_size’ containing these samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.generate_moments">
+<code class="descname">generate_moments</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.generate_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store moments to retrieve more efficiently later</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.target.BetaRandomVariable.get_beta_shape_params">
+<em class="property">static </em><code class="descname">get_beta_shape_params</code><span class="sig-paren">(</span><em>min_value</em>, <em>max_value</em>, <em>mean</em>, <em>variance</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.get_beta_shape_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the beta shape parameters (alpha, beta) and the shift/scale
+parameters that produce a beta random variable with the specified
+minimum value, maximum value, mean, and variance. Can be called prior
+to initialization of this class if only this info is known about the
+random variable being modeled.
+Returns a list of length 4 ordered [alpha, beta, shift, scale]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.BetaRandomVariable.get_variance">
+<code class="descname">get_variance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.BetaRandomVariable.get_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns variance of beta random variable</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.DiscreteRandomVector">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">DiscreteRandomVector</code><span class="sig-paren">(</span><em>samples</em>, <em>probabilities</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.DiscreteRandomVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discrete random vector. Defines a target that can be matched with a SROM
+that is created from samples and corresponding probabilities. Implements
+basic discrete statistics (similar to those of an SROM).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>samples</strong> (<em>np array</em><em>, </em><em>size:</em><em> (</em><em># samples x dim</em><em>)</em>) – set of realizations/samples of the random vector</li>
+<li><strong>probabilities</strong> (<em>np array</em><em>, </em><em>length = # samples</em>) – probabilties associated with each sample</li>
+<li><strong>max_moment</strong> (<em>int</em>) – max. order moment to precompute and store</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="SROMPy.target.DiscreteRandomVector.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.DiscreteRandomVector.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the marginal CDF values in each dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>Numpy array.</em>) – Grid of points to compute CDF values on. If 1d array is
+provided, the same points are used to evaluate CDF in each
+dimension. If 2d array is provided, calculates CDF values on
+different points, but must have same # points for each dimension.
+Size is (# grid pts) x (dim) or (# grid pts) x (1).</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: Numpy array of CDF values at x_grid points. Size is (# grid
+pts) x (dim).</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd><ul class="first last simple">
+<li>Increasing the number of grid points can significantly slow
+down the SROM optimization problem.</li>
+<li>Providing a 2d array for x_grid can specify a different range
+of values for each dimension, but must use the same number of pts.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.DiscreteRandomVector.compute_correlation_matrix">
+<code class="descname">compute_correlation_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.DiscreteRandomVector.compute_correlation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns precomputed correlation matrix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.DiscreteRandomVector.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.DiscreteRandomVector.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return precomputed moments up to specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>max_order</strong> (<em>int</em>) – Maximum order of moments to return</td>
+</tr>
+</tbody>
+</table>
+<p>Returns (max_order x dim) size Numpy array with SROM moments for
+each dimension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.DiscreteRandomVector.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.DiscreteRandomVector.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly draws a sample of this random vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sample_size</strong> (<em>int</em>) – number of samples to return</td>
+</tr>
+</tbody>
+</table>
+<p>sample_size must be smaller than total # of samples. For discrete
+random vector, we return a randomly selected # of samples</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.GammaRandomVariable">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">GammaRandomVariable</code><span class="sig-paren">(</span><em>alpha</em>, <em>shift=0</em>, <em>scale=1</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for implementing a gamma random variable</p>
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of gamma CDF values at the points contained in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.compute_inv_cdf">
+<code class="descname">compute_inv_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.compute_inv_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns np array of inverse gamma CDF values at pts in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns moments up to order ‘max_order’ in numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.compute_pdf">
+<code class="descname">compute_pdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.compute_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of gamma pdf values at the points contained
+in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_sz</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws random samples from the gamma random variable. Returns numpy
+array of length ‘sample_size’ containing these samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.generate_moments">
+<code class="descname">generate_moments</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.generate_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store moments to retrieve more efficiently later</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.GammaRandomVariable.get_variance">
+<code class="descname">get_variance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.GammaRandomVariable.get_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns variance of gamma random variable</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.UniformRandomVariable">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">UniformRandomVariable</code><span class="sig-paren">(</span><em>min_val=0.0</em>, <em>max_val=0.0</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for defining a uniform random variable</p>
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of uniform CDF values at the points contained
+in x_grid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.compute_inv_cdf">
+<code class="descname">compute_inv_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.compute_inv_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns np array of inverse uniform CDF values at pts in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns moments up to order ‘max_order’ in numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.compute_pdf">
+<code class="descname">compute_pdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.compute_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns numpy array of uniform pdf values at the points contained
+in x_grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws random samples from the uniform random variable. Returns numpy
+array of length ‘sample_size’ containing these samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.generate_moments">
+<code class="descname">generate_moments</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.generate_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store moments to retrieve more efficiently later</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.UniformRandomVariable.get_variance">
+<code class="descname">get_variance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.UniformRandomVariable.get_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns variance of uniform random variable</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.AnalyticRandomVector">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">AnalyticRandomVector</code><span class="sig-paren">(</span><em>random_variables</em>, <em>correlation_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for implementing a translation random vector for non-gaussian random
+vectors whose components are governed by analytic probability distributions
+and have known correlation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>random_variables</strong> (<em>list of SROMPy random variable objects</em>) – list of SROMPy target random variable objects 
+defining each component of the random vector.</li>
+<li><strong>correlation_matrix</strong> (<em>np array</em><em>, </em><em>size: dim x dim</em>) – specifies correlation between vector components.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>random_variables list must have length equal to the random vector dimension.
+Each SROMPy random variable object in the list must be properly
+initialized and have compute_moments and compute_CDF functions implemented.</p>
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the precomputed/stored CDFs at the specified x_grid values
+and returns. x_grid can be a 1D array in which case the CDFs for each
+dimension are evaluated at the same points, or it can be a
+(num_grid_pts x dim) array, specifying different points for each
+dimension - each dimension can have a different range of values but
+must have the same # of grid pts across it. Returns a (num_grid_pts x
+dim) array of corresponding CDF values at the grid points</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.compute_correlation_matrix">
+<code class="descname">compute_correlation_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.compute_correlation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the correlation matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate random vector moments up to order max_moment based
+on samples. Moments from 1,…,max_order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the translation model to generate general random vectors with
+non-gaussian components. Nonlinear transformation of a std gaussian
+vector according to method in S.R. Arwade 2005 paper.</p>
+<dl class="docutils">
+<dt>random component sample: theta = inv_cdf(std_normal_cdf(normal_vec))</dt>
+<dd>Theta = F^{-1}(Phi(G))</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.generate_gaussian_correlation">
+<code class="descname">generate_gaussian_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.generate_gaussian_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the Gaussian correlation matrix that will achieve the
+covariance matrix specified for this random vector when using a
+translation random vector sampling approach. See J.M. Emery 2015 paper
+pages 922,923 on this procedure.
+Helper function - no inputs, operates on self._correlation correlation
+matrix and generates self._gaussian_corr</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.generate_unscaled_correlation">
+<code class="descname">generate_unscaled_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.generate_unscaled_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the unscaled correlation matrix that is matched by the SROM
+during optimization. No inputs / outputs. INternally produces
+self._unscaled_correlation from self._correlation.</p>
+<p>&gt;&gt; C_ij = E[ X_i X_j]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.get_correlation_entry">
+<code class="descname">get_correlation_entry</code><span class="sig-paren">(</span><em>k</em>, <em>j</em>, <em>rho_kj</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.get_correlation_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the correlation between this random vector’s k &amp; j components from
+the correlation btwn the Gaussian random vector’s k &amp; j components.
+Helper function for generate_gaussian_correlation
+Need to integrate product of k/j component’s inv cdf &amp; a standard
+2D normal pdf with correlation rho_kj. This is equation 6 in J.M. Emery
+et al 2015.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.AnalyticRandomVector.integrand_helper">
+<code class="descname">integrand_helper</code><span class="sig-paren">(</span><em>u</em>, <em>v</em>, <em>k</em>, <em>j</em>, <em>rho_kj</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.integrand_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function for numerical integration in the
+generate_gaussian_correlation() function. Implements the integrand of
+equation 6 of J.M. Emery 2015 paper that needs to be integrated w/
+scipy
+Passing in values of the k^th and j^th component of the random variable
+- u and v - and the specified correlation between them rho_kj.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.target.AnalyticRandomVector.verify_correlation_matrix">
+<em class="property">static </em><code class="descname">verify_correlation_matrix</code><span class="sig-paren">(</span><em>corr_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.AnalyticRandomVector.verify_correlation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do error checking on the provided correlation matrix, e.g., is it
+square? is it symmetric?</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SROMPy.target.SampleRandomVector">
+<em class="property">class </em><code class="descclassname">SROMPy.target.</code><code class="descname">SampleRandomVector</code><span class="sig-paren">(</span><em>samples</em>, <em>max_moment=10</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample-based random vector. Defines a target random vector to match with
+an SROM based on a set of realizations of that random vector. Implements
+basic statistics to use in SROM optimization and comparisons.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>samples</strong> (<em>np array</em><em>, </em><em>size:</em><em> (</em><em># samples x dim</em><em>)</em>) – set of realizations/samples of the random vector</li>
+<li><strong>max_moment</strong> (<em>int</em>) – max. order moment to precompute and store</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.compute_cdf">
+<code class="descname">compute_cdf</code><span class="sig-paren">(</span><em>x_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.compute_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the precomputed/stored CDFs at the specified x_grid values
+and returns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>Numpy array.</em>) – Grid of points to compute CDF values on. If 1d array is
+provided, the same points are used to evaluate CDF in each
+dimension. If 2d array is provided, calculates CDF values on
+different points, but must have same # points for each dimension.
+Size is (# grid pts) x (dim) or (# grid pts) x (1).</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: Numpy array of CDF values at x_grid points. Size is (# grid
+pts) x (dim).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.compute_correlation_matrix">
+<code class="descname">compute_correlation_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.compute_correlation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns precomputed correlation matrix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.compute_moments">
+<code class="descname">compute_moments</code><span class="sig-paren">(</span><em>max_order</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.compute_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return precomputed moments up to specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>max_order</strong> (<em>int</em>) – Maximum order of moments to return</td>
+</tr>
+</tbody>
+</table>
+<p>Returns (max_order x dim) size Numpy array with SROM moments for
+each dimension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.draw_random_sample">
+<code class="descname">draw_random_sample</code><span class="sig-paren">(</span><em>sample_size</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.draw_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly draws a sample of this random vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sample_size</strong> (<em>int</em>) – number of samples to return</td>
+</tr>
+</tbody>
+</table>
+<p>sample_size must be smaller than total # of samples. For sample-based
+random vector, we return a randomly selected # of samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.generate_cdfs">
+<code class="descname">generate_cdfs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.generate_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store marginal CDFs for each dimension of the random vector.
+Stores a linear interpolator of the CDF for each dim
+Uses trick from :   <a class="reference external" href="http://stackoverflow.com/questions/3209362/">http://stackoverflow.com/questions/3209362/</a></p>
+<blockquote>
+<div>%20how-to-plot-empirical-cdf-in-matplotlib-in-python</div></blockquote>
+<p>to calculate CDF from samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.generate_correlation">
+<code class="descname">generate_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.generate_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and stores sample-based correlation matrix for random vector</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.generate_moments">
+<code class="descname">generate_moments</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.generate_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate &amp; store random vector moments up to order max_moment based
+on samples. Moments from 1,…,max_order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.generate_statistics">
+<code class="descname">generate_statistics</code><span class="sig-paren">(</span><em>max_moment</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.generate_statistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Precompute &amp; store moments, CDFs, correlation matrix of the samples
+so that they can be returned quickly later</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.target.SampleRandomVector.get_plot_cdfs">
+<code class="descname">get_plot_cdfs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.target.SampleRandomVector.get_plot_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get CDF values for plotting (without using interpolant) - returns
+tuple with x_grid &amp; CDF values arrays</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-SROMPy.postprocess">
+<span id="postprocessor-documentation"></span><h2>Postprocessor Documentation<a class="headerlink" href="#module-SROMPy.postprocess" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="SROMPy.postprocess.Postprocessor">
+<em class="property">class </em><code class="descclassname">SROMPy.postprocess.</code><code class="descname">Postprocessor</code><span class="sig-paren">(</span><em>srom</em>, <em>target_random_vector</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for comparing an SROM vs the target random vector it is modeling. 
+Capabilities for plotting CDFs/pdfs and tabulating errors in moments, 
+correlations, etc.</p>
+<dl class="method">
+<dt id="SROMPy.postprocess.Postprocessor.compare_cdfs">
+<code class="descname">compare_cdfs</code><span class="sig-paren">(</span><em>variable='x'</em>, <em>plot_dir='.'</em>, <em>plot_suffix='CDFcompare'</em>, <em>show_figure=True</em>, <em>save_figure=True</em>, <em>variable_names=None</em>, <em>x_limits=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.compare_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plots comparing the srom &amp; target cdfs for each dimension
+of the random vector.</p>
+<dl class="docutils">
+<dt>inputs:</dt>
+<dd><p class="first">variable, str, name of variable being plotted
+plot_suffix, str, name for saving plot (will append dim &amp; .pdf)
+plot_dir, str, name of directory to store plots
+show_figure, bool, show or not show generated plot
+save_figure, bool, save or not save generated plot
+variable_names, list of strings, names of variable in each dimension</p>
+<blockquote class="last">
+<div>optional. Used for x axes labels if provided.</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.postprocess.Postprocessor.compare_pdfs">
+<code class="descname">compare_pdfs</code><span class="sig-paren">(</span><em>variable='x'</em>, <em>plot_dir='.'</em>, <em>plot_suffix='pdf_compare'</em>, <em>show_figure=True</em>, <em>save_figure=True</em>, <em>variable_names=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.compare_pdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plots comparing the srom &amp; target pdfs for each dimension
+of the random vector.</p>
+<dl class="docutils">
+<dt>inputs:</dt>
+<dd><p class="first">variable, str, name of variable being plotted
+plot_suffix, str, name for saving plot (will append dim &amp; .pdf)
+plot_dir, str, name of directory to store plots
+show_figure, bool, show or not show generated plot
+save_figure, bool, save or not save generated plot
+variable_names, list of strings, names of variable in each dimension</p>
+<blockquote class="last">
+<div>optional. Used for x axes labels if provided.</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.postprocess.Postprocessor.compare_random_variable_cdfs">
+<code class="descname">compare_random_variable_cdfs</code><span class="sig-paren">(</span><em>random_variable_1</em>, <em>random_variable_2</em>, <em>variable='x'</em>, <em>plot_dir='.'</em>, <em>plot_suffix='CDFscompare'</em>, <em>show_figure=True</em>, <em>save_figure=False</em>, <em>variable_names=None</em>, <em>x_limits=None</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.compare_random_variable_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plots comparing CDFs from sroms of different sizes versus 
+the target variable for each dimension of the vector.</p>
+<dl class="docutils">
+<dt>inputs:</dt>
+<dd><p class="first">random_variable_1, SampleRandomVector, target random variable object
+random_variable_2, SampleRandomVector, target random variable object
+variable, str, name of variable being plotted
+plot_suffix, str, name for saving plot (will append dim &amp; .pdf)
+plot_dir, str, name of directory to store plots
+show_figure, bool, show or not show generated plot
+save_figure, bool, save or not save generated plot
+variable_names, list of strings, names of variable in each dimension</p>
+<blockquote>
+<div>optional. Used for x axes labels if provided.</div></blockquote>
+<p class="last">labels, list of str: names of random_variable_1 &amp; random_variable_2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.postprocess.Postprocessor.compare_srom_cdfs">
+<em class="property">static </em><code class="descname">compare_srom_cdfs</code><span class="sig-paren">(</span><em>size2srom</em>, <em>target</em>, <em>variable='x'</em>, <em>plot_dir='.'</em>, <em>plot_suffix='CDFscompare'</em>, <em>show_figure=True</em>, <em>save_figure=True</em>, <em>variable_names=None</em>, <em>y_limits=None</em>, <em>x_ticks=None</em>, <em>cdf_y_label=False</em>, <em>x_axis_padding=None</em>, <em>axis_font_size=30</em>, <em>label_font_size=24</em>, <em>legend_font_size=25</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.compare_srom_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plots comparing CDFs from sroms of different sizes versus 
+the target variable for each dimension of the vector.</p>
+<dl class="docutils">
+<dt>inputs:</dt>
+<dd><p class="first">size2srom, dict, key=size of SROM (int), value = srom object
+target, TargetRV, target random variable object
+variable, str, name of variable being plotted
+plot_suffix, str, name for saving plot (will append dim &amp; .pdf)
+plot_dir, str, name of directory to store plots
+show_figure, bool, show or not show generated plot
+save_figure, bool, save or not save generated plot
+variable_names, list of strings, names of variable in each dimension</p>
+<blockquote>
+<div>optional. Used for x axes labels if provided.</div></blockquote>
+<dl class="docutils">
+<dt>cdf_y_label, bool, use “CDF” as y-axis label? If False, uses</dt>
+<dd>F(&lt;variable_name&gt;)</dd>
+</dl>
+<p class="last">x_axis_padding, int, spacing between xtick labels and x-axis</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.postprocess.Postprocessor.compute_moment_error">
+<code class="descname">compute_moment_error</code><span class="sig-paren">(</span><em>max_moment=4</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.compute_moment_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a comparison of the moments between the SROM and target, 
+calculates the percent errors up to moments of order ‘max_moment’.
+Optionally generates text file with the latex source to generate
+a table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SROMPy.postprocess.Postprocessor.generate_cdf_grids">
+<code class="descname">generate_cdf_grids</code><span class="sig-paren">(</span><em>cdf_grid_pts=1000</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.generate_cdf_grids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate numerical grids for plotting CDFs based on the 
+range of the target random vector. Return  x_grid variable with
+cdf_grid_pts along each dimension of the random vector.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.postprocess.Postprocessor.plot_cdfs">
+<em class="property">static </em><code class="descname">plot_cdfs</code><span class="sig-paren">(</span><em>x_grid</em>, <em>srom_cdf</em>, <em>x_target</em>, <em>target_cdf</em>, <em>x_label='x'</em>, <em>y_label='F(x)'</em>, <em>plot_name=None</em>, <em>show_figure=True</em>, <em>x_limits=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.plot_cdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plotting routine for comparing a single srom/target cdf</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="SROMPy.postprocess.Postprocessor.plot_pdfs">
+<em class="property">static </em><code class="descname">plot_pdfs</code><span class="sig-paren">(</span><em>samples</em>, <em>probabilities</em>, <em>x_target</em>, <em>target_pdf</em>, <em>x_label='x'</em>, <em>y_label='f(x)'</em>, <em>plot_name=None</em>, <em>show_figure=True</em><span class="sig-paren">)</span><a class="headerlink" href="#SROMPy.postprocess.Postprocessor.plot_pdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plotting routine for comparing a single srom/target pdf</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SROMPy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example - Spring Mass System</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Source Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-SROMPy.srom">SROM Module Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-SROMPy.target">Target Random Quantity Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-SROMPy.postprocess">Postprocessor Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="example.html" title="previous chapter">Example - Spring Mass System</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, NASA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/source_code.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

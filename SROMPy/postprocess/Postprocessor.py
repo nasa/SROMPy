@@ -18,6 +18,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+from SROMPy.srom.SROM import SROM
+from SROMPy.target.RandomEntity import RandomEntity
+
 
 class Postprocessor:
     """
@@ -30,9 +33,7 @@ class Postprocessor:
         """
         Initialize class with previously initialized srom & targetrv objects.
         """
-
-        # TODO - check to make sure srom/targetrv are initialized & have the 
-        # needed functions implemented (compute_moments/cdfs/ etc.)
+        self.__check_init_params(srom, target_random_vector)
 
         self._SROM = srom
         self._target = target_random_vector
@@ -58,7 +59,7 @@ class Postprocessor:
         srom_cdfs = self._SROM.compute_cdf(x_grids)
         target_cdfs = self._target.compute_cdf(x_grids)
 
-        # Start plot name string if it's being stored
+        # Start plot name string if it's being stored.
         if save_figure:
             plot_name = os.path.join(plot_dir, plot_suffix)
         else:
@@ -271,8 +272,8 @@ class Postprocessor:
         x_grid = np.zeros((cdf_grid_pts, self._target.dim))
 
         for i in range(self._target.dim):
-            grid = np.linspace(self._target._mins[i],
-                               self._target._maxs[i],
+            grid = np.linspace(self._target.mins[i],
+                               self._target.maxs[i],
                                cdf_grid_pts)
             x_grid[:, i] = grid
 
@@ -312,8 +313,8 @@ class Postprocessor:
         x_grids = np.zeros((cdf_grid_pts, target.dim))
 
         for i in range(target.dim):
-            grid = np.linspace(target._mins[i],
-                               target._maxs[i],
+            grid = np.linspace(target.mins[i],
+                               target.maxs[i],
                                cdf_grid_pts)
             x_grids[:, i] = grid
 
@@ -425,8 +426,7 @@ class Postprocessor:
             if show_figure:
                 plt.show()
 
-    @staticmethod
-    def compare_random_variable_cdfs(random_variable_1, random_variable_2,
+    def compare_random_variable_cdfs(self, random_variable_1, random_variable_2,
                                      variable="x", plot_dir=".",
                                      plot_suffix="CDFscompare",
                                      show_figure=True, save_figure=False,
@@ -463,7 +463,7 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != target.dim:
+            if len(variable_names) != self._target.dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
@@ -527,3 +527,16 @@ class Postprocessor:
                 plt.savefig(plot_name_)
             if show_figure:
                 plt.show()
+
+    @staticmethod
+    def __check_init_params(srom, target_random_vector):
+
+        if not isinstance(target_random_vector, RandomEntity):
+            raise TypeError("target_random_vector must descend from " +
+                            "RandomEntity")
+
+        if not hasattr(target_random_vector, 'compute_cdf'):
+            raise TypeError("Target must define compute_cdf()")
+
+        if not hasattr(target_random_vector, 'compute_moments'):
+            raise TypeError("Target must define compute_moments()")

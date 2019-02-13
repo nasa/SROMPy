@@ -260,8 +260,8 @@ class AnalyticRandomVector(RandomVector):
         covariance matrix specified for this random vector when using a
         translation random vector sampling approach. See J.M. Emery 2015 paper
         pages 922,923 on this procedure.
-        Helper function - no inputs, operates on self._correlation correlation matrix
-        and generates self._gaussian_corr
+        Helper function - no inputs, operates on self._correlation correlation
+        matrix and generates self._gaussian_corr
         """
 
         self._gaussian_corr = np.ones(self._corr.shape)

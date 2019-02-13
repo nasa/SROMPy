@@ -27,14 +27,7 @@ class SROMSurrogate:
     SROMPy class that provides a closed-form surrogate model for a model output
     that can be sampled as a means of efficiently propagating uncertainty.
     Enables both a piecewise-constant model and a piecewise-linear model, if
-    gradient information is provided. 
-
-    :param inputsrom: The input SROM that was used to generate the outputs.
-    :type inputsrom: SROMPy SROM object.
-    :param outputsamples: Output samples corresponding to each input SROM sample
-    :type outputsamples: 2d Numpy Array
-    :param outputgradients: Gradient of output with respect to input samples
-    :type outputgradients: 2d Numpy Array
+    gradient information is provided.
     
     Conventions:
 
@@ -86,6 +79,14 @@ class SROMSurrogate:
 
         do - dimension of output samples (doesn't need to equal di of input)
 
+        :param input_srom: The input SROM that was used to generate the outputs.
+        :type input_srom: SROMPy SROM object.
+        :param output_samples: Output samples corresponding to each input SROM
+            sample
+        :type output_samples: 2d Numpy Array
+        :param output_gradients: Gradient of output with respect to input
+            samples
+        :type output_gradients: 2d Numpy Array
         """
 
         if input_srom.samples is None or input_srom.probabilities is None:
