@@ -9,9 +9,7 @@ from SROMPy.srom import SROM
 class SROMSimulator:
 
     def __init__(self, random_input, model):
-        # self.__check_init_parameters(random_input, model)
-        if not isinstance(random_input, type(RandomVariable)):
-            TypeError("Data must inherit from the RandomVariable class")
+        self.__check_init_parameters(random_input, model)
 
         self._data = random_input
         self._model = model
@@ -86,11 +84,11 @@ class SROMSimulator:
 
     @staticmethod
     def __check_init_parameters(data, model):
-        if not isinstance(data, type(RandomVariable)):
-            TypeError("Data must inherit from the RandomVariable class")
+        if not isinstance(data, RandomVariable):
+            raise TypeError("Data must inherit from the RandomVariable class")
         
-        if not isinstance(model, type(Model)):
-            TypeError("Model must inherit from Model class")
+        if not isinstance(model, Model):
+            raise TypeError("Model must inherit from Model class")
 
     #Test to make sure it is throwing exceptions, fix problem with except (TODO)
     @staticmethod
@@ -101,7 +99,7 @@ class SROMSimulator:
         #Check if dim is short for dimensions (TODO)
         if not isinstance(dim, int):
             raise TypeError("Dimensions must be an integer.")
-            
+
         #Update surrogate type exception (TODO)
         if surrogate_type != "PWC":
             raise ValueError("For now, surrogate type must PWC.")

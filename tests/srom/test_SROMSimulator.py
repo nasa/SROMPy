@@ -12,17 +12,19 @@ from SROMPy.srom.SROMSimulator import SROMSimulator
 from SROMPy.target import BetaRandomVariable
 from SROMPy.srom.spring_mass_model import SpringMassModel
 
-# def test_simulator_init_exceptions():
-#     # random_input = \
-#     #     BetaRandomVariable(alpha=3.0, beta=2.0, shift=1.0, scale=2.5)
+@pytest.fixture
+def beta_random_variable():
+    random_input = \
+        BetaRandomVariable(alpha=3.0, beta=2.0, shift=1.0, scale=2.5)
 
-#     spring_model = SpringMassModel(state0=[0.0, 0.0], time_step=0.01)
+    return random_input
 
-#     with pytest.raises(TypeError):
-#         SROMSimulator("test", spring_model)
-    
-#     # with pytest.raises(TypeError):
-#     #     SROMSimulator(random_input, spring_model)
+@pytest.fixture
+def spring_model_fixture():
+    spring_model = SpringMassModel(state0=[0.0, 0.0], time_step=0.01)
+
+    return spring_model
+
 @pytest.fixture
 def srom_simulator_fixture():
     random_variable = \
@@ -32,6 +34,15 @@ def srom_simulator_fixture():
 
     srom_sim = SROMSimulator(random_variable, spring_model)
     return srom_sim
+
+def test_simulator_init_exception_for_invalid_parameters(beta_random_variable, 
+                                                         spring_model_fixture):
+
+    with pytest.raises(TypeError):
+        SROMSimulator(1, spring_model_fixture)
+
+    with pytest.raises(TypeError):
+        SROMSimulator(beta_random_variable, "Not A Proper Model")
 
 def test_simulate_exception_for_invalid_parameters(srom_simulator_fixture):
     with pytest.raises(TypeError):
