@@ -28,12 +28,7 @@ def spring_model():
     return model
 
 @pytest.fixture
-def srom_simulator_instance():
-    beta_random_variable_distribution = \
-        BetaRandomVariable(alpha=3.0, beta=2.0, shift=1.0, scale=2.5)
-    
-    spring_model = SpringMassModel(mass=1.5, time_step=1.0, state0=[0.0, 0.0])
-    
+def srom_simulator_instance(beta_random_variable_distribution, spring_model):
     srom_sim = SROMSimulator(beta_random_variable_distribution, spring_model)
 
     return srom_sim
@@ -43,7 +38,7 @@ def test_simulator_init_exceptions(beta_random_variable_distribution,
                                    spring_model):
 
     with pytest.raises(TypeError):
-        SROMSimulator(5.5, spring_model)
+        SROMSimulator(random_input=5.5, model=spring_model)
     
     with pytest.raises(TypeError):
         SROMSimulator(beta_random_variable_distribution, "TestString")
@@ -52,5 +47,5 @@ def test_simulate_function_exceptions(srom_simulator_instance):
     with pytest.raises(TypeError):
         srom_simulator_instance.simulate(srom_size=10.5, surrogate_type="PWC")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         srom_simulator_instance.simulate(srom_size=10, surrogate_type="JBC")

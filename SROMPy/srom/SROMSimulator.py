@@ -1,8 +1,9 @@
 
 from SROMPy.target import RandomVariable
 from SROMPy.srom import Model
+from SROMPy.postprocess import Postprocessor
 
-class SROMSimulator(object):
+class SROMSimulator:
 
     def __init__(self, random_input, model):
         self.__check_init_parameters(random_input, model)
@@ -16,7 +17,7 @@ class SROMSimulator(object):
     @staticmethod
     def __check_init_parameters(data, model):
         if not isinstance(data, RandomVariable):
-            TypeError("Data must inherit from the RandomEntity class")
+            TypeError("Data must inherit from the RandomVariable class")
         
         if not isinstance(model, Model):
             TypeError("Model must inherit from Model class")
@@ -27,5 +28,5 @@ class SROMSimulator(object):
             TypeError("SROM size must be an integer")
         
         #Update surrogate type exception (TODO)
-        #if surrogate_type == "PWC":
-        #    TypeError("For now, surrogate type must PWC")
+        if surrogate_type == "PWC":
+            ValueError("For now, surrogate type must PWC")
