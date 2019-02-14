@@ -10,7 +10,7 @@ if 'PYTHONPATH' not in os.environ:
 
 from SROMPy.srom.SROMSimulator import SROMSimulator
 from SROMPy.target import BetaRandomVariable
-from spring_mass_model import SpringMassModel
+from SROMPy.srom.spring_mass_model import SpringMassModel
 
 @pytest.fixture
 def beta_random_variable_distribution():
