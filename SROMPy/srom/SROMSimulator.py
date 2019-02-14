@@ -27,5 +27,5 @@ class SROMSimulator(object):
             TypeError("SROM size must be an integer")
         
         #Update surrogate type exception (TODO)
-        if surrogate_type != "PWC":
-            TypeError("For now, surrogate type must PWC")
+        #if surrogate_type == "PWC":
+        #    TypeError("For now, surrogate type must PWC")

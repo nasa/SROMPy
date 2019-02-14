@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.integrate import odeint
+from SROMPy.srom.Model import Model
 
-class SpringMassModel():
+class SpringMassModel(Model):
     """
     Defines Spring Mass model with 1 free param (stiffness of spring, k). The
     quantity of interest that is returned by the evaluate() function is the
