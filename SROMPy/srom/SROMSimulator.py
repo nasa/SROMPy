@@ -9,14 +9,16 @@ from SROMPy.srom import SROM
 class SROMSimulator:
 
     def __init__(self, random_input, model):
-        self.__check_init_parameters(random_input, model)
+        # self.__check_init_parameters(random_input, model)
+        if not isinstance(random_input, type(RandomVariable)):
+            TypeError("Data must inherit from the RandomVariable class")
 
         self._data = random_input
         self._model = model
 
     #Checks to see what surrogate type, then calls correct fxn
     def simulate(self, srom_size, dim, surrogate_type):
-        self.__check_simulate_parameters(srom_size, surrogate_type)
+        self.__check_simulate_parameters(srom_size, dim, surrogate_type)
 
         if surrogate_type == "PWC":
             self._simulate_piecewise_computation(srom_size, dim)
@@ -84,21 +86,25 @@ class SROMSimulator:
 
     @staticmethod
     def __check_init_parameters(data, model):
-        if not isinstance(data, RandomVariable):
+        if not isinstance(data, type(RandomVariable)):
             TypeError("Data must inherit from the RandomVariable class")
         
-        if not isinstance(model, Model):
+        if not isinstance(model, type(Model)):
             TypeError("Model must inherit from Model class")
 
     #Test to make sure it is throwing exceptions, fix problem with except (TODO)
     @staticmethod
-    def __check_simulate_parameters(size, surrogate_type):
-        if not isinstance(size, int):
-            TypeError("SROM size must be an integer")
-        
+    def __check_simulate_parameters(srom_size, dim, surrogate_type):
+        if not isinstance(srom_size, int):
+            raise TypeError("SROM size must be an integer.")
+
+        #Check if dim is short for dimensions (TODO)
+        if not isinstance(dim, int):
+            raise TypeError("Dimensions must be an integer.")
+            
         #Update surrogate type exception (TODO)
         if surrogate_type != "PWC":
-            ValueError("For now, surrogate type must PWC")
+            raise ValueError("For now, surrogate type must PWC.")
 
     #Test to make sure it returns SROM (TODO)
     @staticmethod
