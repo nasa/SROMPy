@@ -32,15 +32,13 @@ class SROMSimulator:
             self._get_srom_max_displacement(srom_size, input_srom)
         
         #The way this wraps looks ugly, but is extremely low priority (TODO)
-        self._output_srom_results(srom_size, dim, 
-                                  srom_displacements, probabilities)
+        self._output_srom_results(srom_size, dim, srom_displacements, 
+                                  probabilities)
 
     #Check to make sure it is returning correct data (TODO)
     def _postprocessor_input(self, input_srom):
         pp_input = \
             Postprocessor(srom=input_srom, target_random_vector=self._data)
-
-        print "Computing piecewise constant SROM approximation for output..."
 
         pp_input.compare_cdfs()
 
@@ -52,7 +50,7 @@ class SROMSimulator:
 
         for i, values in enumerate(samples):
             srom_displacements[i] = self._model.evaluate([values])
-        
+
         return srom_displacements, probabilities
 
     def _output_srom_results(self, srom_size, dim, 
