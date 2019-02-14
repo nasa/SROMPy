@@ -36,6 +36,7 @@ def srom_simulator_instance(beta_random_variable_distribution, spring_model):
 #Come up with a better test name (TODO)
 def test_simulator_init_exceptions(beta_random_variable_distribution, 
                                    spring_model):
+                                   
     with pytest.raises(TypeError):
         SROMSimulator(5.5, spring_model)
     

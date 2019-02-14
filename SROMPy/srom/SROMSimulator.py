@@ -11,7 +11,7 @@ class SROMSimulator(object):
         self._models = model
 
     def simulate(self, srom_size, surrogate_type):
-
+        self.__check_simulate_parameters(srom_size, surrogate_type)
     
     @staticmethod
     def __check_init_parameters(data, model):
