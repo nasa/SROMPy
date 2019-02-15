@@ -120,7 +120,6 @@ class SROMSimulator(object):
         if not isinstance(srom_size, int):
             raise TypeError("SROM size must be an integer")
 
-        #Check if dim is short for dimensions (TODO)
         if not isinstance(dim, int):
             raise TypeError("Dim must be an integer")
 
