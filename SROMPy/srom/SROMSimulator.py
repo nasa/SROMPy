@@ -122,7 +122,7 @@ class SROMSimulator(object):
 
         #Check if dim is short for dimensions (TODO)
         if not isinstance(dim, int):
-            raise TypeError("Dimensions must be an integer")
+            raise TypeError("Dim must be an integer")
 
         if surrogate_type != "PWC" and surrogate_type != "PWL":
             raise ValueError("Surrogate type must be 'PWC' or 'PWL'")
