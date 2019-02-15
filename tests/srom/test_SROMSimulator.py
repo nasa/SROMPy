@@ -9,7 +9,7 @@ if 'PYTHONPATH' not in os.environ:
     sys.path.insert(0, base_path)
 
 from SROMPy.target import BetaRandomVariable, SampleRandomVector
-from SROMPy.srom import SROM
+from SROMPy.srom import SROM, SROMSurrogate
 from SROMPy.srom.spring_mass_model import SpringMassModel
 from SROMPy.srom.SROMSimulator import SROMSimulator
 
@@ -35,6 +35,11 @@ def srom_simulator_fixture():
 
     srom_sim = SROMSimulator(random_variable, spring_model)
     return srom_sim
+
+def srom_base_fixture():
+    srom = SROM(size=10, dim=1)
+    
+    return srom
 
 def test_simulator_init_exception_for_invalid_parameters(beta_random_variable, 
                                                          spring_model_fixture):

@@ -15,7 +15,7 @@ class SROMSimulator:
         self._model = model
 
     #Checks to see what surrogate type, then calls correct fxn
-    def simulate(self, srom_size, dim, surrogate_type, pwl_step_size):
+    def simulate(self, srom_size, dim, surrogate_type, pwl_step_size=None):
         #This wrapping looks ugly but low priority (TODO)
         self.__check_simulate_parameters(srom_size, dim,
                                          surrogate_type, pwl_step_size)
@@ -29,10 +29,10 @@ class SROMSimulator:
         input_srom = SROM(srom_size, dim)
         input_srom.optimize(self._data)
 
-        self._postprocessor_input(input_srom)
-
         srom_displacements, probabilities, _ = \
-            self._get_srom_max_displacement(srom_size, input_srom)
+            self._srom_max_displacement(srom_size, input_srom)
+
+        self._postprocessor_input(input_srom)
 
         #The way this wraps looks ugly, but is extremely low priority (TODO)
         self._output_srom_results(srom_size, dim, srom_displacements,
@@ -42,10 +42,8 @@ class SROMSimulator:
         input_srom = self.__instantiate_srom(srom_size, dim)
         input_srom.optimize(self._data)
 
-        self._postprocessor_input(input_srom)
-
         srom_displacements, samples = \
-             self._get_pwl_samples(srom_size, input_srom)
+             self._pwl_samples(srom_size, input_srom)
 
         samples_fd = \
             FD.get_perturbed_samples(samples=samples,
@@ -63,10 +61,10 @@ class SROMSimulator:
                                               gradient)
 
         output_samples = \
-            self._get_pwl_output_samples(pwl_surrogate)
+            self._pwl_output_samples(pwl_surrogate)
 
         pwl_solution = \
-            self.__get_pwl_solution(output_samples)
+            self.__pwl_solution(output_samples)
 
         self._postprocessor_output(pwl_solution)
 
@@ -78,7 +76,7 @@ class SROMSimulator:
         pp_input.compare_cdfs()
 
     #Check what values it is returning and possibly the get_params (TODO)
-    def _get_srom_max_displacement(self, srom_size, input_srom):
+    def _srom_max_displacement(self, srom_size, input_srom):
         (samples, probabilities) = input_srom.get_params()
 
         srom_displacements = \
@@ -94,9 +92,9 @@ class SROMSimulator:
 
         return displacements
 
-    def _get_pwl_samples(self, srom_size, input_srom):
+    def _pwl_samples(self, srom_size, input_srom):
         srom_displacements, _, samples = \
-            self._get_srom_max_displacement(srom_size, input_srom)
+            self._srom_max_displacement(srom_size, input_srom)
 
         return srom_displacements, samples
 
@@ -112,7 +110,7 @@ class SROMSimulator:
 
         return gradient
 
-    def _get_pwl_output_samples(self, pwl_surrogate):
+    def _pwl_output_samples(self, pwl_surrogate):
         num_samples = 5000
 
         data_samples = self._data.draw_random_sample(num_samples)
@@ -183,7 +181,7 @@ class SROMSimulator:
         return pwl_surrogate
 
     @staticmethod
-    def __get_pwl_solution(output_samples):
+    def __pwl_solution(output_samples):
         pwl_solution = SampleRandomVector(output_samples)
 
         return pwl_solution
