@@ -33,14 +33,24 @@ class SROMSimulator:
         self._postprocessor_input(input_srom)
 
         srom_displacements, probabilities = \
-            self._get_srom_max_displacement(srom_size, input_srom)
+            self._get_srom_max_displacement(srom_size, input_srom)[:2]
         
         #The way this wraps looks ugly, but is extremely low priority (TODO)
         self._output_srom_results(srom_size, dim, srom_displacements, 
                                   probabilities)
 
     def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
-        print "This is the PWL"
+        input_srom = self.__instantiate_srom(srom_size, dim)
+
+        srom_displacements, samples = \
+            self._get_pwl_samples(srom_size, input_srom)
+
+        samples_fd = \
+            FD.get_perturbed_samples(samples=samples, 
+                                     perturbation_values=[pwl_step_size])
+
+        self._compute_pwl_gradient(srom_displacements, srom_size, 
+                                   samples_fd, pwl_step_size)
 
     #Check to make sure it is returning correct data (TODO)
     def _postprocessor_input(self, input_srom):
@@ -58,7 +68,28 @@ class SROMSimulator:
         for i, values in enumerate(samples):
             srom_displacements[i] = self._model.evaluate([values])
 
-        return srom_displacements, probabilities
+        return srom_displacements, probabilities, samples
+
+    def _get_pwl_samples(self, srom_size, input_srom):
+        srom_displacements, samples = \
+            self._get_srom_max_displacement(srom_size, input_srom)[::2]
+        
+        return srom_displacements, samples
+
+    #MAKE A VALUES ENUMERATE FUNCTION (TODO)
+    def _compute_pwl_gradient(self, srom_displacements, 
+                              srom_size, samples_fd, step_size):
+
+        perturbed_displacements = np.zeros(srom_size)
+
+        for i, values in enumerate(samples_fd):
+            perturbed_displacements[i] = self._model.evaluate([values])
+
+        gradient = FD.compute_gradient(srom_displacements, 
+                                       perturbed_displacements, 
+                                       [step_size])
+
+        return gradient
 
     def _output_srom_results(self, srom_size, dim, 
                              displacement_samples, probabilities):
