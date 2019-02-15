@@ -77,7 +77,7 @@ class SROMSimulator:
             displacement_samples[i] = self._model.evaluate([values])
         
         monte_carlo_solution = SampleRandomVector(displacement_samples)
-
+        
         return monte_carlo_solution
 
     @staticmethod

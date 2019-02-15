@@ -8,7 +8,7 @@ if 'PYTHONPATH' not in os.environ:
 
     sys.path.insert(0, base_path)
 
-from SROMPy.target import BetaRandomVariable
+from SROMPy.target import BetaRandomVariable, SampleRandomVector
 from SROMPy.srom import SROM
 from SROMPy.srom.spring_mass_model import SpringMassModel
 from SROMPy.srom.SROMSimulator import SROMSimulator
@@ -61,9 +61,12 @@ def test_srom_displacement_return_type(srom_simulator_fixture,
     dim = 1
     input_srom = SROM(srom_size, dim)
     input_srom.optimize(beta_random_variable)
-    
+
     displacements, probabilities = \
         srom_simulator_fixture._get_srom_max_displacement(srom_size, input_srom)
 
     assert isinstance(displacements, np.ndarray)
     assert isinstance(probabilities, np.ndarray)
+
+
+

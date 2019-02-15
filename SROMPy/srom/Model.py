@@ -1,3 +1,7 @@
+import abc
+
 class Model(object):
     
-    pass
+    @abc.abstractmethod
+    def evaluate(self, inputs):
+        raise NotImplementedError
