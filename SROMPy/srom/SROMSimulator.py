@@ -16,9 +16,10 @@ class SROMSimulator(object):
 
     #Checks to see what surrogate type, then calls correct fxn
     def simulate(self, srom_size, dim, surrogate_type, pwl_step_size=None):
-        #This wrapping looks ugly but low priority (TODO)
-        self.__check_simulate_parameters(srom_size, dim,
-                                         surrogate_type, pwl_step_size)
+        self.__check_simulate_parameters(srom_size, 
+                                        dim,
+                                        surrogate_type,
+                                        pwl_step_size)
 
         if surrogate_type == "PWC":
             self._simulate_piecewise_computation(srom_size, dim)
@@ -46,8 +47,8 @@ class SROMSimulator(object):
              self._pwl_samples(srom_size, input_srom)
 
         samples_fd = \
-            FD.get_perturbed_samples(samples=samples,
-                                     perturbation_values=[pwl_step_size])
+            FD.get_perturbed_samples(samples,
+                                     [pwl_step_size])
 
         gradient = \
             self._compute_pwl_gradient(srom_displacements,
@@ -71,7 +72,7 @@ class SROMSimulator(object):
     #Check to make sure it is returning correct data (TODO)
     def _postprocessor_input(self, input_srom):
         pp_input = \
-            Postprocessor(srom=input_srom, target_random_vector=self._data)
+            Postprocessor(input_srom, self._data)
 
         pp_input.compare_cdfs()
 
@@ -113,6 +114,7 @@ class SROMSimulator(object):
         num_samples = 5000
 
         data_samples = self._data.draw_random_sample(num_samples)
+
         output_samples = \
             pwl_surrogate.sample(data_samples)
 
@@ -157,7 +159,7 @@ class SROMSimulator(object):
     @staticmethod
     def __check_simulate_parameters(srom_size, dim, surrogate_type, 
                                     pwl_step_size):
-                                    
+
         if not isinstance(srom_size, int):
             raise TypeError("SROM size must be an integer")
 
@@ -179,7 +181,9 @@ class SROMSimulator(object):
 
     @staticmethod
     def __instantiate_srom_surrogate(input_srom, srom_displacements, gradient):
-        pwl_surrogate = SROMSurrogate(input_srom, srom_displacements, gradient)
+        pwl_surrogate = SROMSurrogate(input_srom, 
+                                      srom_displacements,
+                                      gradient)
 
         return pwl_surrogate
 
