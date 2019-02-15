@@ -6,7 +6,7 @@ class Model(object):
     produce outputs.
 
     :param inputs: one dimensional ndarray
-    :return: two dimensional ndarray
+    :return: one dimensional ndarray
     
     """
     @abc.abstractmethod
