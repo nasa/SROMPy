@@ -72,5 +72,8 @@ def test_srom_displacement_return_type(srom_simulator_fixture,
     assert isinstance(probabilities, np.ndarray)
     assert isinstance(samples, np.ndarray)
 
+def test_monte_carlo_generator_return_type(srom_simulator_fixture):
+    monte_carlo_solution = \
+        srom_simulator_fixture._generate_monte_carlo_solution()
 
-
+    assert isinstance(monte_carlo_solution, SampleRandomVector)
