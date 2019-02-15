@@ -43,13 +43,6 @@ class SROMSimulator(object):
         srom_displacements, _ = \
             self._srom_max_displacement(srom_size, input_srom)
 
-        #leaving this in until dim issue is resolved (TODO)
-        # srom_displacements = np.zeros(srom_size)
-        # (samples, _) = input_srom.get_params()
-
-        # for i, values in enumerate(samples):
-        #     srom_displacements[i] = self._model.evaluate([values])
-
         return input_srom, srom_displacements
     
     def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):

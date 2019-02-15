@@ -9,7 +9,7 @@ if 'PYTHONPATH' not in os.environ:
     sys.path.insert(0, base_path)
 
 from SROMPy.target import BetaRandomVariable, SampleRandomVector
-from SROMPy.srom import SROM, SROMSurrogate
+from SROMPy.srom import SROM, SROMSurrogate, FiniteDifference as FD
 from SROMPy.srom.spring_mass_model import SpringMassModel
 from SROMPy.srom.SROMSimulator import SROMSimulator
 
@@ -36,6 +36,7 @@ def srom_simulator_fixture():
     srom_sim = SROMSimulator(random_variable, spring_model)
     return srom_sim
 
+@pytest.fixture
 def srom_base_fixture():
     srom = SROM(size=10, dim=1)
     
@@ -70,15 +71,44 @@ def test_srom_displacement_return_type(srom_simulator_fixture,
     input_srom = SROM(srom_size, dim)
     input_srom.optimize(beta_random_variable)
 
-    displacements, probabilities, samples = \
-        srom_simulator_fixture._get_srom_max_displacement(srom_size, input_srom)
+    displacements, samples = \
+        srom_simulator_fixture._srom_max_displacement(srom_size, input_srom)
 
     assert isinstance(displacements, np.ndarray)
-    assert isinstance(probabilities, np.ndarray)
     assert isinstance(samples, np.ndarray)
 
-def test_monte_carlo_generator_return_type(srom_simulator_fixture):
-    monte_carlo_solution = \
-        srom_simulator_fixture._generate_monte_carlo_solution()
+def test_compute_pwl_gradient_return_type(srom_simulator_fixture,
+                                          beta_random_variable,
+                                          srom_base_fixture):
+    srom_size = 10
+    pwl_step_size = 1e-12
+    srom_base_fixture.optimize(beta_random_variable)
 
-    assert isinstance(monte_carlo_solution, SampleRandomVector)
+    displacements, samples = \
+        srom_simulator_fixture._srom_max_displacement(srom_size,
+                                                      srom_base_fixture)
+    samples_fd = \
+        FD.get_perturbed_samples(samples,
+                                 perturbation_values=[pwl_step_size])
+
+    test_gradient = \
+        srom_simulator_fixture._compute_pwl_gradient(displacements,
+                                                     srom_size,
+                                                     samples_fd,
+                                                     pwl_step_size)
+    assert isinstance(test_gradient, np.ndarray)
+
+def test_simulate_return_type(srom_simulator_fixture):
+    test_pwc_surrogate = \
+        srom_simulator_fixture.simulate(srom_size=10,
+                                        dim=1,
+                                        surrogate_type="PWC")
+
+    test_pwl_surrogate = \
+        srom_simulator_fixture.simulate(srom_size=10,
+                                        dim=1,
+                                        surrogate_type="PWL",
+                                        pwl_step_size=1e-12)
+
+    assert isinstance(test_pwc_surrogate, SROMSurrogate)
+    assert isinstance(test_pwl_surrogate, SROMSurrogate)
