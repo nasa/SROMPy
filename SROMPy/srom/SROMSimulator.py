@@ -6,7 +6,7 @@ from SROMPy.srom.Model import Model
 from SROMPy.postprocess import Postprocessor
 from SROMPy.srom import SROM, FiniteDifference as FD, SROMSurrogate
 
-class SROMSimulator:
+class SROMSimulator(object):
 
     def __init__(self, random_input, model):
         self.__check_init_parameters(random_input, model)
@@ -75,7 +75,6 @@ class SROMSimulator:
 
         pp_input.compare_cdfs()
 
-    #Check what values it is returning and possibly the get_params (TODO)
     def _srom_max_displacement(self, srom_size, input_srom):
         (samples, probabilities) = input_srom.get_params()
 
@@ -156,17 +155,17 @@ class SROMSimulator:
     @staticmethod
     def __check_simulate_parameters(srom_size, dim, surrogate_type, pwl_step_size):
         if not isinstance(srom_size, int):
-            raise TypeError("SROM size must be an integer.")
+            raise TypeError("SROM size must be an integer")
 
         #Check if dim is short for dimensions (TODO)
         if not isinstance(dim, int):
-            raise TypeError("Dimensions must be an integer.")
+            raise TypeError("Dimensions must be an integer")
 
         if surrogate_type != "PWC" and surrogate_type != "PWL":
-            raise ValueError("Surrogate type must be 'PWC' or 'PWL'.")
+            raise ValueError("Surrogate type must be 'PWC' or 'PWL'")
 
         if surrogate_type == "PWL" and pwl_step_size is None:
-            raise TypeError("Step size must be initialized for 'PWL'")
+            raise TypeError("Step size must be initialized for 'PWL' ex: 1e-12")
 
     @staticmethod
     def __instantiate_srom(srom_size, dim):
