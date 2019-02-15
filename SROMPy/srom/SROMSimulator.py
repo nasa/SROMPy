@@ -155,7 +155,9 @@ class SROMSimulator(object):
             raise TypeError("Model must inherit from Model class")
 
     @staticmethod
-    def __check_simulate_parameters(srom_size, dim, surrogate_type, pwl_step_size):
+    def __check_simulate_parameters(srom_size, dim, surrogate_type, 
+                                    pwl_step_size):
+                                    
         if not isinstance(srom_size, int):
             raise TypeError("SROM size must be an integer")
 
