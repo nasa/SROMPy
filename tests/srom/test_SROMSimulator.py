@@ -47,13 +47,16 @@ def test_simulator_init_exception_for_invalid_parameters(beta_random_variable,
 
 def test_simulate_exception_for_invalid_parameters(srom_simulator_fixture):
     with pytest.raises(TypeError):
-        srom_simulator_fixture.simulate(10.5, 1,"PWC")
+        srom_simulator_fixture.simulate(10.5, 1,"PWC", 1e-12)
 
     with pytest.raises(TypeError):
-        srom_simulator_fixture.simulate(10, 1.5,"PWC")
+        srom_simulator_fixture.simulate(10, 1.5,"PWL", 1e-12)
 
     with pytest.raises(ValueError):
-        srom_simulator_fixture.simulate(10, 1,"Not A Proper Model")
+        srom_simulator_fixture.simulate(10, 1, "no", 1e-12)
+
+    with pytest.raises(TypeError):
+        srom_simulator_fixture.simulate(10, 1, "PWL")
 
 def test_srom_displacement_return_type(srom_simulator_fixture, 
                                        beta_random_variable):
@@ -62,11 +65,12 @@ def test_srom_displacement_return_type(srom_simulator_fixture,
     input_srom = SROM(srom_size, dim)
     input_srom.optimize(beta_random_variable)
 
-    displacements, probabilities = \
+    displacements, probabilities, samples = \
         srom_simulator_fixture._get_srom_max_displacement(srom_size, input_srom)
 
     assert isinstance(displacements, np.ndarray)
     assert isinstance(probabilities, np.ndarray)
+    assert isinstance(samples, np.ndarray)
 
 
 

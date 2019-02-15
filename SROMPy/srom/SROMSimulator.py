@@ -17,7 +17,7 @@ class SROMSimulator:
     #Checks to see what surrogate type, then calls correct fxn
     def simulate(self, srom_size, dim, surrogate_type, pwl_step_size):
         #This wrapping looks ugly but low priority (TODO)
-        self.__check_simulate_parameters(srom_size, dim, 
+        self.__check_simulate_parameters(srom_size, dim,
                                          surrogate_type, pwl_step_size)
 
         if surrogate_type == "PWC":
@@ -25,7 +25,6 @@ class SROMSimulator:
         elif surrogate_type == "PWL":
             self._simulate_piecewise_linear(srom_size, dim, pwl_step_size)
 
-    
     def _simulate_piecewise_computation(self, srom_size, dim):
         input_srom = SROM(srom_size, dim)
         input_srom.optimize(self._data)
@@ -34,9 +33,9 @@ class SROMSimulator:
 
         srom_displacements, probabilities, _ = \
             self._get_srom_max_displacement(srom_size, input_srom)
-        
+
         #The way this wraps looks ugly, but is extremely low priority (TODO)
-        self._output_srom_results(srom_size, dim, srom_displacements, 
+        self._output_srom_results(srom_size, dim, srom_displacements,
                                   probabilities)
 
     def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
@@ -49,18 +48,18 @@ class SROMSimulator:
              self._get_pwl_samples(srom_size, input_srom)
 
         samples_fd = \
-            FD.get_perturbed_samples(samples=samples, 
+            FD.get_perturbed_samples(samples=samples,
                                      perturbation_values=[pwl_step_size])
 
         gradient = \
-            self._compute_pwl_gradient(srom_displacements, 
-                                       srom_size, 
-                                       samples_fd, 
+            self._compute_pwl_gradient(srom_displacements,
+                                       srom_size,
+                                       samples_fd,
                                        pwl_step_size)
 
         pwl_surrogate = \
-            self.__instantiate_srom_surrogate(input_srom, 
-                                              srom_displacements, 
+            self.__instantiate_srom_surrogate(input_srom,
+                                              srom_displacements,
                                               gradient)
 
         output_samples = \
@@ -94,21 +93,21 @@ class SROMSimulator:
             displacements[i] = self._model.evaluate([values])
 
         return displacements
-    
+
     def _get_pwl_samples(self, srom_size, input_srom):
         srom_displacements, _, samples = \
             self._get_srom_max_displacement(srom_size, input_srom)
-        
+
         return srom_displacements, samples
 
-    def _compute_pwl_gradient(self, srom_displacements, 
+    def _compute_pwl_gradient(self, srom_displacements,
                               srom_size, samples_fd, step_size):
 
         perturbed_displacements = \
             self._enumerate_utility_function(srom_size, samples_fd)
 
-        gradient = FD.compute_gradient(srom_displacements, 
-                                       perturbed_displacements, 
+        gradient = FD.compute_gradient(srom_displacements,
+                                       perturbed_displacements,
                                        [step_size])
 
         return gradient
@@ -122,7 +121,7 @@ class SROMSimulator:
 
         return output_samples
 
-    def _output_srom_results(self, srom_size, dim, 
+    def _output_srom_results(self, srom_size, dim,
                              displacement_samples, probabilities):
 
         output_srom = self.__instantiate_srom(srom_size, dim)
@@ -143,20 +142,19 @@ class SROMSimulator:
 
         displacement_samples = \
             self._enumerate_utility_function(num_samples, monte_carlo_samples)
-        
+
         monte_carlo_solution = SampleRandomVector(displacement_samples)
-        
+
         return monte_carlo_solution
 
     @staticmethod
     def __check_init_parameters(data, model):
         if not isinstance(data, RandomVariable):
             raise TypeError("Data must inherit from the RandomVariable class")
-        
+
         if not isinstance(model, Model):
             raise TypeError("Model must inherit from Model class")
 
-    #Test to make sure it is throwing exceptions, fix problem with except (TODO)
     @staticmethod
     def __check_simulate_parameters(srom_size, dim, surrogate_type, pwl_step_size):
         if not isinstance(srom_size, int):
@@ -166,13 +164,11 @@ class SROMSimulator:
         if not isinstance(dim, int):
             raise TypeError("Dimensions must be an integer.")
 
-        #Update surrogate type exception (TODO)
         if surrogate_type != "PWC" and surrogate_type != "PWL":
-            raise ValueError("For now, surrogate type must PWC.")
-        
-        #Come up with a better error code, implement check for pwl_step_size (TODO)
-        #if surrogate_type == "PWL" and isinstance(pwl_step_size, None):
-        #    raise ValueError("Step size must be instantiated for PWL")
+            raise ValueError("Surrogate type must be 'PWC' or 'PWL'.")
+
+        if surrogate_type == "PWL" and pwl_step_size is None:
+            raise TypeError("Step size must be initialized for 'PWL'")
 
     @staticmethod
     def __instantiate_srom(srom_size, dim):
