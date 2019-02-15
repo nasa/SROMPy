@@ -70,8 +70,8 @@ class SROMSimulator(object):
 
         return input_srom, srom_displacements, gradient
 
-    def _compute_pwl_gradient(self, srom_displacements,
-                              srom_size, samples_fd, step_size):
+    def _compute_pwl_gradient(self, srom_displacements, srom_size,
+                              samples_fd, step_size):
 
         perturbed_displacements, _ = \
             self._enumerate_utility_function(srom_size, samples_fd)
