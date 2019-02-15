@@ -11,7 +11,7 @@ class SROMSimulator(object):
     def __init__(self, random_input, model):
         self.__check_init_parameters(random_input, model)
 
-        self._data = random_input
+        self._random_variable_data = random_input
         self._model = model
     
     def simulate(self, srom_size, dim, surrogate_type, pwl_step_size=None):
@@ -40,14 +40,23 @@ class SROMSimulator(object):
     def _simulate_piecewise_computation(self, srom_size, dim):
         input_srom = self._instantiate_srom(srom_size, dim)
 
-        srom_displacements, _ = self._srom_max_displacement(srom_size, input_srom)
+        srom_displacements, _ = \
+            self._srom_max_displacement(srom_size, input_srom)
+
+        #leaving this in until dim issue is resolved (TODO)
+        # srom_displacements = np.zeros(srom_size)
+        # (samples, _) = input_srom.get_params()
+
+        # for i, values in enumerate(samples):
+        #     srom_displacements[i] = self._model.evaluate([values])
 
         return input_srom, srom_displacements
     
     def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
         input_srom = self._instantiate_srom(srom_size, dim)
 
-        srom_displacements, samples = self._srom_max_displacement(srom_size, input_srom)
+        srom_displacements, samples = \
+            self._srom_max_displacement(srom_size, input_srom)
 
         samples_fd = \
             FD.get_perturbed_samples(samples,
@@ -92,7 +101,7 @@ class SROMSimulator(object):
 
     def _instantiate_srom(self, srom_size, dim):
         srom = SROM(srom_size, dim)
-        srom.optimize(self._data)
+        srom.optimize(self._random_variable_data)
         
         return srom
 
