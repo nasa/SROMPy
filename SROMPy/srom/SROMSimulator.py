@@ -23,7 +23,7 @@ class SROMSimulator(object):
 
         if surrogate_type == "PWC":
             self._simulate_piecewise_computation(srom_size, dim)
-            
+
         elif surrogate_type == "PWL":
             self._simulate_piecewise_linear(srom_size, 
                                             dim,
@@ -52,7 +52,7 @@ class SROMSimulator(object):
 
         samples_fd = \
             FD.get_perturbed_samples(samples,
-                                     [pwl_step_size])
+                                     perturbation_values=[pwl_step_size])
 
         gradient = \
             self._compute_pwl_gradient(srom_displacements,
