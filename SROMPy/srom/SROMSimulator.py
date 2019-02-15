@@ -23,8 +23,11 @@ class SROMSimulator(object):
 
         if surrogate_type == "PWC":
             self._simulate_piecewise_computation(srom_size, dim)
+            
         elif surrogate_type == "PWL":
-            self._simulate_piecewise_linear(srom_size, dim, pwl_step_size)
+            self._simulate_piecewise_linear(srom_size, 
+                                            dim,
+                                            pwl_step_size)
 
     def _simulate_piecewise_computation(self, srom_size, dim):
         input_srom = SROM(srom_size, dim)
@@ -36,7 +39,8 @@ class SROMSimulator(object):
         self._postprocessor_input(input_srom)
 
         #The way this wraps looks ugly, but is extremely low priority (TODO)
-        self._output_srom_results(srom_size, dim, srom_displacements,
+        self._output_srom_results(srom_size, dim, 
+                                  srom_displacements,
                                   probabilities)
 
     def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
