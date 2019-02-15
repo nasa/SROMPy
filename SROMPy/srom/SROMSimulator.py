@@ -101,14 +101,11 @@ class SROMSimulator:
         
         return srom_displacements, samples
 
-    #MAKE A VALUES ENUMERATE FUNCTION (TODO)
     def _compute_pwl_gradient(self, srom_displacements, 
                               srom_size, samples_fd, step_size):
 
-        perturbed_displacements = np.zeros(srom_size)
-
-        for i, values in enumerate(samples_fd):
-            perturbed_displacements[i] = self._model.evaluate([values])
+        perturbed_displacements = \
+            self._enumerate_utility_function(srom_size, samples_fd)
 
         gradient = FD.compute_gradient(srom_displacements, 
                                        perturbed_displacements, 
@@ -144,15 +141,12 @@ class SROMSimulator:
         num_samples = 5000
         monte_carlo_samples = self._data.draw_random_sample(num_samples)
 
-        displacement_samples = np.zeros(num_samples)
-        for i, values in enumerate(monte_carlo_samples):
-            displacement_samples[i] = self._model.evaluate([values])
+        displacement_samples = \
+            self._enumerate_utility_function(num_samples, monte_carlo_samples)
         
         monte_carlo_solution = SampleRandomVector(displacement_samples)
         
         return monte_carlo_solution
-
-  
 
     @staticmethod
     def __check_init_parameters(data, model):
