@@ -130,11 +130,10 @@ class SROMSimulator(object):
         monte_carlo_solution, displacement_samples = \
             self._generate_monte_carlo_solution()
 
-        pp_output = Postprocessor(output_srom, monte_carlo_solution)
-        pp_output.compare_cdfs()
-
         self.__print_mean_comparison(displacement_samples, output_srom)
 
+        pp_output = Postprocessor(output_srom, monte_carlo_solution)
+        pp_output.compare_cdfs()
 
     def _generate_monte_carlo_solution(self):
         num_samples = 5000
