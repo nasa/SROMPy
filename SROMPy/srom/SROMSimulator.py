@@ -4,7 +4,7 @@ from SROMPy.target.RandomVariable import RandomVariable
 from SROMPy.target import SampleRandomVector
 from SROMPy.srom.Model import Model
 from SROMPy.postprocess import Postprocessor
-from SROMPy.srom import SROM
+from SROMPy.srom import SROM, FiniteDifference as FD, SROMSurrogate
 
 class SROMSimulator:
 
@@ -15,11 +15,15 @@ class SROMSimulator:
         self._model = model
 
     #Checks to see what surrogate type, then calls correct fxn
-    def simulate(self, srom_size, dim, surrogate_type):
-        self.__check_simulate_parameters(srom_size, dim, surrogate_type)
+    def simulate(self, srom_size, dim, surrogate_type, pwl_step_size=None):
+        #This wrapping looks ugly but low priority (TODO)
+        self.__check_simulate_parameters(srom_size, dim, 
+                                         surrogate_type, pwl_step_size)
 
         if surrogate_type == "PWC":
             self._simulate_piecewise_computation(srom_size, dim)
+        elif surrogate_type == "PWL":
+            self._simulate_piecewise_linear(srom_size, dim, pwl_step_size)
 
     
     def _simulate_piecewise_computation(self, srom_size, dim):
@@ -34,6 +38,9 @@ class SROMSimulator:
         #The way this wraps looks ugly, but is extremely low priority (TODO)
         self._output_srom_results(srom_size, dim, srom_displacements, 
                                   probabilities)
+
+    def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
+        print "This is the PWL"
 
     #Check to make sure it is returning correct data (TODO)
     def _postprocessor_input(self, input_srom):
@@ -90,7 +97,7 @@ class SROMSimulator:
 
     #Test to make sure it is throwing exceptions, fix problem with except (TODO)
     @staticmethod
-    def __check_simulate_parameters(srom_size, dim, surrogate_type):
+    def __check_simulate_parameters(srom_size, dim, surrogate_type, pwl_step_size):
         if not isinstance(srom_size, int):
             raise TypeError("SROM size must be an integer.")
 
@@ -99,9 +106,12 @@ class SROMSimulator:
             raise TypeError("Dimensions must be an integer.")
 
         #Update surrogate type exception (TODO)
-        if surrogate_type != "PWC":
+        if surrogate_type != "PWC" and surrogate_type != "PWL":
             raise ValueError("For now, surrogate type must PWC.")
-
+        
+        #Come up with a better error code (TODO)
+        if surrogate_type == "PWL" and isinstance(pwl_step_size, None):
+            raise ValueError("Step size must be instantiated for PWL")
     #Test to make sure it returns SROM (TODO)
     @staticmethod
     def __instantiate_srom(srom_size, dim):
