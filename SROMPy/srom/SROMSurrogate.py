@@ -22,7 +22,7 @@ import numpy as np
 from SROM import SROM
 
 
-class SROMSurrogate:
+class SROMSurrogate(SROM):
     """
     SROMPy class that provides a closed-form surrogate model for a model output
     that can be sampled as a means of efficiently propagating uncertainty.
@@ -115,7 +115,7 @@ class SROMSurrogate:
             (size__, dim__) = output_gradients.shape
             if size__ != self._input_srom._size:
                 raise ValueError("Incorrect # samples in gradient array!")
-            if dim__ != self._input_srom.dim:
+            if dim__ != self._input_srom._dim:
                 raise ValueError("Incorrect dimension in gradient array!")
 
         self._gradients = output_gradients
@@ -123,6 +123,9 @@ class SROMSurrogate:
         # Make SROM for output?
         self._output_srom = SROM(size, dim)
         self._output_srom.set_params(output_samples, input_srom.probabilities)
+
+        self.samples = output_samples
+        self.probabilities = input_srom.probabilities
 
     # Do these change for linear surrogate?
     def compute_moments(self, max_order):
@@ -136,7 +139,7 @@ class SROMSurrogate:
         each dimension.
         """
 
-        return self._output_srom.compute_moments(max_order)
+        return super(SROMSurrogate, self).compute_moments(max_order)
 
     def compute_cdf(self, x_grid):
         """
@@ -200,7 +203,7 @@ class SROMSurrogate:
         # Verify dimensions of samples/probabilities.
         (num_samples, dim) = input_samples.shape
 
-        if dim != self._input_srom.dim:
+        if dim != self._input_srom._dim:
             raise ValueError("Incorrect input sample dimension")
 
         # Evaluate piecewise constant or linear surrogate model to get samples:
