@@ -33,9 +33,9 @@ class SROM(object):
     Other functions provided to calculate SROM statistics, set/get defining
     parameters directly, and store/load SROM to/from file.
 
-    :param size: SROM size
+    :param _size: SROM size
     :type size: int
-    :param dim: dimension of random quantity being modeled
+    :param _dim: dimension of random quantity being modeled
     :type dim: int
     """
 
