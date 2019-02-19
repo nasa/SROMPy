@@ -365,7 +365,7 @@ class Optimizer:
             from mpi4py import MPI
             comm = MPI.COMM_WORLD
 
-            self.number_CPUs = comm._size
+            self.number_CPUs = comm.size
             self.cpu_rank = comm.rank
 
         except ImportError:
