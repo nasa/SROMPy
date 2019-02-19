@@ -130,8 +130,8 @@ def test_invalid_init_parameter_values_rejected(valid_srom,
 
 def test_evaluate_returns_expected_result(valid_srom, sample_random_vector):
 
-    samples = np.ones((valid_srom.size, valid_srom.dim))
-    probabilities = np.ones(valid_srom.size)
+    samples = np.ones((valid_srom._size, valid_srom._dim))
+    probabilities = np.ones(valid_srom._size)
 
     for objective_weights in [[0., .05, 1.], [7., .4, .1]]:
         for error_function in ["mean", "max", "sse"]:

@@ -239,7 +239,7 @@ class ObjectiveFunction:
         # Ensure srom and target have same dimensions if target is RandomVector.
         if isinstance(target, RandomVector):
 
-            if target.dim != srom.dim:
+            if target.dim != srom._dim:
                 raise ValueError("target and srom must have same dimensions.")
 
         # Test obj_weights.
