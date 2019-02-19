@@ -89,7 +89,7 @@ class SROMSurrogate(SROM):
         :type output_gradients: 2d Numpy Array
         """
 
-        if input_srom.samples is None or input_srom.probabilities is None:
+        if input_srom._samples is None or input_srom._probabilities is None:
             raise ValueError("Input SROM must be properly initialized")
 
         self._input_srom = input_srom
@@ -122,7 +122,7 @@ class SROMSurrogate(SROM):
 
         # Make SROM for output?
         self._output_srom = SROM(size, dim)
-        self._output_srom.set_params(output_samples, input_srom.probabilities)
+        self._output_srom.set_params(output_samples, input_srom._probabilities)
 
         #Added samples and possibilities, may move their place later (TODO)
         self._samples = output_samples
@@ -222,7 +222,7 @@ class SROMSurrogate(SROM):
         Evaluate standard piecewise constant output surrogate model
         """
 
-        input_samples_srom = self._input_srom.samples
+        input_samples_srom = self._input_srom._samples
 
         # Generate surrogate samples:
         (num_samples, _) = input_samples.shape
@@ -256,7 +256,7 @@ class SROMSurrogate(SROM):
 
         """
 
-        input_samples_srom = self._input_srom.samples
+        input_samples_srom = self._input_srom._samples
 
         # Generate surrogate samples:
         (num_samples, _) = input_samples.shape
