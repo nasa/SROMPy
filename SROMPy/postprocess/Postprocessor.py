@@ -269,9 +269,9 @@ class Postprocessor:
         cdf_grid_pts along each dimension of the random vector.
         """
 
-        x_grid = np.zeros((cdf_grid_pts, self._target._dim))
+        x_grid = np.zeros((cdf_grid_pts, self._target.dim))
 
-        for i in range(self._target._dim):
+        for i in range(self._target.dim):
             grid = np.linspace(self._target.mins[i],
                                self._target.maxs[i],
                                cdf_grid_pts)
@@ -310,9 +310,9 @@ class Postprocessor:
 
         # Make x grids for plotting.
         cdf_grid_pts = 1000
-        x_grids = np.zeros((cdf_grid_pts, target._dim))
+        x_grids = np.zeros((cdf_grid_pts, target.dim))
 
-        for i in range(target._dim):
+        for i in range(target.dim):
             grid = np.linspace(target.mins[i],
                                target.maxs[i],
                                cdf_grid_pts)
@@ -320,7 +320,7 @@ class Postprocessor:
 
         # If x_ticks is None (default), cast to list of Nones for plotting:
         if x_ticks is None:
-            x_ticks = target._dim * [None]
+            x_ticks = target.dim * [None]
 
         # Get CDFs for each size SROM.
         srom_cdfs = OrderedDict()
@@ -338,17 +338,17 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != target._dim:
+            if len(variable_names) != target.dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(target._dim):
-                if target._dim == 1:
+            for i in range(target.dim):
+                if target.dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
-        for i in range(target._dim):
+        for i in range(target.dim):
 
             variable = variable_names[i]
             plot_name_ = plot_name + "_" + variable + ".pdf"
@@ -463,19 +463,19 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != self._target._dim:
+            if len(variable_names) != self._target.dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(random_variable_1._dim):
-                if random_variable_1._dim == 1:
+            for i in range(random_variable_1.dim):
+                if random_variable_1.dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
         print "variable names = ", variable_names
 
-        for i in range(random_variable_1._dim):
+        for i in range(random_variable_1.dim):
 
             variable = variable_names[i]
             if plot_name is not None:
