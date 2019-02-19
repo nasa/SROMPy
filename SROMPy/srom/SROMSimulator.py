@@ -38,8 +38,10 @@ class SROMSimulator(object):
         return srom_surrogate
     
     def _simulate_piecewise_computation(self, srom_size, dim):
-        input_srom = self._instantiate_srom(srom_size, dim)
-
+        #input_srom = self._instantiate_srom(srom_size, dim)
+        input_srom = SROM(srom_size, dim=1)
+        input_srom.optimize(self._random_variable_data)
+        
         srom_displacements, _ = \
             self._srom_max_displacement(srom_size, input_srom)
 
@@ -75,12 +77,15 @@ class SROMSimulator(object):
 
         return gradient
 
-    #Put probabilities to _, is that right? (TODO)
     def _srom_max_displacement(self, srom_size, input_srom):
         (samples, _) = input_srom.get_params()
-
-        displacements, samples = \
-            self._enumerate_utility_function(srom_size, samples)
+        displacements = np.zeros(srom_size)
+        
+        # displacements, samples = \
+            # self._enumerate_utility_function(srom_size, samples)
+        
+        for i, values in enumerate(samples):
+            displacements[i] = self._model.evaluate([values])
 
         return displacements, samples
     
@@ -118,6 +123,6 @@ class SROMSimulator(object):
 
         if surrogate_type != "PWC" and surrogate_type != "PWL":
             raise ValueError("Surrogate type must be 'PWC' or 'PWL'")
-
+        #Should this be a TypeError or ValueError? Leaning on value(TODO)
         if surrogate_type == "PWL" and pwl_step_size is None:
             raise TypeError("Step size must be initialized for 'PWL' ex: 1e-12")
