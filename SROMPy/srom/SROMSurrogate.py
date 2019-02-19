@@ -124,8 +124,9 @@ class SROMSurrogate(SROM):
         self._output_srom = SROM(size, dim)
         self._output_srom.set_params(output_samples, input_srom.probabilities)
 
-        self.samples = output_samples
-        self.probabilities = input_srom.probabilities
+        #Added samples and possibilities, may move their place later (TODO)
+        self._samples = output_samples
+        self._probabilities = input_srom._probabilities
 
     # Do these change for linear surrogate?
     def compute_moments(self, max_order):

@@ -54,8 +54,8 @@ class SROM(object):
         self._size = int(size)
         self._dim = int(dim)
 
-        self.samples = None
-        self.probabilities = None
+        self._samples = None
+        self._probabilities = None
 
     def set_params(self, samples, probabilities):
         """
@@ -97,8 +97,8 @@ class SROM(object):
             raise ValueError("SROM probabilities must have dim. equal to srom "
                              "size")
 
-        self.samples = copy.deepcopy(samples)
-        self.probabilities = \
+        self._samples = copy.deepcopy(samples)
+        self._probabilities = \
             copy.deepcopy(probabilities.reshape((self._size, 1)))
 
     def get_params(self):
@@ -121,7 +121,7 @@ class SROM(object):
         | [p^(1), p^(2), ..., p^(m)]^T
 
         """
-        return self.samples, self.probabilities
+        return self._samples, self._probabilities
 
     def compute_moments(self, max_order):
         """
@@ -135,7 +135,7 @@ class SROM(object):
         """
 
         # Make sure SROM has been properly initialized.
-        if self.samples is None or self.probabilities is None:
+        if self._samples is None or self._probabilities is None:
             raise ValueError("Must initialize SROM before computing moments")
 
         max_order = int(max_order)
@@ -145,8 +145,8 @@ class SROM(object):
 
             # moment_q = sum_{k=1}^m p(k) * x(k)^q.
             moment_q = np.zeros((1, self._dim))
-            for k, sample in enumerate(self.samples):
-                moment_q = moment_q + self.probabilities[k] * pow(sample, q + 1)
+            for k, sample in enumerate(self._samples):
+                moment_q = moment_q + self._probabilities[k] * pow(sample, q + 1)
 
             moments[q, :] = moment_q
 
@@ -174,7 +174,7 @@ class SROM(object):
         """
 
         # Make sure SROM has been properly initialized
-        if self.samples is None or self.probabilities is None:
+        if self._samples is None or self._probabilities is None:
             raise ValueError("Must initialize SROM before computing CDF")
 
         if len(x_grid.shape) == 1:
@@ -190,10 +190,10 @@ class SROM(object):
         # Vectorized indicator implementation for CDF.
         # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k).
         for i, grid in enumerate(x_grid.T):
-            for k, sample in enumerate(self.samples):
+            for k, sample in enumerate(self._samples):
 
                 indices = grid >= sample[i]
-                cdf_values[indices, i] += self.probabilities[k]
+                cdf_values[indices, i] += self._probabilities[k]
 
         return cdf_values
 
@@ -205,13 +205,13 @@ class SROM(object):
         """
 
         # Make sure SROM has been properly initialized
-        if self.samples is None or self.probabilities is None:
+        if self._samples is None or self._probabilities is None:
             raise ValueError("Must initialize SROM before computing moments")
 
         corr = np.zeros((self._dim, self._dim))
 
-        for k, sample in enumerate(self.samples):
-            corr = corr + np.outer(sample, sample) * self.probabilities[k]
+        for k, sample in enumerate(self._samples):
+            corr = corr + np.outer(sample, sample) * self._probabilities[k]
 
         return corr
 
@@ -316,10 +316,10 @@ class SROM(object):
         """
 
         # Make sure SROM has been properly initialized
-        if self.samples is None or self.probabilities is None:
+        if self._samples is None or self._probabilities is None:
             raise ValueError("Must initialize SROM before saving to disk")
 
-        srom_params = np.hstack((self.samples, self.probabilities))
+        srom_params = np.hstack((self._samples, self._probabilities))
         np.savetxt(outfile, srom_params, delimiter=delimiter)
 
     def load_params(self, infile="srom_params.txt", delimiter=' '):
@@ -358,5 +358,5 @@ class SROM(object):
             msg = "Dimension mismatch when loading SROM params from file"
             raise ValueError(msg)
 
-        self.samples = srom_params[:, :-1]
-        self.probabilities = srom_params[:, -1]
+        self._samples = srom_params[:, :-1]
+        self._probabilities = srom_params[:, -1]
