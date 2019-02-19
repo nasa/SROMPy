@@ -100,8 +100,8 @@ class Optimizer:
                                        max_moment, cdf_grid_pts)
 
         # Get srom size & dimension.
-        self._srom_size = srom.size
-        self._dim = srom.dim
+        self._srom_size = srom._size
+        self._dim = srom._dim
 
         # Gradient only available for SSE error obj function.
         if error.upper() == "SSE":
@@ -365,7 +365,7 @@ class Optimizer:
             from mpi4py import MPI
             comm = MPI.COMM_WORLD
 
-            self.number_CPUs = comm.size
+            self.number_CPUs = comm._size
             self.cpu_rank = comm.rank
 
         except ImportError:
