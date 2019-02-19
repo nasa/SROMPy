@@ -100,8 +100,8 @@ class Optimizer:
                                        max_moment, cdf_grid_pts)
 
         # Get srom size & dimension.
-        self._srom_size = srom.size
-        self._dim = srom.dim
+        self._srom_size = srom._size
+        self._dim = srom._dim
 
         # Gradient only available for SSE error obj function.
         if error.upper() == "SSE":
@@ -111,8 +111,9 @@ class Optimizer:
 
         self.__detect_parallelization()
 
-    def get_optimal_params(self, num_test_samples=500,  method=None,
-                           joint_opt=False, output_interval=10, verbose=True):
+    def get_optimal_params(self, num_test_samples=500, tolerance=None, 
+                           options=None, method=None, joint_opt=False,
+                           output_interval=10, verbose=True):
         """
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -124,8 +125,9 @@ class Optimizer:
             -num_test_samples, int, If optimizing sequentially (samples then
                 probabilities), this is number of random sample sets to test in
                 opt
-            -tol, float, tolerance of scipy optimization algorithm
+            -tolerance, float, tolerance of scipy optimization algorithm
             -options, dict, options for scipy optimization algorithm
+                {"maxiter": int, "disp": bool}
             -method, str, method specifying scipy optimization algorithm
             -output_interval, int, how often to print optimization progress
             -verbose: bool. Flag for whether to generate text output.
@@ -140,6 +142,8 @@ class Optimizer:
         if num_test_samples <= 0:
             raise ValueError("Insufficient number of test samples specified.")
 
+        #Make test for options(both cases maxiter, disp) and tolerance (TODO)
+
         # Report whether we're running in sequential or parallel mode.
         if verbose:
             self.show_parallelization_information(num_test_samples)
@@ -151,7 +155,9 @@ class Optimizer:
                                         joint_opt,
                                         method,
                                         output_interval,
-                                        verbose)
+                                        verbose,
+                                        tolerance,
+                                        options)
 
         # Display final errors in statistics:
         moment_error, cdf_error, correlation_error, mean_error = \
@@ -169,7 +175,7 @@ class Optimizer:
     # -----Helper funcs----
 
     def __perform_optimization(self, num_test_samples, joint_opt, method,
-                               output_interval, verbose):
+                               output_interval, verbose, tolerance, options):
         """
         Calls optimization loop function and, in the case of parallelization,
         acquires the optimal results achieved across all CPUs before
@@ -183,6 +189,9 @@ class Optimizer:
         -method: str, method specifying scipy optimization algorithm
         -output_interval: int, how often to print optimization progress
         -verbose: bool. Flag for whether to generate text output.
+        -tolerance: float, tolerance for scipy optimization algorithm
+        -options: dict, options for scipy optimization algorithm.
+                {"maxiter": int, "disp": bool}
 
         returns optimal SROM samples & probabilities
         """
@@ -192,7 +201,9 @@ class Optimizer:
                                          joint_opt,
                                          method,
                                          output_interval,
-                                         verbose)
+                                         verbose,
+                                         tolerance,
+                                         options)
 
         # If we're running in parallel mode, we need to gather all of the data
         # across CPUs and identify the best result.
@@ -204,8 +215,8 @@ class Optimizer:
 
         return optimal_samples, optimal_probabilities
 
-    def __run_optimization_loop(self, num_test_samples, joint_opt,
-                                method, output_interval, verbose):
+    def __run_optimization_loop(self, num_test_samples, joint_opt, method, 
+                                output_interval, verbose, tolerance, options):
         """
         Is run by __perform_optimization to perform sampling and acquire
         optimal parameter values.
@@ -219,9 +230,12 @@ class Optimizer:
         -joint_opt: bool, Flag for optimizing jointly for samples &
                 probabilities rather than sequentially (draw samples then
                 optimize probabilities in loop - default).
-        -method: str, method specifying scipy optimization algorithm
+        -method: str, method specifying scipy optimization algorithm.
         -output_interval: int, how often to print optimization progress
         -verbose: bool. Flag for whether to generate text output.
+        -tolerance: float, tolerance for scipy optimization algorithm.
+        -options: dict, options for scipy optimization algorithm. 
+                {"maxiter": int, "disp": bool}
 
         returns optimal SROM samples & probabilities
         """
@@ -252,7 +266,9 @@ class Optimizer:
                              jac=self._grad,
                              constraints=self.get_constraints(joint_opt),
                              method=method,
-                             bounds=self.get_param_bounds(joint_opt))
+                             bounds=self.get_param_bounds(joint_opt),
+                             tol=tolerance,
+                             options=options)
 
             # If error is lower than lowest so far, keep track of results.
             if optimization_result['fun'] < best_objective_function_result:

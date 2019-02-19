@@ -68,11 +68,11 @@ def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom
 
 def test_evaluate_returns_expected_result(valid_srom, gradient):
 
-    samples = np.ones((valid_srom.size, valid_srom.dim))
-    probabilities = np.ones(valid_srom.size)
+    samples = np.ones((valid_srom._size, valid_srom._dim))
+    probabilities = np.ones(valid_srom._size)
 
     results = gradient.evaluate(samples, probabilities)
 
     assert isinstance(results, np.ndarray)
-    assert results.size == valid_srom.size
+    assert results.size == valid_srom._size
 

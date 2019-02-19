@@ -67,17 +67,17 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != self._SROM.dim:
+            if len(variable_names) != self._SROM._dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(self._SROM.dim):
-                if self._SROM.dim == 1:
+            for i in range(self._SROM._dim):
+                if self._SROM._dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
-        for i in range(self._SROM.dim):
+        for i in range(self._SROM._dim):
 
             variable = variable_names[i]
             y_label = "F(" + variable + ")"
@@ -126,12 +126,12 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != self._SROM.dim:
+            if len(variable_names) != self._SROM._dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(self._SROM.dim):
-                if self._SROM.dim == 1:
+            for i in range(self._SROM._dim):
+                if self._SROM._dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
@@ -139,7 +139,7 @@ class Postprocessor:
         if len(samples.shape) == 1:
             samples = samples.reshape((1, len(samples)))
 
-        for i in range(self._SROM.dim):
+        for i in range(self._SROM._dim):
 
             variable = variable_names[i]
             y_label = "f(" + variable + ")"

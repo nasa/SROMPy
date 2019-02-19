@@ -73,7 +73,7 @@ class Gradient:
         probabilities (m x 1 array)
         """
     
-        srom_size = self.srom.size
+        srom_size = self.srom._size
 
         # d_e1/d_p:
         if self._weights[0] > 0:
