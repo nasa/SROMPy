@@ -10,6 +10,7 @@ class SROMSimulator(object):
     algorithm.
     """
     def __init__(self, random_input, model):
+        #Update docstring with option params (TODO)
         """
         Requires a data object that provides input samples and a model.
 
@@ -17,11 +18,23 @@ class SROMSimulator(object):
         :type random_input: Input
         :param model: A model that outputs from a sample data input.
         :type model: Model
+        :param enhanced_optimize: A model that outputs from a sample data input.
+        :type enhanced_optimize: bool
         """
         self.__check_init_parameters(random_input, model)
 
         self._random_variable_data = random_input
         self._model = model
+        self._enhanced_optimize = False
+        self._weights = None
+        self._num_test_samples = 50
+        self._error = 'SSE'
+        self._max_moment = 5
+        self._cdf_grid_pts = 100
+        self._tolerance = None
+        self._options = None
+        self._method = None
+        self._joint_opt = False
 
     def simulate(self, srom_size, dim, surrogate_type, pwl_step_size=None):
         #Read this docstring over (TODO)
@@ -60,7 +73,55 @@ class SROMSimulator(object):
             SROMSurrogate(input_srom, output_samples, output_gradients)
 
         return srom_surrogate
+    def set_optimization_parameters(self,
+                                    weights=None,
+                                    num_tests=50,
+                                    error='SSE',
+                                    max_moment=5,
+                                    cdf_grid_pts=100,
+                                    tolerance=None,
+                                    options=None,
+                                    method=None,
+                                    joint_opt=False):
+        """
+        Sets the additional optimization parameters for SROM's optimize method.
+        
+        :param weights: relative weights specifying importance of matching
+            CDFs, moments, and correlation of the target during optimization.
+            Default is equal weights [1,1,1].
+        :type weights: 1d Numpy array (length = 3)
+        :param num_test_samples: Number of sample sets (iterations) to run
+            optimization.
+        :type num_test_samples: int
+        :param error: Type of error metric to use in objective ("SSE", "MAX",
+            "MEAN").
+        :type error: string
+        :param max_moment: Max number of target moments to consider matching
+        :type max_moment: int
+        :param cdf_grid_pts: Number of points to evaluate CDF error on
+        :type cdf_grid_pts: int
+        :param tolerance: Tolerance for scipy optimization algorithm.
+        :type tolerance: float
+        :param options: Scipy optimization algorithm options, see scipy 
+            documentation.
+        :type options: dict
+        :param method: Method used for scipy optimization, see scipy 
+            documentation.
+        :type method: string
+        :param joint_opt: Flag to optimize jointly for samples & probabilities.
+        :type joint_opt: bool
+        """
+        self._enhanced_optimize = True
 
+        self._weights = weights
+        self._num_tests = num_tests
+        self._error = error
+        self._max_moment = max_moment
+        self._cdf_grid_pts = cdf_grid_pts
+        self._tolerance = tolerance
+        self._method = method
+        self._joint_opt = joint_opt
+                          
     def _simulate_piecewise_constant(self, input_srom):
         """
         Performs the simulation of the piecewise constant function.
@@ -163,7 +224,20 @@ class SROMSimulator(object):
         :rtype: SROM
         """
         srom = SROM(srom_size, dim)
-        srom.optimize(self._random_variable_data)
+
+        if self._enhanced_optimize == True:
+            srom.optimize(target_random_variable=self._random_variable_data,
+                          weights=self._weights,
+                          num_test_samples=self._num_test_samples,
+                          error=self._error,
+                          max_moment=self._max_moment,
+                          cdf_grid_pts=self._cdf_grid_pts,
+                          tolerance=self._tolerance,
+                          options=self._options,
+                          method=self._method,
+                          joint_opt=self._joint_opt)
+        else:
+            srom.optimize(self._random_variable_data)
 
         return srom
 
