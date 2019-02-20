@@ -1,7 +1,6 @@
 import numpy as np
 
 from SROMPy.target.RandomVariable import RandomVariable
-from SROMPy.target import SampleRandomVector
 from SROMPy.srom.Model import Model
 from SROMPy.postprocess import Postprocessor
 from SROMPy.srom import SROM, FiniteDifference as FD, SROMSurrogate
@@ -20,16 +19,18 @@ class SROMSimulator(object):
                                         surrogate_type,
                                         pwl_step_size)
 
+        input_srom = self._generate_input_srom(srom_size, dim)
+
         if surrogate_type == "PWC":
-            input_srom, output_samples = \
-                self._simulate_piecewise_computation(srom_size, dim)
+            output_samples = \
+                self._simulate_piecewise_constant(input_srom)
             
             output_gradients = None
 
         elif surrogate_type == "PWL":
-            input_srom, output_samples, output_gradients = \
+            output_samples, output_gradients = \
                 self._simulate_piecewise_linear(srom_size, 
-                                                dim,
+                                                input_srom,
                                                 pwl_step_size)
 
         srom_surrogate = \
@@ -37,62 +38,54 @@ class SROMSimulator(object):
 
         return srom_surrogate
     
-    def _simulate_piecewise_computation(self, srom_size, dim):
-        input_srom = self._instantiate_srom(srom_size, dim)
-        
-        srom_displacements, _ = \
-            self._srom_max_displacement(srom_size, input_srom)
+    def _simulate_piecewise_constant(self, input_srom):
+        srom_output, _ = \
+            self.evaluate_model_for_samples(input_srom)
 
-        return input_srom, srom_displacements
+        return srom_output
     
-    def _simulate_piecewise_linear(self, srom_size, dim, pwl_step_size):
-        input_srom = self._instantiate_srom(srom_size, dim)
-        
-        srom_displacements, samples = \
-            self._srom_max_displacement(srom_size, input_srom)
+    def _simulate_piecewise_linear(self, srom_size, input_srom, pwl_step_size):        
+        srom_output, samples = \
+            self.evaluate_model_for_samples(input_srom)
 
         samples_fd = \
             FD.get_perturbed_samples(samples,
                                      perturbation_values=[pwl_step_size])
 
         gradient = \
-            self._compute_pwl_gradient(srom_displacements,
-                                       srom_size,
+            self._compute_pwl_gradient(srom_output,
                                        samples_fd,
-                                       pwl_step_size)
+                                       pwl_step_size,
+                                       input_srom)
 
-        return input_srom, srom_displacements, gradient
+        return srom_output, gradient
 
-    def _compute_pwl_gradient(self, srom_displacements, srom_size,
-                              samples_fd, step_size):
+    def _compute_pwl_gradient(self, srom_output, samples_fd, step_size,
+                              input_srom):
 
-        perturbed_displacements, _ = \
-            self._enumerate_utility_function(srom_size, samples_fd)
+        perturbed_output, _ = \
+            self.evaluate_model_for_samples(input_srom, samples_fd)
 
-        gradient = FD.compute_gradient(srom_displacements,
-                                       perturbed_displacements,
+        gradient = FD.compute_gradient(srom_output,
+                                       perturbed_output,
                                        [step_size])
 
         return gradient
-
-    def _srom_max_displacement(self, srom_size, input_srom):
-        (samples, _) = input_srom.get_params()
-        displacements = np.zeros(srom_size)
-        
-        displacements, samples = \
-            self._enumerate_utility_function(srom_size, samples)
-
-        return displacements, samples
     
-    def _enumerate_utility_function(self, srom_size, samples):
-        displacements = np.zeros(srom_size)
+    def evaluate_model_for_samples(self, input_srom, samples_fd=None):
+        if samples_fd is not None:
+            samples = samples_fd
+        else:
+            (samples, _) = input_srom.get_params()
+
+        output = np.zeros(len(samples))
 
         for i, values in enumerate(samples):
-            displacements[i] = self._model.evaluate([values])
+            output[i] = self._model.evaluate([values])
 
-        return displacements, samples
+        return output, samples
 
-    def _instantiate_srom(self, srom_size, dim):
+    def _generate_input_srom(self, srom_size, dim):
         srom = SROM(srom_size, dim)
         srom.optimize(self._random_variable_data)
         
