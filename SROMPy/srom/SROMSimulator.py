@@ -10,7 +10,7 @@ class SROMSimulator(object):
     algorithm.
     """
     def __init__(self, random_input, model):
-        #Update docstring with option params (TODO)
+        #How should the option members be included to docstring?  (TODO)
         """
         Requires a data object that provides input samples and a model.
 
@@ -73,6 +73,7 @@ class SROMSimulator(object):
             SROMSurrogate(input_srom, output_samples, output_gradients)
 
         return srom_surrogate
+
     def set_optimization_parameters(self,
                                     weights=None,
                                     num_tests=50,
@@ -85,7 +86,7 @@ class SROMSimulator(object):
                                     joint_opt=False):
         """
         Sets the additional optimization parameters for SROM's optimize method.
-        
+
         :param weights: relative weights specifying importance of matching
             CDFs, moments, and correlation of the target during optimization.
             Default is equal weights [1,1,1].
@@ -102,10 +103,10 @@ class SROMSimulator(object):
         :type cdf_grid_pts: int
         :param tolerance: Tolerance for scipy optimization algorithm.
         :type tolerance: float
-        :param options: Scipy optimization algorithm options, see scipy 
+        :param options: Scipy optimization algorithm options, see scipy
             documentation.
         :type options: dict
-        :param method: Method used for scipy optimization, see scipy 
+        :param method: Method used for scipy optimization, see scipy
             documentation.
         :type method: string
         :param joint_opt: Flag to optimize jointly for samples & probabilities.
@@ -114,14 +115,15 @@ class SROMSimulator(object):
         self._enhanced_optimize = True
 
         self._weights = weights
-        self._num_tests = num_tests
+        self._num_test_samples = num_tests
         self._error = error
         self._max_moment = max_moment
         self._cdf_grid_pts = cdf_grid_pts
         self._tolerance = tolerance
+        self._options = options
         self._method = method
         self._joint_opt = joint_opt
-                          
+
     def _simulate_piecewise_constant(self, input_srom):
         """
         Performs the simulation of the piecewise constant function.
@@ -225,7 +227,7 @@ class SROMSimulator(object):
         """
         srom = SROM(srom_size, dim)
 
-        if self._enhanced_optimize == True:
+        if self._enhanced_optimize is True:
             srom.optimize(target_random_variable=self._random_variable_data,
                           weights=self._weights,
                           num_test_samples=self._num_test_samples,
