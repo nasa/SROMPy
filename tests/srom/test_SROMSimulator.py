@@ -64,6 +64,34 @@ def test_simulate_exception_for_invalid_parameters(srom_simulator_fixture):
     with pytest.raises(TypeError):
         srom_simulator_fixture.simulate(10, 1, "PWL")
 
+
+def test_simulate_pwc_spring_mass(srom_simulator_fixture):
+    '''
+    Tests a PWC surrogate against a manual reference solution generated from  
+    test_scripts_data/generate_srom_sim_ref_solution.py
+    '''
+
+    pwc_surrogate = srom_simulator_fixture.simulate(10, 1, "PWC")
+
+    mean_pwc = pwc_surrogate.compute_moments(1)[0][0]
+    mean_reference = 12.385393457327542
+
+    assert np.isclose(mean_pwc, mean_reference)
+
+def test_simulate_pwl_spring_mass(srom_simulator_fixture):
+    '''
+    Tests a PWL surrogate against a manual reference solution generated from  
+    test_scripts_data/generate_srom_sim_ref_solution.py
+    '''
+
+    pwl_surrogate = srom_simulator_fixture.simulate(10, 1, "PWL", 1e-12)
+
+    output_pwl = pwl_surrogate.sample(np.array([2]))
+    output_ref = np.array([[14.69958116]])
+
+    assert np.isclose(output_pwl, output_ref)
+
+
 def test_srom_displacement_return_type(srom_simulator_fixture, 
                                        beta_random_variable):
     srom_size = 10
