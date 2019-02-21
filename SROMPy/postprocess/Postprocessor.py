@@ -38,9 +38,11 @@ class Postprocessor:
         self._SROM = srom
         self._target = target_random_vector
 
-    def compare_cdfs(self, variable="x", plot_dir='.', plot_suffix="CDFcompare",
-                     show_figure=True, save_figure=True, variable_names=None,
-                     x_limits=None):
+    #Update srom_type and target as place holders, docstrings (TODO)
+    @classmethod
+    def compare_cdfs(cls, srom_type, target, variable="x", x_limits=None,
+                     plot_suffix="CDFcompare", show_figure=True, plot_dir='.',
+                     save_figure=True, variable_names=None):
         """
         Generates plots comparing the srom & target cdfs for each dimension
         of the random vector.
@@ -54,10 +56,10 @@ class Postprocessor:
             variable_names, list of strings, names of variable in each dimension
                 optional. Used for x axes labels if provided. 
         """
-
-        x_grids = self.generate_cdf_grids()
-        srom_cdfs = self._SROM.compute_cdf(x_grids)
-        target_cdfs = self._target.compute_cdf(x_grids)
+        #Must update generate_cdf_grids (TODO)
+        x_grids = cls.generate_cdf_grids(target)
+        srom_cdfs = srom_type.compute_cdf(x_grids)
+        target_cdfs = target.compute_cdf(x_grids)
 
         # Start plot name string if it's being stored.
         if save_figure:
@@ -67,17 +69,17 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != self._SROM._dim:
+            if len(variable_names) != srom_type._dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(self._SROM._dim):
-                if self._SROM._dim == 1:
+            for i in range(srom_type._dim):
+                if srom_type._dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
-        for i in range(self._SROM._dim):
+        for i in range(srom_type._dim):
 
             variable = variable_names[i]
             y_label = "F(" + variable + ")"
@@ -92,11 +94,12 @@ class Postprocessor:
                 x_limit = x_limits[i]
             else:
                 x_limit = None
-            self.plot_cdfs(x_grids[:, i], srom_cdfs[:, i], x_grids[:, i],
+                cls.plot_cdfs(x_grids[:, i], srom_cdfs[:, i], x_grids[:, i],
                            target_cdfs[:, i], variable, y_label, plot_name_,
                            show_figure, x_limit)
-
-    def compare_pdfs(self, variable="x", plot_dir='.',
+    #Update srom_type and target variable names, docstrings (TODO)
+    @classmethod
+    def compare_pdfs(cls, srom_type, target, variable="x", plot_dir='.',
                      plot_suffix="pdf_compare", show_figure=True,
                      save_figure=True, variable_names=None):
         """
@@ -113,10 +116,10 @@ class Postprocessor:
                 optional. Used for x axes labels if provided. 
         """
 
-        x_grids = self.generate_cdf_grids()
-        target_cdfs = self._target.compute_pdf(x_grids)
+        x_grids = cls.generate_cdf_grids(target)
+        target_cdfs = target.compute_pdf(x_grids)
 
-        (samples, probabilities) = self._SROM.get_params()
+        (samples, probabilities) = srom_type.get_params()
 
         # Start plot name string if it's being stored
         if save_figure:
@@ -126,12 +129,12 @@ class Postprocessor:
 
         # Get variable names:
         if variable_names is not None:
-            if len(variable_names) != self._SROM._dim:
+            if len(variable_names) != srom_type._dim:
                 raise ValueError("Wrong number of variable names provided")
         else:
             variable_names = []
-            for i in range(self._SROM._dim):
-                if self._SROM._dim == 1:
+            for i in range(srom_type._dim):
+                if srom_type._dim == 1:
                     variable_names.append(variable)
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
@@ -139,7 +142,7 @@ class Postprocessor:
         if len(samples.shape) == 1:
             samples = samples.reshape((1, len(samples)))
 
-        for i in range(self._SROM._dim):
+        for i in range(srom_type._dim):
 
             variable = variable_names[i]
             y_label = "f(" + variable + ")"
@@ -152,7 +155,7 @@ class Postprocessor:
                 plot_name_ = None
 
             print "samples = ", samples[:, i]
-            self.plot_pdfs(samples[:, i], probabilities.flatten(),
+            cls.plot_pdfs(samples[:, i], probabilities.flatten(),
                            x_grids[:, i], target_cdfs[:, i], variable, y_label,
                            plot_name_, show_figure)
 
@@ -262,18 +265,19 @@ class Postprocessor:
         if show_figure:
             plt.show()    
 
-    def generate_cdf_grids(self, cdf_grid_pts=1000):
+    @staticmethod
+    def generate_cdf_grids(target, cdf_grid_pts=1000):
         """
         Generate numerical grids for plotting CDFs based on the 
         range of the target random vector. Return  x_grid variable with
         cdf_grid_pts along each dimension of the random vector.
         """
 
-        x_grid = np.zeros((cdf_grid_pts, self._target.dim))
+        x_grid = np.zeros((cdf_grid_pts, target.dim))
 
-        for i in range(self._target.dim):
-            grid = np.linspace(self._target.mins[i],
-                               self._target.maxs[i],
+        for i in range(target.dim):
+            grid = np.linspace(target.mins[i],
+                               target.maxs[i],
                                cdf_grid_pts)
             x_grid[:, i] = grid
 

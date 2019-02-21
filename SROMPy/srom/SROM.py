@@ -33,9 +33,9 @@ class SROM(object):
     Other functions provided to calculate SROM statistics, set/get defining
     parameters directly, and store/load SROM to/from file.
 
-    :param size: SROM size
+    :param _size: SROM size
     :type size: int
-    :param dim: dimension of random quantity being modeled
+    :param _dim: dimension of random quantity being modeled
     :type dim: int
     """
 
@@ -252,8 +252,8 @@ class SROM(object):
         :type cdf_grid_pts: int
         :param tolerance: tolerance for scipy optimization algorithm (TODO)
         :type tolerance: float
-        :param options: scipy optimization algorithm options 
-            {"maxiter": int, "disp": bool} (TODO)
+        :param options: scipy optimization algorithm options see scipy 
+            documentation. (TODO)
         :type options: dict
         :param method: method used for scipy optimization  (TODO)
         :type method: string
