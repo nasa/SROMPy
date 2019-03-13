@@ -186,7 +186,7 @@ class ObjectiveFunction:
         if self._target.dim == 1:
             return 0.0
 
-        srom_corr = self._SROM.compute_correlation_matrix()
+        srom_corr = self._SROM.compute_corr_mat()
         target_corr = self._target.compute_correlation_matrix()
 
         if self._metric == "SSE":
