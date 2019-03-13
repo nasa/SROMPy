@@ -74,6 +74,7 @@ legend_font_size = 20
 Postprocessor.compare_srom_cdfs(sroms, target, plot_dir="plots",
                                 plot_suffix=plot_suffix,
                                 variable_names=variables,
+                                x_limits=x_limits,
                                 x_ticks=x_ticks,
                                 cdf_y_label=cdf_y_label,
                                 axis_font_size=axis_font_size,

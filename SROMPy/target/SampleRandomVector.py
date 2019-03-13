@@ -173,9 +173,9 @@ class SampleRandomVector(RandomVector):
 
             # Generate empirical CDF:
             sorted_i = np.sort(samples_i)
-            cdf_values = np.arange(1, len(sorted_i) + 1)/float(len(sorted_i))
+            cdf_vals_i = np.arange(1, len(sorted_i) + 1)/float(len(sorted_i))
             x_grid[:, i] = sorted_i
-            cdf_values[:, i] = cdf_values
+            cdf_values[:, i] = cdf_vals_i
 
         return x_grid, cdf_values
 

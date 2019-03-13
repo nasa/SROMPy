@@ -286,7 +286,8 @@ class Postprocessor:
     def compare_srom_cdfs(size2srom, target, variable="x", plot_dir=".",
                           plot_suffix="CDFscompare", show_figure=True,
                           save_figure=True, variable_names=None,
-                          y_limits=None, x_ticks=None, cdf_y_label=False,
+                          y_limits=None, x_limits=None, x_ticks=None, 
+                          cdf_y_label=False,
                           x_axis_padding=None, axis_font_size=30,
                           label_font_size=24, legend_font_size=25):
         """
@@ -388,13 +389,13 @@ class Postprocessor:
             ax.legend(loc='best', prop={'size': legend_font})
 
             # Labels/limits.
-            x_limits = ax.get_xlim()
             ax.axis([min(x_grid), max(x_grid), 0, 1.1])
 
             if x_limits is not None and y_limits is None:
                 ax.axis([x_limits[i][0], x_limits[i][1], 0, 1.1])
 
             elif x_limits is None and y_limits is not None:
+                x_limits = ax.get_xlim()
                 ax.axis([x_limits[0], x_limits[1], y_limits[i][0],
                          y_limits[i][1]])
 
