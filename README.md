@@ -3,6 +3,7 @@ SROMPy - **S**tochastic **R**educed **O**rder **M**odels with **Py**thon
 
 Python module for generating Stochastic Reduced Order Models (SROMs) and applying them for uncertainty quantification problems. See documentation in `docs/` directory for details. 
 
+<a href='https://travis-ci.com/nasa/SROMPy'><img src='https://travis-ci.com/nasa/SROMPy.svg?branch=master' alt='Coverage Status' /></a> <a href='https://coveralls.io/github/lukemorrill/SROMPy?branch=master'><img src='https://coveralls.io/repos/github/lukemorrill/SROMPy/badge.svg?branch=master' alt='Coverage Status' /></a>
 
 Example usage:
 
