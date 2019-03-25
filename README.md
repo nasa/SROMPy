@@ -40,13 +40,13 @@ The above code snippet produces the following CDF comparison plot:
   
 ![CDF comparison](https://github.com/nasa/SROMPy/blob/master/examples/basic_tests/normal_rv_srom.png)
 
-Tests
-------
-The tests can be performed by running "py.test" from the tests/ directory to ensure a proper installation.
-
 Getting Started
 ----------------
 The best way to get started with SROMPy is to take a look at the scripts in the examples/ directory. A simple example of propagating uncertainty through a spring mass system can be found in the examples/spring_mass/, while the examples/phm18/ directory contains scripts necessary to reproduce the results in the following conference paper on probabilistic prognostics: https://www.phmpapers.org/index.php/phmconf/article/view/551. For more information, see the source code documentation in docs/SROMPy_doc.pdf (a work in progress) or the technical report below that accompanied the release of SROMPy.
+
+Tests
+------
+The tests can be performed by running "py.test" from the tests/ directory to ensure a proper installation.
 
 Reference
 -------------
