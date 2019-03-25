@@ -10,6 +10,7 @@ Python module for generating Stochastic Reduced Order Models (SROMs) and applyin
 
 Dependencies
 -------------
+SROMPy is intended for use with Python 2.7 and relies on the following packages:
 * numpy
 * scipy
 * matplotlib
