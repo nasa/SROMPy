@@ -49,24 +49,6 @@ def initialized_srom(valid_srom):
     return valid_srom
 
 
-def test_invalid_init_parameter_values_rejected(valid_srom,
-                                                initialized_srom,
-                                                sample_random_vector):
-
-    with pytest.raises(TypeError):
-        Postprocessor('srom', sample_random_vector)
-
-    with pytest.raises(TypeError):
-        Postprocessor(valid_srom, 'rv')
-
-
-def test_error_on_uninitialized_srom(valid_srom, sample_random_vector):
-
-    # Should raise ValueError due to srom not being initialized.
-    with pytest.raises(ValueError):
-        Postprocessor(valid_srom, sample_random_vector)
-
-
 # TODO: Find a way to test that Postprocessor checks for required functions
 #       on the random entity.
 # @pytest.mark.parametrize('required_function', ['compute_cdf',
