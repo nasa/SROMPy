@@ -43,6 +43,24 @@ The above code snippet produces the following CDF comparison plot:
 
 Getting Started
 ----------------
+SROMPy can be installed via pip from [PyPI](https://pypi.org/project/SROMPy/).
+
+```
+pip install srompy
+```
+
+SROMPy can also be installed using the `git clone` command:
+
+```
+git clone https://github.com/nasa/SROMPy.git
+```
+
+A requirements.txt file is included for easy installation of dependecies with pip:
+
+```
+pip install -r requirements.txt
+```
+
 The best way to get started with SROMPy is to take a look at the scripts in the examples/ directory. A simple example of propagating uncertainty through a spring mass system can be found in the examples/spring_mass/, while the examples/phm18/ directory contains scripts necessary to reproduce the results in the following conference paper on probabilistic prognostics: https://www.phmpapers.org/index.php/phmconf/article/view/551. For more information, see the source code documentation in docs/SROMPy_doc.pdf (a work in progress) or the technical report below that accompanied the release of SROMPy.
 
 Tests
