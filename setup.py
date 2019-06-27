@@ -20,7 +20,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SROMPy",
-    version="0.0.01",
+    version="0.1.0",
     author="James Warner ",
     author_email="james.e.warner@nasa.gov",
     description="Stochastic Reduced Order Models with Python",
@@ -33,7 +33,7 @@ setuptools.setup(
               "SROMPy.srom",
               "SROMPy.target"],
     package_dir={'SROMPy': 'SROMPy'},
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy', 'scipy', 'matplotlib'],
     classifiers=[
         "Programming Language :: Python :: 2.7",
         "License :: OSI Approved :: Apache Software License",
