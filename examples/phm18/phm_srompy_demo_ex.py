@@ -31,7 +31,7 @@ monte_carlo_end_of_life_input_filename = "mc_data/input_samples_MC.txt"
 monte_carlo_end_of_life_sample_filename = "mc_data/eol_samples_MC.txt"
 
 # Define target random variable from samples.
-monte_carlo_samples = np.genfromtxt(monte_carlo_end_of_life_sample_filename)
+monte_carlo_samples = np.genfromtxt(monte_carlo_end_of_life_input_filename)
 target = SampleRandomVector(monte_carlo_samples)
 
 # Define SROM, determine optimal parameters, store parameters.

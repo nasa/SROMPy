@@ -60,7 +60,7 @@ sroms = OrderedDict()
 for srom_size in srom_sizes:
 
     # Generate input SROM from file:
-    srom = SROM(srom_size, target.dim)
+    srom = SROM(srom_size, target._dim)
     srom_filename = "srom_m" + str(srom_size) + ".txt"
     srom_filename = os.path.join(srom_dir, srom_filename)
     srom.load_params(srom_filename)
