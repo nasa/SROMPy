@@ -73,7 +73,7 @@ class Gradient:
         probabilities (m x 1 array)
         """
     
-        srom_size = self.srom.size
+        srom_size = self.srom._size
 
         # d_e1/d_p:
         if self._weights[0] > 0:
@@ -206,9 +206,9 @@ class Gradient:
         cdf_grid_pts along each dimension of the random vector.
         """
 
-        self._x_grid = np.zeros((cdf_grid_pts, self._target.dim))
+        self._x_grid = np.zeros((cdf_grid_pts, self._target._dim))
 
-        for i in range(self._target.dim):
+        for i in range(self._target._dim):
             grid = np.linspace(self._target.mins[i],
                                self._target.maxs[i],
                                cdf_grid_pts)
