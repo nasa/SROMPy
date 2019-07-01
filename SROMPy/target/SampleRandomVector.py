@@ -58,7 +58,7 @@ class SampleRandomVector(RandomVector):
         self.mins = []
         self.maxs = []
 
-        # Parent class (RandomVector) constructor, sets self.dim.
+        # Parent class (RandomVector) constructor, sets self._dim.
         super(SampleRandomVector, self).__init__(dim)
 
         self._num_samples = num_samples
@@ -113,10 +113,10 @@ class SampleRandomVector(RandomVector):
         (num_points, dim) = x_grid.shape
 
         # If only one grid was provided for multiple dims, repeat to generalize.
-        if (dim == 1) and (self.dim > 1):
-            x_grid = np.repeat(x_grid, self.dim, axis=1)
+        if (dim == 1) and (self._dim > 1):
+            x_grid = np.repeat(x_grid, self._dim, axis=1)
 
-        cdf_values = np.zeros((num_points, self.dim))
+        cdf_values = np.zeros((num_points, self._dim))
 
         # Evaluate CDF interpolants on grid.
         for d, grid in enumerate(x_grid.T):
@@ -166,8 +166,8 @@ class SampleRandomVector(RandomVector):
         tuple with x_grid & CDF values arrays
         """
 
-        x_grid = np.zeros((self._num_samples, self.dim))
-        cdf_values = np.zeros((self._num_samples, self.dim))
+        x_grid = np.zeros((self._num_samples, self._dim))
+        cdf_values = np.zeros((self._num_samples, self._dim))
 
         for i, samples_i in enumerate(self._samples.T):
 
@@ -195,12 +195,12 @@ class SampleRandomVector(RandomVector):
         on samples. Moments from 1,...,max_order
         """
 
-        self._moments = np.zeros((max_moment, self.dim))
+        self._moments = np.zeros((max_moment, self._dim))
 
         factor = (1./float(self._num_samples))
         for q in range(0, max_moment):
 
-            moment_q = np.zeros((1, self.dim))
+            moment_q = np.zeros((1, self._dim))
             for sample in self._samples:
                 moment_q += factor*np.power(sample, q+1)
 
@@ -241,7 +241,7 @@ class SampleRandomVector(RandomVector):
         """
 
         # TODO - find faster numpy/scipy function
-        self._correlation = np.zeros((self.dim, self.dim))
+        self._correlation = np.zeros((self._dim, self._dim))
 
         factor = (1./float(self._num_samples))
         for sample in self._samples:

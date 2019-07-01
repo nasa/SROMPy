@@ -87,8 +87,8 @@ class DiscreteRandomVector(RandomVector):
         (num_pts, dim) = x_grid.shape
 
         # If only one grid was provided for multiple dims, repeat to generalize
-        if (dim == 1) and (self.dim > 1):
-            x_grid = np.repeat(x_grid, self.dim, axis=1)
+        if (dim == 1) and (self._dim > 1):
+            x_grid = np.repeat(x_grid, self._dim, axis=1)
 
         # Check if we've computed/stored cdf values for this x_grid:
         cache_flag = self._is_cdf_cached(x_grid)
@@ -97,7 +97,7 @@ class DiscreteRandomVector(RandomVector):
             return self._cdf_cache
         else:
 
-            cdf_values = np.zeros((num_pts, self.dim))
+            cdf_values = np.zeros((num_pts, self._dim))
 
             # Vectorized indicator implementation for CDF
             # CDF(x) = sum_{k=1}^m  1( sample^(k) < x) prob^(k)
@@ -147,12 +147,12 @@ class DiscreteRandomVector(RandomVector):
         array.
         """
     
-        self._moments = np.zeros((self._max_moment, self.dim))
+        self._moments = np.zeros((self._max_moment, self._dim))
         
         for order in range(self._max_moment):
         
             # moment_q = sum_{k=1}^m p(k) * x(k)^q
-            moment_q = np.zeros((1, self.dim))
+            moment_q = np.zeros((1, self._dim))
             for k, sample in enumerate(self._samples):
                 moment_q = moment_q + self._probabilities[k] * \
                                       pow(sample, order+1)
@@ -164,7 +164,7 @@ class DiscreteRandomVector(RandomVector):
         Precomputes and stores correlation matrix and stores in 
         "_corr_matrix" member variable array.
         """
-        corr = np.zeros((self.dim, self.dim))
+        corr = np.zeros((self._dim, self._dim))
 
         for k, sample in enumerate(self._samples):
             corr = corr + np.outer(sample, sample) * self._probabilities[k]
@@ -202,7 +202,7 @@ class DiscreteRandomVector(RandomVector):
         self.mins = np.min(samples, axis=0)
         self.maxs = np.max(samples, axis=0)
 
-        # Parent class (RandomVector) constructor, sets self.dim.
+        # Parent class (RandomVector) constructor, sets self._dim.
         super(DiscreteRandomVector, self).__init__(dim)
 
     @staticmethod

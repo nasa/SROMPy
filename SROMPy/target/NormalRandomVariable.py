@@ -43,7 +43,7 @@ class NormalRandomVariable(RandomVariable):
         self._moments = None
 
         # Set dimension (scalar), min/max to equal mean +/- 4stds.
-        self.dim = 1
+        self._dim = 1
         self.mins = [mean - 4. * std_dev]
         self.maxs = [mean + 4. * std_dev]
 

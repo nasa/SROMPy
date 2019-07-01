@@ -57,7 +57,7 @@ class BetaRandomVariable(RandomVariable):
         self._moments = None
 
         # Set dimension (scalar), min/max.
-        self.dim = 1
+        self._dim = 1
         self.mins = [shift]
         self.maxs = [shift + scale]
 
