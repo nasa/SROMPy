@@ -164,7 +164,7 @@ class Optimizer:
             self.get_errors(optimal_samples, optimal_probabilities)
 
         if verbose and self.cpu_rank == 0:
-            print "\tOptimization time: ", time.time() - t0, "seconds"
+            print "\tOptimization time: %.3f seconds" % (time.time() - t0)
             print "\tFinal SROM errors:"
             print "\t\tCDF: ", cdf_error
             print "\t\tMoment: ", moment_error
@@ -280,10 +280,9 @@ class Optimizer:
             if verbose and self.number_CPUs == 1 and \
                     (i == 0 or (i + 1) % output_interval == 0):
 
-                print "\tIteration %d Objective Function: %s" % \
-                      (i + 1, optimization_result['fun'])
-
-                print "Optimal:", best_objective_function_result
+                print "\tIteration %d Current Objective: %s Optimal: %.3f" % \
+                      (i + 1, optimization_result['fun'], \
+                       best_objective_function_result)
 
         return optimal_samples, optimal_probabilities
 
