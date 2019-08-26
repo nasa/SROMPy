@@ -78,6 +78,9 @@ class AnalyticRandomVector(RandomVector):
         # Parent class (RandomVector) constructor, sets self._dim
         super(AnalyticRandomVector, self).__init__(len(random_variables))
 
+        self._gaussian_corr = None
+        self._unscaled_correlation = None
+
         # Get min/max values for each component.
         self._components = copy.deepcopy(random_variables)
 
@@ -93,9 +96,6 @@ class AnalyticRandomVector(RandomVector):
 
         # Generate unscaled correlation that is matched by SROM during opt.
         self.generate_unscaled_correlation()
-
-        self._gaussian_corr = None
-        self._unscaled_correlation = None
 
     @staticmethod
     def verify_correlation_matrix(corr_matrix):
@@ -246,7 +246,7 @@ class AnalyticRandomVector(RandomVector):
 
         # Try adjusting tolerance to speed this up:
         # 1.49e-8 is default for both.
-        opts = {'epsabs': 1.e-8, 'epsrel': 1e-8}
+        opts = {'epsabs': 1.e-5, 'epsrel': 1e-5}
         e_integral = integrate.nquad(self.integrand_helper, [k_lims, j_lims],
                                      args=(k, j, rho_kj), opts=opts)
 
@@ -268,7 +268,7 @@ class AnalyticRandomVector(RandomVector):
 
         # Want to build interpolant from eta correlation values to rho
         # correlation values.
-        num_points = 15
+        num_points = 12
 
         # -1 made matrix singular
         rho_kj_grid = np.linspace(-0.99, 0.99, num_points)
