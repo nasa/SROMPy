@@ -174,7 +174,7 @@ class AnalyticRandomVector(RandomVector):
         return self._unscaled_correlation
 
     def draw_random_sample(self, sample_size):
-        """
+        r"""
         Implements the translation model to generate general random vectors with
         non-gaussian components. Nonlinear transformation of a std gaussian
         vector according to method in S.R. Arwade 2005 paper.
@@ -275,8 +275,8 @@ class AnalyticRandomVector(RandomVector):
         eta_jk_grid = np.zeros(num_points)
 
         for k in range(self._dim):
-            for j in range(k+1, self._dim):
-                print "Determining correlation entry ", k, " ", j
+            for j in range(k + 1, self._dim):
+                print("Determining correlation entry ", k, " ", j)
 
                 # Compute grid of eta/rho pts:
                 for i, rho_kj in enumerate(rho_kj_grid):

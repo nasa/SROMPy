@@ -24,7 +24,7 @@ class ObjectiveFunction:
     Defines the objective function for optimizing SROM parameters. Calculates
     errors between the statistics of the SROM and the target random vector
     being model by it.
-    Will create objective function for optimization library (e.g. scipy) that 
+    Will create objective function for optimization library (e.g. scipy) that
     essentially wraps this class's evaluate function
     """
 
@@ -94,7 +94,7 @@ class ObjectiveFunction:
     def evaluate(self, samples, probabilities):
         """
         Evaluates the objective function for the specified SROM samples & 
-        probabilities. Calculates errrors in statistics between SROM/target
+        probabilities. Calculates errors in statistics between SROM/target
         """
 
         error = 0.0

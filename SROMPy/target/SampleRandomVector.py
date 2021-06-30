@@ -243,7 +243,6 @@ class SampleRandomVector(RandomVector):
         # TODO - find faster numpy/scipy function
         self._correlation = np.zeros((self._dim, self._dim))
 
-        factor = (1./float(self._num_samples))
+        factor = 1. / float(self._num_samples)
         for sample in self._samples:
-            self._correlation = self._correlation +\
-                                factor * np.outer(sample, sample)
+            self._correlation += factor * np.outer(sample, sample)

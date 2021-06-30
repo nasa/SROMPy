@@ -154,8 +154,7 @@ class DiscreteRandomVector(RandomVector):
             # moment_q = sum_{k=1}^m p(k) * x(k)^q
             moment_q = np.zeros((1, self._dim))
             for k, sample in enumerate(self._samples):
-                moment_q = moment_q + self._probabilities[k] * \
-                                      pow(sample, order+1)
+                moment_q += self._probabilities[k] * pow(sample, order + 1)
 
             self._moments[order, :] = moment_q
 

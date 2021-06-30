@@ -18,7 +18,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from SROMPy.srom.SROM import SROM
 from SROMPy.target.RandomEntity import RandomEntity
 
 
@@ -151,14 +150,14 @@ class Postprocessor:
             else:
                 plot_name_ = None
 
-            print "samples = ", samples[:, i]
+            print("samples = ", samples[:, i])
             self.plot_pdfs(samples[:, i], probabilities.flatten(),
                            x_grids[:, i], target_cdfs[:, i], variable, y_label,
                            plot_name_, show_figure)
 
     def compute_moment_error(self, max_moment=4):
         """
-        Performs a comparison of the moments between the SROM and target, 
+        Performs a comparison of the moments between the SROM and target,
         calculates the percent errors up to moments of order 'max_moment'.
         Optionally generates text file with the latex source to generate
         a table.
@@ -474,7 +473,7 @@ class Postprocessor:
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
-        print "variable names = ", variable_names
+        print("variable names = ", variable_names)
 
         for i in range(random_variable_1.dim):
 

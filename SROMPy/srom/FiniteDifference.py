@@ -140,4 +140,3 @@ class FiniteDifference(object):
             gradients[:, i] = grad
 
         return gradients
-
