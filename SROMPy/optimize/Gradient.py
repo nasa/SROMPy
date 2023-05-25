@@ -65,7 +65,7 @@ class Gradient:
         Evaluates gradient (for probability only)
         Just calls gradient_wrt_probabilities() for now
         """
-
+        samples = self.check_bounds(samples.flatten(), self.get_param_bounds(joint_opt=self._joint_opt))
         # SROM defined by the current values of samples/probabilities for stats
         self.srom.set_params(samples, probabilities)
 
@@ -76,6 +76,27 @@ class Gradient:
             result = self._gradient_wrt_probabilities(samples)
 
         return result
+
+    def get_param_bounds(self, joint_opt):
+        """
+        Get the bounds on parameters for SROM optimization problem. If doing
+        joint optimization, need bounds for both samples & probabilities. If
+        not, just need trivial bounds on probabilities
+        """
+
+        if not joint_opt:
+            bounds = [(0.0, 1.0)] * self.srom.size
+        else:
+            bounds = list(zip(self._target.mins, self._target.maxs)) * self.srom.size + [(0.0, 1.0)] * self.srom.size
+
+        return bounds
+
+    def check_bounds(self, samples, bounds):
+        for i in range(self.srom.size):
+            x = samples[i]
+            if(x <= bounds[i][0]) or (x >= bounds[i][1]):
+                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+        return samples.reshape(self.srom.size, self.srom.dim)
 
     def _gradient_wrt_samples(self, samples, probabilities):
         """
@@ -104,7 +125,7 @@ class Gradient:
         else:
             corr_grad = np.zeros((srom_size, srom_dim))
 
-        grad = (self._weights[0] * cdf_grad +
+        grad = (-1 * self._weights[0] * cdf_grad +
                 self._weights[1] * moment_grad +
                 self._weights[2] * corr_grad)
 
@@ -137,10 +158,10 @@ class Gradient:
         diffs = (srom_cdfs - target_cdfs) / target_cdfs ** 2.0
 
         const = np.sqrt(2 * np.pi * self._scale ** 2)
-        for srom_ind in range(size):
-            for j in range(dim):
+        for j in range(dim):
+            for srom_ind in range(size):
                 x_srom = samples[srom_ind, j]
-                grad[srom_ind, j] = np.sum(diffs[i_nonzero, j] * np.exp(-1 / (2 * self._scale ** 2) *
+                grad[srom_ind, j] = np.sum(diffs[i_nonzero, j] * np.exp((-1 / (2 * self._scale ** 2)) *
                                                                         (self._x_grid[i_nonzero, j] - x_srom) ** 2))
                 grad[srom_ind, j] *= (probabilities[srom_ind] / const)
 
