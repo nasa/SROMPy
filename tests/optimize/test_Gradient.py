@@ -19,7 +19,6 @@ import os
 import sys
 
 if 'PYTHONPATH' not in os.environ:
-
     base_path = os.path.abspath('.')
 
     sys.path.insert(0, base_path)
@@ -31,7 +30,6 @@ from SROMPy.target import SampleRandomVector
 
 @pytest.fixture
 def sample_random_vector():
-
     np.random.seed(1)
     random_vector = np.random.rand(10)
     return SampleRandomVector(random_vector)
@@ -44,14 +42,21 @@ def valid_srom():
 
 @pytest.fixture
 def gradient(sample_random_vector, valid_srom):
-
     return Gradient(srom=valid_srom,
                     target_random_variable=sample_random_vector,
                     error='mean')
 
 
-def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom):
+@pytest.fixture
+def gradient_joint(sample_random_vector, valid_srom):
+    return Gradient(srom=valid_srom,
+                    target_random_variable=sample_random_vector,
+                    error='SSE',
+                    scale=0.01,
+                    joint_opt=True)
 
+
+def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom):
     # Ensure no exception using default parameters.
     Gradient(srom=valid_srom, target_random_variable=sample_random_vector)
 
@@ -67,7 +72,6 @@ def test_invalid_init_parameter_values_rejected(sample_random_vector, valid_srom
 
 
 def test_evaluate_returns_expected_result(valid_srom, gradient):
-
     samples = np.ones((valid_srom._size, valid_srom._dim))
     probabilities = np.ones(valid_srom._size)
 
@@ -76,3 +80,12 @@ def test_evaluate_returns_expected_result(valid_srom, gradient):
     assert isinstance(results, np.ndarray)
     assert results.size == valid_srom._size
 
+
+def test_gradient_joint(valid_srom, gradient_joint):
+    samples = np.ones((valid_srom.size, valid_srom.dim))
+    probabilities = np.ones(valid_srom.size)
+
+    results = gradient_joint.evaluate(samples, probabilities)
+
+    assert isinstance(results, np.ndarray)
+    assert results.size == (valid_srom.size * valid_srom.dim + valid_srom.size)
