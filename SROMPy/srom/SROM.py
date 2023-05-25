@@ -266,7 +266,8 @@ class SROM(object):
                  method=None,
                  joint_opt=False,
                  opt_output_interval=10,
-                 verbose=True):
+                 verbose=True,
+                 scale=None):
         """
         Optimize for the SROM samples & probabilities to best match the
         target random vector statistics. The main functionality provided
@@ -329,7 +330,9 @@ class SROM(object):
                         weights,
                         error,
                         max_moment,
-                        cdf_grid_pts)
+                        cdf_grid_pts,
+                        joint_opt=joint_opt,
+                        scale=scale)
 
         (samples, probabilities) = opt.get_optimal_params(num_test_samples,
                                                           tolerance,
