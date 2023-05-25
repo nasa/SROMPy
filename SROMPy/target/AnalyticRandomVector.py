@@ -276,7 +276,7 @@ class AnalyticRandomVector(RandomVector):
 
         for k in range(self._dim):
             for j in range(k+1, self._dim):
-                print "Determining correlation entry ", k, " ", j
+                print("Determining correlation entry ", k, " ", j)
 
                 # Compute grid of eta/rho pts:
                 for i, rho_kj in enumerate(rho_kj_grid):
