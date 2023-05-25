@@ -71,6 +71,14 @@ class SampleRandomVector(RandomVector):
         # Precompute & store statistics so they can be returned quickly later.
         self.generate_statistics(max_moment)
 
+    @property
+    def num_samples(self):
+        return self._num_samples
+
+    @property
+    def samples(self):
+        return self._samples
+
     def compute_moments(self, max_order):
         """
         Return precomputed moments up to specified order.
@@ -152,9 +160,11 @@ class SampleRandomVector(RandomVector):
 
         if qmc_engine is not None:
             if qmc_engine == 'Halton':
-                random_indices = Halton.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
+                sampler = Halton(d=self._dim)
+                random_indices = sampler.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
             elif qmc_engine == 'Sobol':
-                random_indices = Sobol.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
+                sampler = Sobol(d=self._dim)
+                random_indices = sampler.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
             else:
                 raise ValueError("Invalid QMC engine provided.")
         else:
