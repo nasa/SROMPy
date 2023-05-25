@@ -17,11 +17,9 @@
 Class to solve SROM optimization problem.
 """
 
-# testing
 import numpy as np
 import scipy.optimize as opt
 import time
-import imp
 
 from SROMPy.optimize import ObjectiveFunction
 from SROMPy.optimize import Gradient
@@ -70,6 +68,7 @@ def scipy_gradient(x, objective_function, gradient, samples, srom_size, dim, joi
         gradient = gradient.evaluate(samples, probabilities)
 
     return gradient
+
 
 # -----------------------------------------------------------------
 
@@ -122,9 +121,9 @@ class Optimizer:
 
         self.__detect_parallelization()
 
-    def get_optimal_params(self, num_test_samples=500, tolerance=None, 
+    def get_optimal_params(self, num_test_samples=500, tolerance=None,
                            options=None, method=None, joint_opt=False,
-                           output_interval=10, verbose=True):
+                           output_interval=10, verbose=True, qmc_engine=None):
         """
         Solve the SROM optimization problem - finds samples & probabilities
         that minimize the error between SROM/Target RV statistics.
@@ -153,7 +152,7 @@ class Optimizer:
         if num_test_samples <= 0:
             raise ValueError("Insufficient number of test samples specified.")
 
-        #Make test for options(both cases maxiter, disp) and tolerance (TODO)
+        # Make test for options(both cases maxiter, disp) and tolerance (TODO)
 
         # Report whether we're running in sequential or parallel mode.
         if verbose:
@@ -168,25 +167,26 @@ class Optimizer:
                                         output_interval,
                                         verbose,
                                         tolerance,
-                                        options)
+                                        options,
+                                        qmc_engine)
 
         # Display final errors in statistics:
         moment_error, cdf_error, correlation_error, mean_error = \
             self.get_errors(optimal_samples, optimal_probabilities)
 
         if verbose and self.cpu_rank == 0:
-            print "\tOptimization time: %.3f seconds" % (time.time() - t0)
-            print "\tFinal SROM errors:"
-            print "\t\tCDF: ", cdf_error
-            print "\t\tMoment: ", moment_error
-            print "\t\tCorrelation: ", correlation_error
+            print("\tOptimization time: %.3f seconds" % (time.time() - t0))
+            print("\tFinal SROM errors:")
+            print("\t\tCDF: ", cdf_error)
+            print("\t\tMoment: ", moment_error)
+            print("\t\tCorrelation: ", correlation_error)
 
         return optimal_samples, optimal_probabilities
 
     # -----Helper funcs----
 
     def __perform_optimization(self, num_test_samples, joint_opt, method,
-                               output_interval, verbose, tolerance, options):
+                               output_interval, verbose, tolerance, options, qmc_engine):
         """
         Calls optimization loop function and, in the case of parallelization,
         acquires the optimal results achieved across all CPUs before
@@ -234,15 +234,14 @@ class Optimizer:
         # If we're running in parallel mode, we need to gather all of the data
         # across CPUs and identify the best result.
         if self.number_CPUs > 1:
-
             optimal_samples, optimal_probabilities = \
                 self.__get_optimal_parallel_results(optimal_samples,
                                                     optimal_probabilities)
 
         return optimal_samples, optimal_probabilities
 
-    def __run_optimization_loop(self, num_test_samples, joint_opt, method, 
-                                output_interval, verbose, tolerance, options):
+    def __run_optimization_loop(self, num_test_samples, joint_opt, method,
+                                output_interval, verbose, tolerance, options, qmc_engine):
         """
         Is run by __perform_optimization to perform sampling and acquire
         optimal parameter values.
@@ -287,7 +286,7 @@ class Optimizer:
 
             optimization_result = \
                 opt.minimize(scipy_objective_function,
-                             self.get_initial_guess(joint_opt),
+                             self.get_initial_guess(joint_opt, qmc_engine),
                              args=args,
                              jac=self._grad,
                              constraints=self.get_constraints(joint_opt),
@@ -305,7 +304,6 @@ class Optimizer:
             # Report ongoing results to user if in sequential mode.
             if verbose and self.number_CPUs == 1 and \
                     (i == 0 or (i + 1) % output_interval == 0):
-
                 print("\tIteration %d Current Optimal Objective: %.4f" % \
                       (i + 1, best_objective_function_result))
 
@@ -454,8 +452,7 @@ class Optimizer:
             print("SROM Parallel Optimizer (%s cpus):" % self.number_CPUs)
 
         if self.cpu_rank == 0 and \
-           num_test_samples % self.number_CPUs != 0:
-
+                num_test_samples % self.number_CPUs != 0:
             print("Warning: # test samples not divisible by # CPUs!")
             print("%s per core, %s total" % \
                   (num_test_samples // self.number_CPUs, num_test_samples))
@@ -519,10 +516,7 @@ class Optimizer:
             bounds = [(0.0, 1.0)] * self._srom_size
         else:
             bounds = list(zip(self._target.mins, self._target.maxs)) * self._srom_size + [(0.0, 1.0)] * self._srom_size
-            # lb = np.array((self._target.mins * self._srom_size + [0.0] * self._srom_size))
-            # ub = np.array((self._target.maxs * self._srom_size + [1.0] * self._srom_size))
-            # bounds = opt.Bounds(lb, ub, keep_feasible=True)
-            # print(bounds)
+
         return bounds
 
     def get_constraints(self, joint_opt):
@@ -543,7 +537,6 @@ class Optimizer:
             return {'type': 'eq', 'fun': seq_constraint}
         else:
             return {'type': 'eq', 'fun': joint_constraint}
-
 
     def get_initial_guess(self, joint_opt, samples=None, qmc_engine=None):
         """
