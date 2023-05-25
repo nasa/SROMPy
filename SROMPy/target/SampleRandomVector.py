@@ -19,6 +19,7 @@ Class for defining a sample-based random vector with empirical estimators
 
 import numpy as np
 from scipy import interpolate
+from scipy.stats.qmc import Halton, Sobol
 
 from SROMPy.target import RandomVector
 
@@ -135,7 +136,7 @@ class SampleRandomVector(RandomVector):
         """
         return self._correlation
 
-    def draw_random_sample(self, sample_size):
+    def draw_random_sample(self, sample_size, qmc_engine=None):
         """
         Randomly draws a sample of this random vector.
 
@@ -149,10 +150,17 @@ class SampleRandomVector(RandomVector):
         if sample_size > self._num_samples:
             raise ValueError("Sample size can't be more than total # samples")
 
-        # Generate random indices for samples array.
-        all_indices = np.arange(self._num_samples)
-        random_indices = np.random.choice(all_indices, sample_size,
-                                          replace=False)
+        if qmc_engine is not None:
+            if qmc_engine == 'Halton':
+                random_indices = Halton.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
+            elif qmc_engine == 'Sobol':
+                random_indices = Sobol.integers(l_bounds=0, u_bounds=self._num_samples, n=sample_size)
+            else:
+                raise ValueError("Invalid QMC engine provided.")
+        else:
+            # Generate random indices for samples array.
+            all_indices = np.arange(self._num_samples)
+            random_indices = np.random.choice(all_indices, sample_size, replace=False)
 
         sample = self._samples[random_indices, :]
 
