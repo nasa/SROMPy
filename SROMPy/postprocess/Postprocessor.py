@@ -85,7 +85,7 @@ class Postprocessor:
             # Remove latex math symbol from plot name
             if plot_name is not None:
                 plot_name_ = plot_name + "_" + variable + ".pdf"
-                plot_name_ = plot_name_.translate(None, "$")
+                # plot_name_ = plot_name_.translate(None, "$")
             else:
                 plot_name_ = None
             if x_limits is not None:
@@ -147,11 +147,11 @@ class Postprocessor:
             # Remove latex math symbol from plot name
             if plot_name is not None:
                 plot_name_ = plot_name + "_" + variable + ".pdf"
-                plot_name_ = plot_name_.translate(None, "$")
+                plot_name_ = plot_name_.replace("$", "")
             else:
                 plot_name_ = None
 
-            print "samples = ", samples[:, i]
+            print("samples = ", samples[:, i])
             self.plot_pdfs(samples[:, i], probabilities.flatten(),
                            x_grids[:, i], target_cdfs[:, i], variable, y_label,
                            plot_name_, show_figure)
@@ -192,7 +192,7 @@ class Postprocessor:
         ax.plot(x_grid, srom_cdf, 'r--', linewidth=4.5, label='SROM')
         ax.plot(x_target, target_cdf, 'k-', linewidth=2.5, label='Target')
         ax.legend(loc='best', prop={'size': legend_font})
-        fig.canvas.set_window_title("CDF Comparison")
+        fig.canvas.manager.set_window_title("CDF Comparison")
 
         # Labels/limits.
         ax.axis([min(x_grid), max(x_grid), 0, 1.1])
@@ -474,7 +474,7 @@ class Postprocessor:
                 else:
                     variable_names.append(variable + "_" + str(i + 1))
 
-        print "variable names = ", variable_names
+        print("variable names = ", variable_names)
 
         for i in range(random_variable_1.dim):
 
