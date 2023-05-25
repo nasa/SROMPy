@@ -122,3 +122,16 @@ def test_get_optimal_params_expected_output(sample_random_vector, valid_srom):
                                                           verbose=False)
 
     assert np.allclose([np.sum(probabilities)], [1.])
+
+
+def test_get_joint_optimal_params(sample_random_vector, valid_srom):
+
+    # Ensure that output corresponding to a known input processed
+    # with a preset random seed remains consistent.
+    optimizer = Optimizer(sample_random_vector, valid_srom, joint_opt=True, scale=0.001)
+
+    samples, probabilities = optimizer.get_optimal_params(num_test_samples=10,
+                                                          joint_opt=True,
+                                                          verbose=True)
+
+    assert np.allclose([np.sum(probabilities)], [1.])
