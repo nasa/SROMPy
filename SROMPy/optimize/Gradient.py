@@ -131,18 +131,17 @@ class Gradient:
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
-        nonzero_index = np.where(target_cdfs[:, 0] > 0)[0]
-        srom_cdfs = srom_cdfs[nonzero_index, :]
-        target_cdfs = target_cdfs[nonzero_index, :]
+        i_nonzero = np.where(target_cdfs[:, 0] > 0)[0]
+        srom_cdfs = srom_cdfs[i_nonzero, :]
+        target_cdfs = target_cdfs[i_nonzero, :]
         diffs = (srom_cdfs - target_cdfs) / target_cdfs ** 2.0
 
         const = np.sqrt(2 * np.pi * self._scale ** 2)
         for srom_ind in range(size):
             for j in range(dim):
                 x_srom = samples[srom_ind, j]
-                grad[srom_ind, j] = np.sum(diffs[nonzero_index, j] * np.exp(-1 / (2 * self._scale ** 2) * \
-                                                                            (self._x_grid[
-                                                                                 nonzero_index, j] - x_srom) ** 2))
+                grad[srom_ind, j] = np.sum(diffs[i_nonzero, j] * np.exp(-1 / (2 * self._scale ** 2) *
+                                                                        (self._x_grid[i_nonzero, j] - x_srom) ** 2))
                 grad[srom_ind, j] *= (probabilities[srom_ind] / const)
 
         return grad
@@ -189,7 +188,7 @@ class Gradient:
 
         # Correlation irrelevant for 1D.
         if dim == 1:
-            return np.zeros(size)
+            return np.zeros((size, dim))
 
         # Compute relative diffs between SROM/target correlation matrices.
         srom_corr = self.srom.compute_corr_mat()
@@ -261,9 +260,9 @@ class Gradient:
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
-        nonzero_index = np.where(target_cdfs[:, 0] > 0)[0]
-        srom_cdfs = srom_cdfs[nonzero_index, :]
-        target_cdfs = target_cdfs[nonzero_index, :]
+        i_nonzero = np.where(target_cdfs[:, 0] > 0)[0]
+        srom_cdfs = srom_cdfs[i_nonzero, :]
+        target_cdfs = target_cdfs[i_nonzero, :]
         diffs = (srom_cdfs - target_cdfs) / target_cdfs ** 2.0
 
         grad = np.zeros(size)
@@ -274,7 +273,7 @@ class Gradient:
             grad_i = 0
 
             for i in range(dim):
-                grid_i = self._x_grid[nonzero_index, i]
+                grid_i = self._x_grid[i_nonzero, i]
 
                 # Implement indicator function in vectorized way:
                 indices = grid_i >= samples_k[i]
