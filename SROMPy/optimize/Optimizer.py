@@ -104,10 +104,12 @@ class Optimizer:
         self._srom_objective_function = ObjectiveFunction(srom, target,
                                                           obj_weights, error,
                                                           max_moment,
-                                                          cdf_grid_pts)
+                                                          cdf_grid_pts,
+                                                          scale=scale,
+                                                          joint_opt=joint_opt)
 
         self._srom_gradient = Gradient(srom, target, obj_weights, error,
-                                       max_moment, cdf_grid_pts, scale, joint_opt)
+                                       max_moment, cdf_grid_pts, scale=scale, joint_opt=joint_opt)
 
         # Get srom size & dimension.
         self._srom_size = srom.size
@@ -282,7 +284,10 @@ class Optimizer:
             # Optimize using scipy.
             args = (self._srom_objective_function,
                     self._srom_gradient,
-                    srom_samples)
+                    srom_samples,
+                    self._srom_size,
+                    self._dim,
+                    joint_opt)
 
             optimization_result = \
                 opt.minimize(scipy_objective_function,
@@ -368,7 +373,7 @@ class Optimizer:
 
             optimization_result = \
                 opt.minimize(scipy_objective_function,
-                             x0=self.get_initial_guess(joint_opt, qmc_engine),
+                             x0=self.get_initial_guess(joint_opt, qmc_engine='Halton'),
                              args=args,
                              jac=self._grad,
                              constraints=(self.get_constraints(joint_opt)),
@@ -538,37 +543,37 @@ class Optimizer:
         else:
             return {'type': 'eq', 'fun': joint_constraint}
 
-    def get_initial_guess(self, joint_opt, samples=None, qmc_engine=None):
+    def check_bounds(self, samples, bounds):
+        for i in range(self._srom_size):
+            x = samples[i]
+            if(x <= bounds[i][0]) or (x >= bounds[i][1]):
+                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+        return samples
+
+    def get_initial_guess(self, joint_opt, qmc_engine=None):
         """
         Return initial guess for optimization. Randomly drawn samples w/ equal
         probability for joint optimization or just equal probabilities for
         sequential optimization
         """
 
+        # Randomly draw some samples & stack them with probabilities
+        samples = self._target.draw_random_sample(self._srom_size, qmc_engine)
+        samples = self.check_bounds(samples, self.get_param_bounds(joint_opt))
+
+        probabilities = np.zeros(self._srom_size)
+        for i in range(self._target.num_samples):
+            diffs = self._target.samples[i, :] - samples
+            diff_norms = np.linalg.norm(diffs, axis=1)
+            k = np.argmin(diff_norms)
+            probabilities[k] += 1
+
+        probabilities /= self._target.num_samples
+        assert(np.allclose([np.sum(probabilities)], [1.]))
+
         if joint_opt:
-            # Randomly draw some samples & stack them with probabilities
-            samples = self._target.draw_random_sample(self._srom_size, qmc_engine)
-
-            probabilities = np.zeros(self._srom_size)
-            for i in range(self._target.num_samples):
-                diffs = self._target.samples[i, :] - samples
-                diff_norms = np.linalg.norm(diffs, axis=1)
-                k = np.argmin(diff_norms)
-                probabilities[k] += 1
-
-            probabilities /= self._target.num_samples
-            # probabilities = (1. /
-            #                  float(self._srom_size)) * np.ones(self._srom_size)
-
             initial_guess = np.hstack((samples.flatten(), probabilities))
         else:
-            initial_guess = np.zeros(self._srom_size)
-            for i in range(self._target.num_samples):
-                diffs = self._target.samples[i, :] - samples
-                diff_norms = np.linalg.norm(diffs, axis=1)
-                k = np.argmin(diff_norms)
-                initial_guess[k] += 1
-
-            initial_guess /= self._target.num_samples
+            initial_guess = probabilities
 
         return initial_guess
