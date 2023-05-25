@@ -16,7 +16,8 @@
 """
 Class to solve SROM optimization problem.
 """
-# test
+
+# testing
 import numpy as np
 import scipy.optimize as opt
 import time
