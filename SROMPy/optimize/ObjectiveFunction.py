@@ -29,7 +29,7 @@ class ObjectiveFunction:
     """
 
     def __init__(self, srom, target, obj_weights=None, error='mean',
-                 max_moment=5, num_cdf_grid_points=100):
+                 max_moment=5, num_cdf_grid_points=100, scale=None, joint_opt=False):
         """
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
@@ -59,6 +59,10 @@ class ObjectiveFunction:
         self._SROM = srom
         self._target = target
         self._x_grid = None
+
+        # Scale for error function when using SSE for smooth derivative
+        self._scale = scale
+        self._joint_opt = joint_opt
 
         # Generate grids for evaluating CDFs based on target RV's range
         self.generate_cdf_grids(num_cdf_grid_points)
@@ -97,6 +101,7 @@ class ObjectiveFunction:
         probabilities. Calculates errrors in statistics between SROM/target
         """
 
+        samples = self.check_bounds(samples.flatten(), self.get_param_bounds(joint_opt=self._joint_opt))
         error = 0.0
  
         # SROM is by the current values of samples/probabilities for stats.
@@ -115,6 +120,27 @@ class ObjectiveFunction:
             error += corr_error * self._weights[2]
 
         return error
+
+    def get_param_bounds(self, joint_opt):
+        """
+        Get the bounds on parameters for SROM optimization problem. If doing
+        joint optimization, need bounds for both samples & probabilities. If
+        not, just need trivial bounds on probabilities
+        """
+
+        if not joint_opt:
+            bounds = [(0.0, 1.0)] * self._SROM.size
+        else:
+            bounds = list(zip(self._target.mins, self._target.maxs)) * self._SROM.size + [(0.0, 1.0)] * self._SROM.size
+
+        return bounds
+
+    def check_bounds(self, samples, bounds):
+        for i in range(self._SROM.size):
+            x = samples[i]
+            if(x <= bounds[i][0]) or (x >= bounds[i][1]):
+                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+        return samples.reshape(self._SROM.size, self._SROM.dim)
 
     def compute_moment_error(self):
         """
@@ -154,7 +180,7 @@ class ObjectiveFunction:
         Calculate error in CDFs between SROM & target at pts in x_grid
         """
 
-        srom_cdfs = self._SROM.compute_cdf(self._x_grid)
+        srom_cdfs = self._SROM.compute_cdf(self._x_grid, sigma=self._scale)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
@@ -183,7 +209,7 @@ class ObjectiveFunction:
         """ 
 
         # Neglect for 1D random variable:
-        if self._target._dim == 1:
+        if self._target.dim == 1:
             return 0.0
 
         srom_corr = self._SROM.compute_corr_mat()
@@ -211,9 +237,9 @@ class ObjectiveFunction:
         num_cdf_grid_points along each dimension of the random vector.
         """
         
-        self._x_grid = np.zeros((num_cdf_grid_points, self._target._dim))
+        self._x_grid = np.zeros((num_cdf_grid_points, self._target.dim))
 
-        for i in range(self._target._dim):
+        for i in range(self._target.dim):
             grid = np.linspace(self._target.mins[i],
                                self._target.maxs[i],
                                num_cdf_grid_points)
@@ -239,7 +265,7 @@ class ObjectiveFunction:
         # Ensure srom and target have same dimensions if target is RandomVector.
         if isinstance(target, RandomVector):
 
-            if target._dim != srom._dim:
+            if target.dim != srom.dim:
                 raise ValueError("target and srom must have same dimensions.")
 
         # Test obj_weights.
