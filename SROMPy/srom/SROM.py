@@ -57,6 +57,14 @@ class SROM(object):
         self.samples = None
         self.probabilities = None
 
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def dim(self):
+        return self._dim
+
     def set_params(self, samples, probabilities):
         """
         Set defining SROM parameters - samples & corresponding probabilities.
@@ -152,7 +160,7 @@ class SROM(object):
 
         return moments
 
-    def compute_cdf(self, x_grid):
+    def compute_cdf(self, x_grid, sigma=None):
         """
         Computes the SROM marginal CDF values in each dimension.
 
@@ -162,6 +170,11 @@ class SROM(object):
             different points, but must have same # points for each dimension.
             Size is (# grid pts) x (dim) or (# grid pts) x (1).
         :type x_grid: Numpy array.
+
+        :param sigma: scaling parameter for the smooth CDF approximation. If
+            None, uses the empirical CDF computed from an indicator function.
+            Otherwise, uses the error function approximation.
+        :type sigma: float
 
         Returns: Numpy array of CDF values at x_grid points. Size is (# grid
         pts) x (dim).
@@ -185,6 +198,15 @@ class SROM(object):
         if (dim == 1) and (self._dim > 1):
             x_grid = np.repeat(x_grid, self._dim, axis=1)
 
+        if sigma is not None:
+            cdf_values = self._compute_cdf_smooth(num_pts, x_grid, sigma)
+        else:
+            cdf_values = self._compute_cdf_empirical(num_pts, x_grid)
+
+        return cdf_values
+
+    def _compute_cdf_empirical(self, num_pts, x_grid):
+
         cdf_values = np.zeros((num_pts, self._dim))
 
         # Vectorized indicator implementation for CDF.
@@ -194,6 +216,23 @@ class SROM(object):
 
                 indices = grid >= sample[i]
                 cdf_values[indices, i] += self.probabilities[k]
+
+        return cdf_values
+
+    def _compute_cdf_erf(self, x, d, sigma):
+
+        cdf_value = 0.0
+        for k in range(self._size):
+            cdf_value += 0.5 * self.probabilities[k]*(1.0 + erf((x - self.samples[k, d]) / (np.sqrt(2) * sigma)))
+
+        return cdf_value
+
+    def _compute_cdf_smooth(self, num_pts, x_grid, sigma):
+
+        cdf_values = np.zeros((num_pts, self._dim))
+
+        for i, grid in enumerate(x_grid.T):
+            cdf_values[:, i] = self._compute_cdf_erf(grid, i, sigma=sigma)
 
         return cdf_values
 
