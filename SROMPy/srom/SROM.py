@@ -20,6 +20,7 @@ Define stochastic reduced order model (SROM) class
 import copy
 import os
 import numpy as np
+from scipy.special import erf
 
 from SROMPy.optimize import Optimizer
 from SROMPy.target.RandomEntity import RandomEntity
