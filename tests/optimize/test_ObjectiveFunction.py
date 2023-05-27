@@ -19,11 +19,9 @@ import os
 import sys
 
 if 'PYTHONPATH' not in os.environ:
-
     base_path = os.path.abspath('.')
 
     sys.path.insert(0, base_path)
-
 
 from SROMPy.srom import SROM
 from SROMPy.optimize import ObjectiveFunction
@@ -32,7 +30,6 @@ from SROMPy.target import SampleRandomVector
 
 @pytest.fixture
 def sample_random_vector():
-
     np.random.seed(1)
     random_vector = np.random.rand(10)
     return SampleRandomVector(random_vector)
@@ -43,9 +40,15 @@ def valid_srom():
     return SROM(10, 1)
 
 
+@pytest.fixture
+def valid_srom_smooth():
+    srom = SROM(10, 1)
+    srom._scale = 0.1
+    return srom
+
+
 def test_invalid_init_parameter_values_rejected(valid_srom,
                                                 sample_random_vector):
-
     with pytest.raises(TypeError):
         ObjectiveFunction(srom="srom",
                           target=sample_random_vector,
@@ -129,7 +132,6 @@ def test_invalid_init_parameter_values_rejected(valid_srom,
 
 
 def test_evaluate_returns_expected_result(valid_srom, sample_random_vector):
-
     samples = np.ones((valid_srom._size, valid_srom._dim))
     probabilities = np.ones(valid_srom._size)
 
@@ -137,9 +139,31 @@ def test_evaluate_returns_expected_result(valid_srom, sample_random_vector):
         for error_function in ["mean", "max", "sse"]:
             for max_moment in [1, 2, 3, 4]:
                 for num_cdf_grid_points in [2, 15, 70]:
-
                     objective_function = \
                         ObjectiveFunction(srom=valid_srom,
+                                          target=sample_random_vector,
+                                          obj_weights=objective_weights,
+                                          error=error_function,
+                                          max_moment=max_moment,
+                                          num_cdf_grid_points=
+                                          num_cdf_grid_points)
+
+                    error = objective_function.evaluate(samples, probabilities)
+
+                    assert isinstance(error, float)
+                    assert error > 0.
+
+
+def test_evaluate_returns_expected_result_smooth(valid_srom_smooth, sample_random_vector):
+    samples = np.ones((valid_srom_smooth._size, valid_srom_smooth._dim))
+    probabilities = np.ones(valid_srom_smooth._size)
+
+    for objective_weights in [[0., .05, 1.], [7., .4, .1]]:
+        for error_function in ["mean", "max", "sse"]:
+            for max_moment in [1, 2, 3, 4]:
+                for num_cdf_grid_points in [2, 15, 70]:
+                    objective_function = \
+                        ObjectiveFunction(srom=valid_srom_smooth,
                                           target=sample_random_vector,
                                           obj_weights=objective_weights,
                                           error=error_function,

@@ -29,7 +29,7 @@ class ObjectiveFunction:
     """
 
     def __init__(self, srom, target, obj_weights=None, error='mean',
-                 max_moment=5, num_cdf_grid_points=100, scale=None, joint_opt=False):
+                 max_moment=5, num_cdf_grid_points=100, joint_opt=False):
         """
         Initialize objective function. Pass in SROM & target random vector
         objects that have been previously initialized. Objective function
@@ -60,8 +60,7 @@ class ObjectiveFunction:
         self._target = target
         self._x_grid = None
 
-        # Scale for error function when using SSE for smooth derivative
-        self._scale = scale
+        # Joint optimization
         self._joint_opt = joint_opt
 
         # Generate grids for evaluating CDFs based on target RV's range
@@ -139,7 +138,7 @@ class ObjectiveFunction:
         for i in range(self._SROM.size):
             x = samples[i]
             if(x <= bounds[i][0]) or (x >= bounds[i][1]):
-                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+                samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
         return samples.reshape(self._SROM.size, self._SROM.dim)
 
     def compute_moment_error(self):
@@ -180,7 +179,7 @@ class ObjectiveFunction:
         Calculate error in CDFs between SROM & target at pts in x_grid
         """
 
-        srom_cdfs = self._SROM.compute_cdf(self._x_grid, sigma=self._scale)
+        srom_cdfs = self._SROM.compute_cdf(self._x_grid)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
