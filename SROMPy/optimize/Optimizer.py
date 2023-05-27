@@ -105,7 +105,6 @@ class Optimizer:
                                                           obj_weights, error,
                                                           max_moment,
                                                           cdf_grid_pts,
-                                                          scale=scale,
                                                           joint_opt=joint_opt)
 
         self._srom_gradient = Gradient(srom, target, obj_weights, error,
@@ -316,7 +315,7 @@ class Optimizer:
 
     def __run_joint_optimization_loop(self, num_test_samples, joint_opt, method,
                                       output_interval, verbose, tolerance, options,
-                                      qmc_engine):
+                                      qmc_engine=None):
         """
         Is run by __perform_optimization to perform sampling and acquire
         optimal parameter values.
@@ -373,7 +372,7 @@ class Optimizer:
 
             optimization_result = \
                 opt.minimize(scipy_objective_function,
-                             x0=self.get_initial_guess(joint_opt, qmc_engine='Halton'),
+                             x0=self.get_initial_guess(joint_opt, qmc_engine=qmc_engine),
                              args=args,
                              jac=self._grad,
                              constraints=(self.get_constraints(joint_opt)),
@@ -547,7 +546,7 @@ class Optimizer:
         for i in range(self._srom_size):
             x = samples[i]
             if(x <= bounds[i][0]) or (x >= bounds[i][1]):
-                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+                samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
         return samples
 
     def get_initial_guess(self, joint_opt, qmc_engine=None):
