@@ -43,7 +43,7 @@ class Gradient:
 
         # NOTE - gradients won't make sense for MAX error metric
 
-        self.__check_init_parameters(obj_weights, error)
+        self.__check_init_parameters(obj_weights, error, scale)
         # Error checking/handling should have already been done by obj fun prior
         self.srom = srom
         self._target = target_random_variable
@@ -95,7 +95,7 @@ class Gradient:
         for i in range(self.srom.size):
             x = samples[i]
             if(x <= bounds[i][0]) or (x >= bounds[i][1]):
-                samples[i] = np.clip(x, bounds[i][0] + 1e-6, bounds[i][1] - 1e-6)
+                samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
         return samples.reshape(self.srom.size, self.srom.dim)
 
     def _gradient_wrt_samples(self, samples, probabilities):
@@ -148,7 +148,7 @@ class Gradient:
 
         # Compute relative diffs btwn srom/target CDFs.
         # Do a compute on the generated grid to get interpolants
-        srom_cdfs = self.srom.compute_cdf(self._x_grid, sigma=self._scale)
+        srom_cdfs = self.srom.compute_cdf(self._x_grid)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
@@ -277,7 +277,7 @@ class Gradient:
         (size, dim) = samples.shape
 
         # Compute relative diffs btwn srom/target CDFs.
-        srom_cdfs = self.srom.compute_cdf(self._x_grid, sigma=self._scale)
+        srom_cdfs = self.srom.compute_cdf(self._x_grid)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
@@ -381,7 +381,7 @@ class Gradient:
                                cdf_grid_pts)
             self._x_grid[:, i] = grid
 
-    def __check_init_parameters(self, obj_weights, error):
+    def __check_init_parameters(self, obj_weights, error, scale):
 
         if obj_weights is not None:
             if len(obj_weights) != 3:
@@ -392,3 +392,9 @@ class Gradient:
 
         if error.upper() not in ["MEAN", "MAX", "SSE"]:
             raise ValueError("error must be either 'mean','max', or 'sse'")
+
+        if scale is not None:
+            if isinstance(scale, int):
+                scale = float(scale)
+            if not isinstance(scale, float):
+                raise TypeError("Smooth CDF scale must be numeric.")
