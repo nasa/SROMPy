@@ -57,6 +57,7 @@ class SROM(object):
 
         self.samples = None
         self.probabilities = None
+        self._scale = None  # smooth CDF approximation
 
     @property
     def size(self):
@@ -161,7 +162,7 @@ class SROM(object):
 
         return moments
 
-    def compute_cdf(self, x_grid, sigma=None):
+    def compute_cdf(self, x_grid):
         """
         Computes the SROM marginal CDF values in each dimension.
 
@@ -199,8 +200,8 @@ class SROM(object):
         if (dim == 1) and (self._dim > 1):
             x_grid = np.repeat(x_grid, self._dim, axis=1)
 
-        if sigma is not None:
-            cdf_values = self._compute_cdf_smooth(num_pts, x_grid, sigma)
+        if self._scale is not None:
+            cdf_values = self._compute_cdf_smooth(num_pts, x_grid, self._scale)
         else:
             cdf_values = self._compute_cdf_empirical(num_pts, x_grid)
 
@@ -305,6 +306,8 @@ class SROM(object):
         :type opt_output_interval: int
         :param verbose: flag indicating to print optimization status to stdout
         :type verbose: bool
+        :param scale: the scale for the smooth CDF approximation
+        :type scale: float
 
         Returns: None. Sets samples/probabilities member variables.
 
@@ -324,6 +327,7 @@ class SROM(object):
             raise TypeError("target_random_variable must inherit from "
                             "RandomEntity.")
 
+        self._scale = scale
         # Use optimizer to form SROM objective func & gradient and minimize:
         opt = Optimizer(target_random_variable,
                         self,
