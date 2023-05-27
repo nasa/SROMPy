@@ -545,7 +545,7 @@ class Optimizer:
     def check_bounds(self, samples, bounds):
         for i in range(self._srom_size):
             x = samples[i]
-            if(x <= bounds[i][0]) or (x >= bounds[i][1]):
+            if np.any(x <= bounds[i][0]) or np.any(x >= bounds[i][1]):
                 samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
         return samples
 

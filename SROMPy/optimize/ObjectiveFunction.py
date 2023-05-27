@@ -56,7 +56,7 @@ class ObjectiveFunction:
         self.__test_init_params(srom, target, obj_weights, error,
                                 max_moment, num_cdf_grid_points)
 
-        self._SROM = srom
+        self._srom = srom
         self._target = target
         self._x_grid = None
 
@@ -75,7 +75,7 @@ class ObjectiveFunction:
         Returns moment error for given samples & probabilities
         """
 
-        self._SROM.set_params(samples, probabilities)
+        self._srom.set_params(samples, probabilities)
         return self.compute_moment_error()
 
     def get_cdf_error(self, samples, probabilities):
@@ -83,7 +83,7 @@ class ObjectiveFunction:
         Returns CDF error for given samples & probabilities
         """
 
-        self._SROM.set_params(samples, probabilities)
+        self._srom.set_params(samples, probabilities)
         return self.compute_cdf_error()
 
     def get_corr_error(self, samples, probabilities):
@@ -91,7 +91,7 @@ class ObjectiveFunction:
         Returns correlation error for given samples & probabilities
         """
 
-        self._SROM.set_params(samples, probabilities)
+        self._srom.set_params(samples, probabilities)
         return self.compute_correlation_error()
 
     def evaluate(self, samples, probabilities):
@@ -104,7 +104,7 @@ class ObjectiveFunction:
         error = 0.0
  
         # SROM is by the current values of samples/probabilities for stats.
-        self._SROM.set_params(samples, probabilities)
+        self._srom.set_params(samples, probabilities)
 
         if self._weights[0] > 0.0:
             cdf_error = self.compute_cdf_error()
@@ -128,25 +128,25 @@ class ObjectiveFunction:
         """
 
         if not joint_opt:
-            bounds = [(0.0, 1.0)] * self._SROM.size
+            bounds = [(0.0, 1.0)] * self._srom.size
         else:
-            bounds = list(zip(self._target.mins, self._target.maxs)) * self._SROM.size + [(0.0, 1.0)] * self._SROM.size
+            bounds = list(zip(self._target.mins, self._target.maxs)) * self._srom.size + [(0.0, 1.0)] * self._srom.size
 
         return bounds
 
     def check_bounds(self, samples, bounds):
-        for i in range(self._SROM.size):
+        for i in range(self._srom.size):
             x = samples[i]
-            if(x <= bounds[i][0]) or (x >= bounds[i][1]):
+            if np.any(x <= bounds[i][0]) or np.any(x >= bounds[i][1]):
                 samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
-        return samples.reshape(self._SROM.size, self._SROM.dim)
+        return samples.reshape(self._srom.size, self._srom.dim)
 
     def compute_moment_error(self):
         """
         Calculate error in moments between SROM & target
         """
         
-        srom_moments = self._SROM.compute_moments(self._max_moment)
+        srom_moments = self._srom.compute_moments(self._max_moment)
         target_moments = self._target.compute_moments(self._max_moment)
 
         # Reshape to 2D if returned as 1D for scalar RV.
@@ -179,7 +179,7 @@ class ObjectiveFunction:
         Calculate error in CDFs between SROM & target at pts in x_grid
         """
 
-        srom_cdfs = self._SROM.compute_cdf(self._x_grid)
+        srom_cdfs = self._srom.compute_cdf(self._x_grid)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
         # Check for 0 cdf values to prevent divide by zero.
@@ -211,7 +211,7 @@ class ObjectiveFunction:
         if self._target.dim == 1:
             return 0.0
 
-        srom_corr = self._SROM.compute_corr_mat()
+        srom_corr = self._srom.compute_corr_mat()
         target_corr = self._target.compute_correlation_matrix()
 
         if self._metric == "SSE":
