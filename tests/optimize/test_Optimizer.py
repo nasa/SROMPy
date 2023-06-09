@@ -97,6 +97,10 @@ def test_invalid_init_parameter_values_rejected(sample_random_vector,
     with pytest.raises(ValueError):
         Optimizer(sample_random_vector, valid_srom, cdf_grid_pts=0)
 
+    # Add the scale checker for scale parameter
+    with pytest.raises(TypeError):
+        Optimizer(sample_random_vector, valid_srom, scale="scale")
+
 
 def test_invalid_get_optimal_params_parameter_values_rejected(sample_random_vector,
                                                               valid_srom):
@@ -111,6 +115,10 @@ def test_invalid_get_optimal_params_parameter_values_rejected(sample_random_vect
     with pytest.raises(ValueError):
         optimizer.get_optimal_params(num_test_samples=0)
 
+    # Add the qmc checker
+    with pytest.raises(ValueError):
+        optimizer.get_optimal_params(qmc_engine="wrong_engine")
+
 
 def test_get_optimal_params_expected_output(sample_random_vector, valid_srom):
 
@@ -121,4 +129,16 @@ def test_get_optimal_params_expected_output(sample_random_vector, valid_srom):
     samples, probabilities = optimizer.get_optimal_params(num_test_samples=10,
                                                           verbose=False)
 
+    assert np.allclose([np.sum(probabilities)], [1.])
+
+
+def test_get_joint_optimal_params(sample_random_vector, valid_srom):
+
+    # Ensure that output corresponding to a known input processed
+    # with a preset random seed remains consistent.
+    optimizer = Optimizer(sample_random_vector, valid_srom, joint_opt=True, scale=0.1)
+
+    samples, probabilities = optimizer.get_optimal_params(num_test_samples=10,
+                                                          joint_opt=True,
+                                                          verbose=True)
     assert np.allclose([np.sum(probabilities)], [1.])

@@ -19,7 +19,7 @@ Define SROM-based output surrogate class
 
 import numpy as np
 
-from SROM import SROM
+from .SROM import SROM
 
 
 class SROMSurrogate:

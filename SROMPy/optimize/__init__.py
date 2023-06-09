@@ -14,7 +14,7 @@
 # under the License.
 
 name = "optimize"
-from ObjectiveFunction import ObjectiveFunction
-from Gradient import Gradient
-from Optimizer import Optimizer
+from .ObjectiveFunction import ObjectiveFunction
+from .Gradient import Gradient
+from .Optimizer import Optimizer
 

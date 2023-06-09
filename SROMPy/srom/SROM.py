@@ -20,6 +20,7 @@ Define stochastic reduced order model (SROM) class
 import copy
 import os
 import numpy as np
+from scipy.special import erf
 
 from SROMPy.optimize import Optimizer
 from SROMPy.target.RandomEntity import RandomEntity
@@ -56,6 +57,15 @@ class SROM(object):
 
         self.samples = None
         self.probabilities = None
+        self._scale = None  # smooth CDF approximation
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def dim(self):
+        return self._dim
 
     def set_params(self, samples, probabilities):
         """
@@ -163,6 +173,11 @@ class SROM(object):
             Size is (# grid pts) x (dim) or (# grid pts) x (1).
         :type x_grid: Numpy array.
 
+        :param sigma: scaling parameter for the smooth CDF approximation. If
+            None, uses the empirical CDF computed from an indicator function.
+            Otherwise, uses the error function approximation.
+        :type sigma: float
+
         Returns: Numpy array of CDF values at x_grid points. Size is (# grid
         pts) x (dim).
 
@@ -185,6 +200,15 @@ class SROM(object):
         if (dim == 1) and (self._dim > 1):
             x_grid = np.repeat(x_grid, self._dim, axis=1)
 
+        if self._scale is not None:
+            cdf_values = self._compute_cdf_smooth(num_pts, x_grid, self._scale)
+        else:
+            cdf_values = self._compute_cdf_empirical(num_pts, x_grid)
+
+        return cdf_values
+
+    def _compute_cdf_empirical(self, num_pts, x_grid):
+
         cdf_values = np.zeros((num_pts, self._dim))
 
         # Vectorized indicator implementation for CDF.
@@ -194,6 +218,23 @@ class SROM(object):
 
                 indices = grid >= sample[i]
                 cdf_values[indices, i] += self.probabilities[k]
+
+        return cdf_values
+
+    def _compute_cdf_erf(self, x, d, sigma):
+
+        cdf_value = 0.0
+        for k in range(self._size):
+            cdf_value += 0.5 * self.probabilities[k]*(1.0 + erf((x - self.samples[k, d]) / (np.sqrt(2) * sigma)))
+
+        return cdf_value
+
+    def _compute_cdf_smooth(self, num_pts, x_grid, sigma):
+
+        cdf_values = np.zeros((num_pts, self._dim))
+
+        for i, grid in enumerate(x_grid.T):
+            cdf_values[:, i] = self._compute_cdf_erf(grid, i, sigma=sigma)
 
         return cdf_values
 
@@ -226,7 +267,8 @@ class SROM(object):
                  method=None,
                  joint_opt=False,
                  opt_output_interval=10,
-                 verbose=True):
+                 verbose=True,
+                 scale=None):
         """
         Optimize for the SROM samples & probabilities to best match the
         target random vector statistics. The main functionality provided
@@ -264,6 +306,8 @@ class SROM(object):
         :type opt_output_interval: int
         :param verbose: flag indicating to print optimization status to stdout
         :type verbose: bool
+        :param scale: the scale for the smooth CDF approximation
+        :type scale: float
 
         Returns: None. Sets samples/probabilities member variables.
 
@@ -283,13 +327,16 @@ class SROM(object):
             raise TypeError("target_random_variable must inherit from "
                             "RandomEntity.")
 
+        self._scale = scale
         # Use optimizer to form SROM objective func & gradient and minimize:
         opt = Optimizer(target_random_variable,
                         self,
                         weights,
                         error,
                         max_moment,
-                        cdf_grid_pts)
+                        cdf_grid_pts,
+                        joint_opt=joint_opt,
+                        scale=scale)
 
         (samples, probabilities) = opt.get_optimal_params(num_test_samples,
                                                           tolerance,

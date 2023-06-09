@@ -14,4 +14,4 @@
 # under the License.
 
 name = "postprocess"
-from Postprocessor import Postprocessor
+from .Postprocessor import Postprocessor

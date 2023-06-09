@@ -29,6 +29,10 @@ class RandomVector(RandomEntity):
 
         self._dim = int(dim)
 
+    @property
+    def dim(self):
+        return self._dim
+
     @abc.abstractmethod
     def compute_moments(self, max_order):
         return
