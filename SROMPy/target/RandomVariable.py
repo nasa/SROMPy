@@ -25,6 +25,11 @@ and NormalRandomVariable.
 
 class RandomVariable(RandomEntity):
 
+    @property
+    def dim(self):
+        """A random variable is one-dimensional."""
+        return 1
+
     @abc.abstractmethod
     def get_variance(self, max_order):
         return

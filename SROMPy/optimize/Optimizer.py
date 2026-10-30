@@ -100,6 +100,13 @@ class Optimizer:
 
         self._target = target
 
+        # Joint optimization differentiates the CDF error with respect to the
+        # samples, which needs the smooth CDF.
+        if joint_opt and scale is None and \
+                (obj_weights is None or obj_weights[0] > 0):
+            raise ValueError("Joint optimization needs scale, the width of "
+                             "the smooth CDF approximation.")
+
         # Initialize objective function defining SROM vs target error.
         self._srom_objective_function = ObjectiveFunction(srom, target,
                                                           obj_weights, error,
@@ -269,7 +276,7 @@ class Optimizer:
         # Track optimal func value with corresponding samples/probabilities.
         optimal_probabilities = None
         optimal_samples = None
-        best_objective_function_result = 1e6
+        best_objective_function_result = np.inf
 
         np.random.seed(self.cpu_rank)
         num_test_samples_per_cpu = num_test_samples // self.number_CPUs
@@ -278,7 +285,7 @@ class Optimizer:
         for i in range(num_test_samples_per_cpu):
 
             # Randomly draw new.
-            srom_samples = self._target.draw_random_sample(self._srom_size)
+            srom_samples = self._draw_samples(qmc_engine)
 
             # Optimize using scipy.
             args = (self._srom_objective_function,
@@ -290,7 +297,8 @@ class Optimizer:
 
             optimization_result = \
                 opt.minimize(scipy_objective_function,
-                             self.get_initial_guess(joint_opt, qmc_engine),
+                             self.get_initial_guess(joint_opt, qmc_engine,
+                                                    samples=srom_samples),
                              args=args,
                              jac=self._grad,
                              constraints=self.get_constraints(joint_opt),
@@ -310,6 +318,10 @@ class Optimizer:
                     (i == 0 or (i + 1) % output_interval == 0):
                 print("\tIteration %d Current Optimal Objective: %.4f" % \
                       (i + 1, best_objective_function_result))
+
+        if optimal_samples is None:
+            raise RuntimeError("No SROM optimization trial returned a finite "
+                               "objective.")
 
         return optimal_samples, optimal_probabilities
 
@@ -342,7 +354,7 @@ class Optimizer:
         # Track optimal func value with corresponding samples/probabilities.
         optimal_probabilities = None
         optimal_samples = None
-        best_objective_function_result = 1e6
+        best_objective_function_result = np.inf
         sample_len = self._srom_size * self._dim
         prob_len = self._srom_size
 
@@ -393,6 +405,10 @@ class Optimizer:
                 print("\tIteration %d Current Optimal Objective: %.4f" % \
                       (i + 1, best_objective_function_result))
             i += 1
+
+        if optimal_samples is None:
+            raise RuntimeError("No SROM optimization trial returned a finite "
+                               "objective.")
 
         return optimal_samples.reshape(self._srom_size, self._dim), optimal_probabilities
 
@@ -542,33 +558,54 @@ class Optimizer:
         else:
             return {'type': 'eq', 'fun': joint_constraint}
 
-    def check_bounds(self, samples, bounds):
-        for i in range(self._srom_size):
-            x = samples[i]
-            if np.any(x <= bounds[i][0]) or np.any(x >= bounds[i][1]):
-                samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
-        return samples
-
-    def get_initial_guess(self, joint_opt, qmc_engine=None):
+    def check_bounds(self, samples):
         """
-        Return initial guess for optimization. Randomly drawn samples w/ equal
-        probability for joint optimization or just equal probabilities for
-        sequential optimization
+        Moves sample coordinates at or beyond the target's range just inside
+        it (by 1e-2), each coordinate against its own range. Returns a new
+        (size x dim) array.
+        """
+        samples = np.reshape(samples, (self._srom_size, self._dim))
+        lower = np.asarray(self._target.mins, dtype=float)
+        upper = np.asarray(self._target.maxs, dtype=float)
+        outside = (samples <= lower) | (samples >= upper)
+        return np.where(outside, np.clip(samples, lower + 1e-2, upper - 1e-2),
+                        samples)
+
+    def _draw_samples(self, qmc_engine=None):
+        """
+        Draws SROM-size samples of the target, with the QMC engine if given.
+        """
+        if qmc_engine is None:
+            return self._target.draw_random_sample(self._srom_size)
+        return self._target.draw_random_sample(self._srom_size, qmc_engine)
+
+    def get_initial_guess(self, joint_opt, qmc_engine=None, samples=None):
+        """
+        Return initial guess for optimization: the SROM samples (given, or
+        randomly drawn) and their probabilities, for joint optimization, or
+        just the probabilities, for sequential optimization. For a target known
+        by samples, each probability is the share of the target's samples
+        nearest to that SROM sample; otherwise probabilities are equal.
         """
 
         # Randomly draw some samples & stack them with probabilities
-        samples = self._target.draw_random_sample(self._srom_size, qmc_engine)
-        samples = self.check_bounds(samples, self.get_param_bounds(joint_opt))
+        if samples is None:
+            samples = self._draw_samples(qmc_engine)
+        samples = np.reshape(samples, (self._srom_size, self._dim))
+        if joint_opt:
+            samples = self.check_bounds(samples)
 
-        probabilities = np.zeros(self._srom_size)
-        for i in range(self._target.num_samples):
-            diffs = self._target.samples[i, :] - samples
-            diff_norms = np.linalg.norm(diffs, axis=1)
-            k = np.argmin(diff_norms)
-            probabilities[k] += 1
-
-        probabilities /= self._target.num_samples
-        assert(np.allclose([np.sum(probabilities)], [1.]))
+        target_samples = getattr(self._target, "samples", None)
+        if target_samples is None:
+            probabilities = np.full(self._srom_size, 1. / self._srom_size)
+        else:
+            target_samples = np.reshape(target_samples, (-1, self._dim))
+            nearest = np.concatenate([np.argmin(np.linalg.norm(
+                chunk[:, None, :] - samples[None, :, :], axis=2), axis=1)
+                for chunk in np.array_split(
+                    target_samples, max(1, len(target_samples) // 10000))])
+            probabilities = np.bincount(nearest, minlength=self._srom_size) / \
+                float(len(target_samples))
 
         if joint_opt:
             initial_guess = np.hstack((samples.flatten(), probabilities))
