@@ -26,14 +26,14 @@ if len(sys.argv) > 1:
     try:
         num_test_samples = int(sys.argv[1])
     except ValueError:
-        print 'Argument must be a positive integer.'
+        print('Argument must be a positive integer.')
         exit()
 
 # Get MPI information.
 comm = MPI.COMM_WORLD
 
 if comm.rank == 0:
-    print 'Will compute using %s samples on %s CPU%s.' % (num_test_samples, comm.size, 's' if comm.size > 1 else '')
+    print('Will compute using %s samples on %s CPU%s.' % (num_test_samples, comm.size, 's' if comm.size > 1 else ''))
 
 # Load previously saved scalability data if available.
 data_filename = os.path.join("data", "strong_scalability_data.txt")
@@ -41,19 +41,19 @@ data_filename = os.path.join("data", "strong_scalability_data.txt")
 if os.path.isfile(data_filename):
 
     if comm.rank == 0:
-        print 'Loading previously saved data set for modification:'
+        print('Loading previously saved data set for modification:')
 
     data_file = open(data_filename, 'r')
     performance_data = pickle.load(data_file)
     data_file.close()
 
     if comm.rank == 0:
-        print performance_data
+        print(performance_data)
 
 else:
 
     if comm.rank == 0:
-        print 'No previous performance data found. Creating new data set.'
+        print('No previous performance data found. Creating new data set.')
     performance_data = {}
 
 # Random variable to optimize to.
@@ -88,10 +88,10 @@ if comm.rank != 0:
 
 performance_data[num_test_samples][comm.size] = mean_performance
 
-print '%s test samples across %s CPUs took %s seconds.' % (num_test_samples, comm.size, float(mean_performance))
+print('%s test samples across %s CPUs took %s seconds.' % (num_test_samples, comm.size, float(mean_performance)))
 
-print 'Writing results to disk...'
-print performance_data
+print('Writing results to disk...')
+print(performance_data)
 
 if not os.path.isdir('data'):
     os.mkdir('data')

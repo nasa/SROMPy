@@ -6,7 +6,7 @@ import os
 # Load data. Should be a file with performance data for each number of CPUs.
 all_speedup_data = []
 
-print 'Loading performance data.'
+print('Loading performance data.')
 
 data_filename = os.path.join("data", "weak_scalability_data.txt")
 if os.path.isfile(data_filename):
@@ -22,7 +22,7 @@ if os.path.isfile(data_filename):
 
 else:
 
-    print 'Chart data not found!'
+    print('Chart data not found!')
     exit()
 
 # Get parallel performance data for as many data files as are available.
@@ -34,7 +34,7 @@ while num_cpus in performance_data:
 
     num_cpus += 1
 
-print 'Found data for up to %s CPUs.' % str(num_cpus - 1)
+print('Found data for up to %s CPUs.' % str(num_cpus - 1))
 
 # Generate the plots.
 fig, ax = plt.subplots(1)
