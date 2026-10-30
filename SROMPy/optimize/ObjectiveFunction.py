@@ -100,7 +100,11 @@ class ObjectiveFunction:
         probabilities. Calculates errrors in statistics between SROM/target
         """
 
-        samples = self.check_bounds(samples.flatten(), self.get_param_bounds(joint_opt=self._joint_opt))
+        # Samples are design variables only in joint optimization; in
+        # sequential optimization they are fixed draws of the target.
+        samples = np.reshape(samples, (self._srom.size, self._srom.dim))
+        if self._joint_opt:
+            samples = self.check_bounds(samples)
         error = 0.0
  
         # SROM is by the current values of samples/probabilities for stats.
@@ -134,12 +138,18 @@ class ObjectiveFunction:
 
         return bounds
 
-    def check_bounds(self, samples, bounds):
-        for i in range(self._srom.size):
-            x = samples[i]
-            if np.any(x <= bounds[i][0]) or np.any(x >= bounds[i][1]):
-                samples[i] = np.clip(x, bounds[i][0] + 1e-2, bounds[i][1] - 1e-2)
-        return samples.reshape(self._srom.size, self._srom.dim)
+    def check_bounds(self, samples):
+        """
+        Moves sample coordinates at or beyond the target's range just inside
+        it (by 1e-2), each coordinate against its own range. Returns a new
+        (size x dim) array.
+        """
+        samples = np.reshape(samples, (self._srom.size, self._srom.dim))
+        lower = np.asarray(self._target.mins, dtype=float)
+        upper = np.asarray(self._target.maxs, dtype=float)
+        outside = (samples <= lower) | (samples >= upper)
+        return np.where(outside, np.clip(samples, lower + 1e-2, upper - 1e-2),
+                        samples)
 
     def compute_moment_error(self):
         """
@@ -153,13 +163,13 @@ class ObjectiveFunction:
         if len(target_moments.shape) == 1:
             target_moments = target_moments.reshape((self._max_moment, 1))
 
-        # Prevent divide by zero.
-        zero_indices = np.where(np.abs(target_moments) <= 1e-12)[0]
-        target_moments[zero_indices] = 1.0
+        # Prevent divide by zero (each input's moments on their own): an
+        # absolute error where the target moment is zero.
+        scale = np.where(np.abs(target_moments) <= 1e-12, 1.0, target_moments)
 
         # Squared relative difference:
         if self._metric == "SSE":
-            rel_diffs = ((srom_moments-target_moments)/target_moments)**2.0
+            rel_diffs = ((srom_moments-target_moments)/scale)**2.0
             error = 0.5*np.sum(rel_diffs)
 
         # Max absolute value:
@@ -182,21 +192,16 @@ class ObjectiveFunction:
         srom_cdfs = self._srom.compute_cdf(self._x_grid)
         target_cdfs = self._target.compute_cdf(self._x_grid)
 
-        # Check for 0 cdf values to prevent divide by zero.
-        nonzero_indices = np.where(target_cdfs[:, 0] > 0)[0]
-        srom_cdfs = srom_cdfs[nonzero_indices, :]
-        target_cdfs = target_cdfs[nonzero_indices, :]
-
         if self._metric == "SSE":
-            squared_diffs = (srom_cdfs - target_cdfs)**2.0
-            rel_diffs = squared_diffs / target_cdfs**2.0
+            # Skip zero target CDF values of each input (no relative error).
+            kept = target_cdfs > 0
+            rel_diffs = ((srom_cdfs - target_cdfs)[kept] / target_cdfs[kept])**2.0
             error = 0.5*np.sum(rel_diffs)
-        elif self._metric == "MAX":
-            diffs = np.abs(srom_cdfs - target_cdfs)
-            error = np.max(diffs)
-        elif self._metric == "MEAN":    
-            diffs = np.abs(srom_cdfs - target_cdfs)
-            error = np.mean(diffs)
+        elif self._metric in ("MAX", "MEAN"):
+            # Absolute errors where the first input's target CDF is positive.
+            nonzero = target_cdfs[:, 0] > 0
+            diffs = np.abs(srom_cdfs[nonzero] - target_cdfs[nonzero])
+            error = np.max(diffs) if self._metric == "MAX" else np.mean(diffs)
         else:
             raise ValueError("Invalid error metric")
 
@@ -215,8 +220,9 @@ class ObjectiveFunction:
         target_corr = self._target.compute_correlation_matrix()
 
         if self._metric == "SSE":
-            squared_diffs = (srom_corr - target_corr)**2.0
-            rel_diffs = squared_diffs / target_corr**2.0
+            # Prevent divide by zero, as for the moments.
+            scale = np.where(np.abs(target_corr) <= 1e-12, 1.0, target_corr)
+            rel_diffs = ((srom_corr - target_corr) / scale)**2.0
             error = 0.5*np.sum(rel_diffs)
         elif self._metric == "MAX":
             diffs = np.abs(srom_corr - target_corr)

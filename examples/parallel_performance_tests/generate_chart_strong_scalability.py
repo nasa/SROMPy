@@ -8,17 +8,17 @@ data_filename = os.path.join("data", "strong_scalability_data.txt")
 all_performance_data = {}
 if os.path.isfile(data_filename):
 
-    print 'Loading previously saved data set for modification:'
+    print('Loading previously saved data set for modification:')
 
     data_file = open(data_filename, 'r')
     all_performance_data = pickle.load(data_file)
     data_file.close()
 
-    print all_performance_data
+    print(all_performance_data)
 
 else:
 
-    print 'Chart data not found!'
+    print('Chart data not found!')
     exit()
 
 # Generate the plots.

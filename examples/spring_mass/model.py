@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # Initialize model & simulate.
     model = SpringMass2D(state0, t)
     state = model.simulate(k, m)
-    print "shape  = ", state.shape
+    print("shape  = ", state.shape)
 
     # Plot results.
     plt.figure()

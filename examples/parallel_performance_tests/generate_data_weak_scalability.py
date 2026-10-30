@@ -32,24 +32,24 @@ data_filename = os.path.join("data", "weak_scalability_data.txt")
 if os.path.isfile(data_filename):
 
     if comm.rank == 0:
-        print 'Loading previously saved data set for modification:'
+        print('Loading previously saved data set for modification:')
 
     data_file = open(data_filename, 'r')
     performance_data = pickle.load(data_file)
     data_file.close()
 
     if comm.rank == 0:
-        print performance_data
+        print(performance_data)
 
 else:
 
     if comm.rank == 0:
-        print 'No previous performance data found. Creating new data set.'
+        print('No previous performance data found. Creating new data set.')
 
     performance_data = {}
 
 if comm.rank == 0:
-    print 'Performing computation with %s CPUs.' % comm.size
+    print('Performing computation with %s CPUs.' % comm.size)
 
 min_samples = 6
 max_samples = 301
@@ -63,7 +63,7 @@ test_results = []
 for num_test_samples in xrange(min_samples, max_samples, samples_step):
 
     if comm.rank == 0:
-        print 'Optimizing with %s test samples...' % num_test_samples
+        print('Optimizing with %s test samples...' % num_test_samples)
 
     # Repeat performance data collection in order to smooth the chart lines.
     iteration_performance = []
